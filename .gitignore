@@ -12,3 +12,6 @@ private/
 # Tooling
 node_modules/
 .cache/
+
+# Python bytecode
+__pycache__/

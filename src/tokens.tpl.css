@@ -1,0 +1,219 @@
+/* ==========================================================================
+   A Brazileira · design tokens · v1.0 (coming-soon, step 1 of the system)
+
+   Three layers, read top to bottom:
+     1. primitives   brand words for the house materials (raw values live ONLY here)
+     2. semantic     roles the interface reads: Dia (default) and Noite
+     3. illustration roles the entrance drawing reads (stone, wood, brass, light)
+   site.css consumes layers 2 and 3 only.
+   ========================================================================== */
+
+/* ---- Fonts: self-hosted, OFL (licences in ../fonts/) -------------------- */
+@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cormorant Garamond"; src: url("../fonts/cormorant-garamond-latin-wght-normal.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
+
+/* Metric-matched fallbacks (measured with fontTools against Times metrics on
+   the exact strings used), so the swap does not move the composition. */
+@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); font-weight: 400; size-adjust: 100.19%; ascent-override: 97.41%; descent-override: 37.13%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 600; size-adjust: 97.12%; ascent-override: 100.49%; descent-override: 38.3%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 700; size-adjust: 105.16%; ascent-override: 92.81%; descent-override: 35.38%; line-gap-override: 0%; }
+@font-face { font-family: "Cormorant fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.1%; ascent-override: 95.16%; descent-override: 29.56%; line-gap-override: 0%; }
+
+:root {
+  /* ==== 1. Primitives ===================================================== */
+  /* house materials, sampled from the brand boards */
+  --papel: #F9F0E9;          /* paper; lime plaster in daylight          */
+  --areia: #F0DFCF;          /* sand                                     */
+  --pedra: #DECDBD;          /* limestone                                */
+  --oliva: #72692E;          /* olive                                    */
+  --azulejo: #6F7A4A;        /* green glazed tile                        */
+  --castanho: #804F1E;       /* chestnut                                 */
+  --nogueira: #5F3819;       /* walnut                                   */
+  --tinta: #2E1E14;          /* ink, near-black brown                    */
+  --latao: #DB9E42;          /* brass: ornament by day, text by night    */
+  /* derived for contrast and for night (all measured, see DESIGN.md) */
+  --latao-marca: #A57638;    /* emblem brass on papel, close to the original logo (3.56:1) */
+  --latao-texto: #83602C;    /* brass-hued small text on papel (5.08:1)  */
+  --noite: #1C120B;          /* walnut night, never #000                 */
+  --linho: #F3E6D6;          /* linen: text on noite (14.99:1)           */
+  --linho-escuro: #C2AE96;   /* secondary text on noite (8.58:1)         */
+  --luz-nucleo: #FFF2D6;     /* lamplight: core                          */
+  --luz: #F4C978;            /* lamplight: body                          */
+  --luz-borda: #B9782C;      /* lamplight: falloff                       */
+  --barro: #9E3B1E;          /* terracotta (handmade ceramics): form errors on the hall surface */
+
+  /* ---- Type -------------------------------------------------------------- */
+  --font-display: "Cinzel", "Cinzel fallback", "Trajan Pro", "Times New Roman", serif;          /* logo lockup only */
+  --font-text: "Cormorant Garamond", "Cormorant fallback", "EB Garamond", Garamond, "Times New Roman", serif;
+  /* lockup: one size, the rest are ratios of the original logo */
+  --size-wordmark: clamp(1.75rem, min(1.05rem + 2.75vw, 6.4svh), 3.5rem);   /* 28 -> 56px */
+  --lockup-kind: 0.5em;
+  --lockup-place: 0.4em;
+  --lockup-emblem: 2.9em;
+  --track-wordmark: 0.045em;
+  --track-kind: 0.12em;
+  --track-place: 0.3em;
+  /* reading text and interface */
+  --size-lede: clamp(1.25rem, min(1.02rem + 0.95vw, 3.4svh), 1.75rem);       /* 20 -> 28px */
+  --size-ui: 1rem;           /* 16px: Dia/Noite, PT/EN, status          */
+  --size-small: 0.9375rem;   /* 15px: footer, form messages             */
+  --size-cta: 1.125rem;      /* 18px: the one action, form fields, button */
+  --size-title: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);   /* 28 -> 40px: section and page titles */
+  --size-read: 1.125rem;     /* 18px: reading text (privacy notice)      */
+  --leading-read: 1.5;
+  --weight-text: 500;
+  --leading-lockup: 1.05;
+  --leading-lede: 1.32;
+  --leading-ui: 1.25;
+  --measure-lede: 21em;
+
+  /* ---- Space: 4px base ----------------------------------------------------- */
+  --space-1: 0.25rem;  /*   4 */
+  --space-2: 0.5rem;   /*   8 */
+  --space-3: 0.75rem;  /*  12 */
+  --space-4: 1rem;     /*  16 */
+  --space-5: 1.5rem;   /*  24 */
+  --space-6: 2rem;     /*  32 */
+  --space-7: 3rem;     /*  48 */
+  --space-8: 4rem;     /*  64 */
+  --space-9: 6rem;     /*  96 */
+  --gutter: clamp(1.5rem, 0.75rem + 3.2vw, 4.5rem);   /* 24 -> 72 */
+  --container: 86rem;                                 /* 1376 */
+  --target: 2.75rem;                                  /* 44px  */
+  --field: 3rem;                                      /* 48px: input and button height */
+  --measure-form: 26rem;                              /* 416px: waiting-list column */
+  --topbar-pad: max(var(--space-2), env(safe-area-inset-top));   /* top bar inset; the stage clears it */
+
+  /* ---- Lines, shape, focus --------------------------------------------------- */
+  --hairline: 1px;
+  --radius-focus: 2px;       /* the only radius: focus ring corners      */
+  --focus-width: 2px;
+  --focus-offset: 3px;
+  --line-w: 1.25px;          /* illustration contour (non-scaling)       */
+  --line-w-fine: 0.75px;     /* illustration detail                       */
+
+  /* ---- Motion -------------------------------------------------------------- */
+  --dur-ui: 160ms;
+  --dur-theme: 400ms;        /* Dia <-> Noite cross-fade                  */
+  --dur-door: 1100ms;        /* doors ease ajar, once                     */
+  --delay-door: 200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);
+  --ajar-l: 41deg;
+  --ajar-r: 27deg;
+  --dur-press: 160ms;        /* button and link press: scale(0.97)      */
+  --dur-state: 200ms;        /* form messages, tick                      */
+  --dur-reveal: 700ms;       /* the waiting list rises in, once          */
+  /* scroll sequence (site.js drives it; these are the values it reads) */
+  --porta-run: 140svh;       /* scroll length of the pinned door sequence (wrapper = 100lvh + run) */
+  --open-l: 47deg;           /* extra swing on scroll: left leaf 41 -> 88deg */
+  --open-r: 55deg;           /* right leaf 27 -> 82deg                   */
+
+  /* ---- Layers -------------------------------------------------------------- */
+  --z-scene: 1;
+  --z-chrome: 10;
+  --z-skip: 100;
+
+  /* ---- Breakpoints (reference; custom properties cannot drive @media) -----
+     stack  portrait (phones and tablets): lockup, text, entrance at the foot
+     split  landscape >= 37.5em (600px): text | entrance
+     short  landscape, max-height 31.25em (500px): compact split
+     tight  portrait, max-height 42.5em (680px): tighter rhythm            */
+
+}
+
+/* ==== 2 + 3 · Dia (default). [data-theme] also scopes a theme to any element
+   (the styleguide shows both side by side); restate `color` where it is used. */
+:root,
+[data-theme="dia"] {
+  color-scheme: light;
+  --color-bg: var(--papel);
+  --color-text-strong: var(--tinta);       /* 14.23:1 on papel */
+  --color-text: var(--nogueira);           /*  9.03:1 */
+  --color-text-muted: var(--castanho);     /*  6.11:1 */
+  --color-accent-text: var(--latao-texto); /*  5.08:1 */
+  --color-mark: var(--latao-marca);        /*  3.56:1, graphic */
+  --color-ground: var(--nogueira);         /* floor line = illustration ink */
+  --color-focus: var(--nogueira);          /*  9.03:1 */
+  --color-selection: var(--areia);
+  --color-surface: var(--areia);
+  --color-hall: color-mix(in srgb, var(--latao) 22%, var(--papel));   /* the lit hall: waiting-list surface */
+
+  /* ==== 3. Illustration · Dia (sun from the upper left) ===================== */
+  --i-line: var(--nogueira);
+  --i-fine: color-mix(in srgb, var(--nogueira) 62%, var(--pedra));
+  --i-stone: var(--pedra);
+  --i-stone-lit: var(--areia);
+  --i-stone-shade: color-mix(in srgb, var(--pedra) 70%, var(--castanho));
+  --i-tread: var(--areia);
+  --i-riser: var(--pedra);
+  --i-wood: var(--castanho);
+  --i-wood-lit: color-mix(in srgb, var(--castanho) 74%, var(--latao));
+  --i-wood-shade: var(--nogueira);
+  --i-wood-line: var(--tinta);
+  --i-glass: var(--areia);
+  --i-room: color-mix(in srgb, var(--tinta) 86%, var(--nogueira));
+  --i-room-floor: color-mix(in srgb, var(--tinta) 62%, var(--nogueira));
+  --i-room-tile: color-mix(in srgb, var(--azulejo) 52%, var(--tinta));
+  --i-brass: var(--latao);
+  --i-lamp: var(--castanho);       /* pendant in the unlit hall */
+  --i-iron: var(--tinta);
+  --i-lantern-glass: var(--areia);
+  --i-lantern-glass-shade: var(--pedra);
+  --i-pot: var(--areia);
+  --i-pot-shade: var(--pedra);
+  --i-soil: var(--nogueira);
+  --i-trunk: color-mix(in srgb, var(--nogueira) 58%, var(--pedra));
+  --i-leaf-a: var(--oliva);
+  --i-leaf-b: color-mix(in srgb, var(--azulejo) 58%, var(--pedra));
+  --i-leaf-c: color-mix(in srgb, var(--oliva) 66%, var(--nogueira));   /* leaves in shade */
+  --i-reveal-glow: color-mix(in srgb, var(--latao) 30%, var(--noite));
+  --i-cast: var(--nogueira);       /* cast shadow on the plaster, sun from the upper left */
+  --light-core: var(--luz-nucleo);
+  --light-mid: var(--luz);
+  --light-edge: var(--luz-borda);
+  --o-night: 0;              /* lamplight layers */
+  --o-turn: 0.22;            /* a leaf turned away from the sun reads darker */
+  --o-cast: 0.12;            /* cast shadows exist only by day */
+  /* the hall once the doors open (HTML layers between the two svgs) */
+  --i-hall-dawn: color-mix(in srgb, var(--latao) 55%, var(--castanho));  /* daylight reaching the walnut hall */
+  --i-hall-light: var(--color-hall);                                    /* lime-washed hall in daylight */
+  --i-hall-floor: color-mix(in srgb, var(--color-hall) 80%, var(--castanho));
+  --i-spill: none;                                                      /* no lamplight by day */
+}
+
+/* The hall surface (waiting list, footer on the home page): lamplight in both themes, so it reads
+   dark ink on a light ground whatever the theme. It re-points the semantic roles for its subtree. */
+.surface-hall {
+  color-scheme: light;
+  --color-bg: var(--color-hall);
+  --color-text-strong: var(--tinta);
+  --color-text: var(--nogueira);
+  --color-text-muted: var(--castanho);    /* 5.24:1 on the hall by day, 5.66:1 by night */
+  --color-accent-text: var(--castanho);   /* latao-texto would be 4.36:1 here: not used for text on the hall */
+  --color-focus: var(--nogueira);
+  --color-ground: var(--nogueira);
+  --color-selection: var(--areia);
+  --color-field: var(--papel);
+  --color-field-line: var(--nogueira);
+  --color-error: var(--barro);
+  --color-on-strong: var(--papel);       /* text on a tinta button */
+}
+
+/* Very wide screens: more air and scale, never more content. */
+@media (min-width: 120em) { :root { font-size: 112.5%; } }   /* >= 1920 */
+@media (min-width: 160em) { :root { font-size: 131.25%; } }  /* >= 2560 */
+
+/* ==== Noite ================================================================
+   Same block twice (generated from one source): the visitor's system
+   preference, unless they chose Dia, and the manual choice. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="dia"]) {
+/*NOITE*/
+  }
+}
+[data-theme="noite"] {
+/*NOITE*/
+}

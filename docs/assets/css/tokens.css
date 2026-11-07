@@ -42,6 +42,7 @@
   --luz-nucleo: #FFF2D6;     /* lamplight: core                          */
   --luz: #F4C978;            /* lamplight: body                          */
   --luz-borda: #B9782C;      /* lamplight: falloff                       */
+  --barro: #9E3B1E;          /* terracotta (handmade ceramics): form errors on the hall surface */
 
   /* ---- Type -------------------------------------------------------------- */
   --font-display: "Cinzel", "Cinzel fallback", "Trajan Pro", "Times New Roman", serif;          /* logo lockup only */
@@ -57,7 +58,11 @@
   /* reading text and interface */
   --size-lede: clamp(1.25rem, min(1.02rem + 0.95vw, 3.4svh), 1.75rem);       /* 20 -> 28px */
   --size-ui: 1rem;           /* 16px: Dia/Noite, PT/EN, status          */
-  --size-small: 0.9375rem;   /* 15px: footer                            */
+  --size-small: 0.9375rem;   /* 15px: footer, form messages             */
+  --size-cta: 1.125rem;      /* 18px: the one action, form fields, button */
+  --size-title: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);   /* 28 -> 40px: section and page titles */
+  --size-read: 1.125rem;     /* 18px: reading text (privacy notice)      */
+  --leading-read: 1.5;
   --weight-text: 500;
   --leading-lockup: 1.05;
   --leading-lede: 1.32;
@@ -77,6 +82,9 @@
   --gutter: clamp(1.5rem, 0.75rem + 3.2vw, 4.5rem);   /* 24 -> 72 */
   --container: 86rem;                                 /* 1376 */
   --target: 2.75rem;                                  /* 44px  */
+  --field: 3rem;                                      /* 48px: input and button height */
+  --measure-form: 26rem;                              /* 416px: waiting-list column */
+  --topbar-pad: max(var(--space-2), env(safe-area-inset-top));   /* top bar inset; the stage clears it */
 
   /* ---- Lines, shape, focus --------------------------------------------------- */
   --hairline: 1px;
@@ -95,6 +103,13 @@
   --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);
   --ajar-l: 41deg;
   --ajar-r: 27deg;
+  --dur-press: 160ms;        /* button and link press: scale(0.97)      */
+  --dur-state: 200ms;        /* form messages, tick                      */
+  --dur-reveal: 700ms;       /* the waiting list rises in, once          */
+  /* scroll sequence (site.js drives it; these are the values it reads) */
+  --porta-run: 140svh;       /* scroll length of the pinned door sequence (wrapper = 100lvh + run) */
+  --open-l: 47deg;           /* extra swing on scroll: left leaf 41 -> 88deg */
+  --open-r: 55deg;           /* right leaf 27 -> 82deg                   */
 
   /* ---- Layers -------------------------------------------------------------- */
   --z-scene: 1;
@@ -102,9 +117,10 @@
   --z-skip: 100;
 
   /* ---- Breakpoints (reference; custom properties cannot drive @media) -----
-     stack  < 56.25em (900px) portrait: lockup, text, entrance at the foot
-     split  >= 56.25em, or landscape >= 37.5em: text | entrance
-     short  landscape, max-height 31.25em (500px): compact split            */
+     stack  portrait (phones and tablets): lockup, text, entrance at the foot
+     split  landscape >= 37.5em (600px): text | entrance
+     short  landscape, max-height 31.25em (500px): compact split
+     tight  portrait, max-height 42.5em (680px): tighter rhythm            */
 
 }
 
@@ -123,6 +139,7 @@
   --color-focus: var(--nogueira);          /*  9.03:1 */
   --color-selection: var(--areia);
   --color-surface: var(--areia);
+  --color-hall: color-mix(in srgb, var(--latao) 22%, var(--papel));   /* the lit hall: waiting-list surface */
 
   /* ==== 3. Illustration · Dia (sun from the upper left) ===================== */
   --i-line: var(--nogueira);
@@ -160,6 +177,29 @@
   --o-night: 0;              /* lamplight layers */
   --o-turn: 0.22;            /* a leaf turned away from the sun reads darker */
   --o-cast: 0.12;            /* cast shadows exist only by day */
+  /* the hall once the doors open (HTML layers between the two svgs) */
+  --i-hall-dawn: color-mix(in srgb, var(--latao) 55%, var(--castanho));  /* daylight reaching the walnut hall */
+  --i-hall-light: var(--color-hall);                                    /* lime-washed hall in daylight */
+  --i-hall-floor: color-mix(in srgb, var(--color-hall) 80%, var(--castanho));
+  --i-spill: none;                                                      /* no lamplight by day */
+}
+
+/* The hall surface (waiting list, footer on the home page): lamplight in both themes, so it reads
+   dark ink on a light ground whatever the theme. It re-points the semantic roles for its subtree. */
+.surface-hall {
+  color-scheme: light;
+  --color-bg: var(--color-hall);
+  --color-text-strong: var(--tinta);
+  --color-text: var(--nogueira);
+  --color-text-muted: var(--castanho);    /* 5.24:1 on the hall by day, 5.66:1 by night */
+  --color-accent-text: var(--castanho);   /* latao-texto would be 4.36:1 here: not used for text on the hall */
+  --color-focus: var(--nogueira);
+  --color-ground: var(--nogueira);
+  --color-selection: var(--areia);
+  --color-field: var(--papel);
+  --color-field-line: var(--nogueira);
+  --color-error: var(--barro);
+  --color-on-strong: var(--papel);       /* text on a tinta button */
 }
 
 /* Very wide screens: more air and scale, never more content. */
@@ -178,10 +218,11 @@
     --color-text-muted: var(--linho-escuro); /*  8.58:1 */
     --color-accent-text: var(--latao);       /*  7.87:1 */
     --color-mark: var(--latao);
-    --color-ground: color-mix(in srgb, var(--pedra) 40%, var(--noite));
+    --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.41:1, floor line */
     --color-focus: var(--latao);
     --color-selection: color-mix(in srgb, var(--latao) 28%, var(--noite));
     --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
+    --color-hall: color-mix(in srgb, var(--luz-nucleo) 72%, var(--luz));   /* lamplight: waiting-list surface */
 
     --i-line: color-mix(in srgb, var(--pedra) 40%, var(--noite));
     --i-fine: color-mix(in srgb, var(--pedra) 24%, var(--noite));
@@ -213,6 +254,10 @@
     --o-night: 1;
     --o-turn: 0;
     --o-cast: 0;
+    --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
+    --i-hall-dawn: transparent;
+    --i-hall-floor: transparent;
+    --i-spill: radial-gradient(farthest-side at 50% 0%, color-mix(in srgb, var(--luz) 70%, transparent), color-mix(in srgb, var(--luz) 28%, transparent) 55%, transparent);
   }
 }
 [data-theme="noite"] {
@@ -223,10 +268,11 @@
   --color-text-muted: var(--linho-escuro); /*  8.58:1 */
   --color-accent-text: var(--latao);       /*  7.87:1 */
   --color-mark: var(--latao);
-  --color-ground: color-mix(in srgb, var(--pedra) 40%, var(--noite));
+  --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.41:1, floor line */
   --color-focus: var(--latao);
   --color-selection: color-mix(in srgb, var(--latao) 28%, var(--noite));
   --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
+  --color-hall: color-mix(in srgb, var(--luz-nucleo) 72%, var(--luz));   /* lamplight: waiting-list surface */
 
   --i-line: color-mix(in srgb, var(--pedra) 40%, var(--noite));
   --i-fine: color-mix(in srgb, var(--pedra) 24%, var(--noite));
@@ -258,4 +304,8 @@
   --o-night: 1;
   --o-turn: 0;
   --o-cast: 0;
+  --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
+  --i-hall-dawn: transparent;
+  --i-hall-floor: transparent;
+  --i-spill: radial-gradient(farthest-side at 50% 0%, color-mix(in srgb, var(--luz) 70%, transparent), color-mix(in srgb, var(--luz) 28%, transparent) 55%, transparent);
 }

@@ -1,0 +1,812 @@
+/* ==========================================================================
+   A Brazileira · coming soon · "A Porta"
+   Components read semantic and illustration tokens only (tokens.css).
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body, h1, h2, p, fieldset, legend { margin: 0; }
+fieldset { min-inline-size: 0; padding: 0; border: 0; }
+legend { padding: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--color-bg);
+}
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-text);
+  font-weight: var(--weight-text);
+  font-size: var(--size-ui);
+  line-height: var(--leading-ui);
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  overflow-x: clip;
+}
+h1, h2 { font-size: inherit; font-weight: inherit; }
+svg { display: block; }
+::selection { background: var(--color-selection); color: var(--color-text-strong); }
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-focus);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- Skip link -------------------------------------------------------------- */
+.skip {
+  position: absolute;
+  z-index: var(--z-skip);
+  inset-inline-start: var(--gutter);
+  inset-block-start: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  transform: translateY(-200%);
+}
+.skip:focus-visible { transform: none; }
+
+/* ---- Top bar: Dia · Noite (left), PT · EN (right) ---------------------------- */
+.topbar {
+  position: relative;
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--topbar-pad) 0;
+  padding-inline:
+    max(calc(var(--gutter) - var(--space-3)), env(safe-area-inset-left))
+    max(calc(var(--gutter) - var(--space-3)), env(safe-area-inset-right));
+}
+.home .topbar { position: absolute; inset: 0 0 auto; }
+.controls { display: flex; align-items: center; }
+.controls[hidden] { display: none; }
+.controls--lang { margin-inline-start: auto; }
+.controls__sep { color: var(--color-text-muted); user-select: none; }
+
+/* one control style for every switch: sentence case, no tracking */
+.ctl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--target);
+  min-block-size: var(--target);
+  margin: 0;
+  padding: 0 var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: color var(--dur-ui) var(--ease-out);
+}
+/* current / pressed: stronger ink and an underline, so state is never colour alone */
+.ctl[aria-current="page"],
+.ctl[aria-pressed="true"] {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 0.3em;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ctl:hover { color: var(--color-text-strong); }
+}
+.ctl:active { color: var(--color-text); }
+
+/* ---- Stage -------------------------------------------------------------------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-block-size: 0;
+  padding-block-start: var(--space-4);
+  padding-inline:
+    max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
+}
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  inline-size: 100%;
+  margin-block: auto var(--space-5);
+  text-align: center;
+}
+
+/* ---- Lockup (h1): the original logo ------------------------------------------- */
+.lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: var(--size-wordmark);
+  font-weight: 600;
+  line-height: var(--leading-lockup);
+  text-transform: uppercase;
+  color: var(--color-text-strong);
+}
+.lockup__emblem {
+  inline-size: var(--lockup-emblem);
+  aspect-ratio: 200 / 228;
+  margin-block-end: 0.42em;
+  color: var(--color-mark);
+}
+.lockup__emblem svg { inline-size: 100%; block-size: 100%; }
+.lockup__name {
+  letter-spacing: var(--track-wordmark);
+  margin-inline-end: calc(var(--track-wordmark) * -1);   /* optical centre */
+}
+.lockup__kind {
+  margin-block-start: 0.34em;
+  font-size: var(--lockup-kind);
+  font-weight: 700;
+  letter-spacing: var(--track-kind);
+  margin-inline-end: calc(var(--track-kind) * -1);
+}
+.lockup__place {
+  margin-block-start: 0.7em;
+  font-size: var(--lockup-place);
+  font-weight: 400;
+  letter-spacing: var(--track-place);
+  margin-inline-end: calc(var(--track-place) * -1);
+  color: var(--color-accent-text);
+}
+
+/* ---- Message ------------------------------------------------------------------ */
+.lede {
+  max-inline-size: var(--measure-lede);
+  margin-block-start: var(--space-5);
+  font-size: var(--size-lede);
+  line-height: var(--leading-lede);
+  color: var(--color-text);
+  text-wrap: balance;
+}
+.status {
+  margin-block-start: var(--space-3);
+  color: var(--color-accent-text);
+}
+
+/* ---- The one action: a text link-button to the waiting list -------------------- */
+.cta-row { margin-block-start: var(--space-2); }
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target);
+  padding-inline: var(--space-2);
+  color: var(--color-text-strong);
+  font-size: var(--size-cta);
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 0.3em;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: color var(--dur-ui) var(--ease-out), transform var(--dur-press) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover { color: var(--color-text); }
+}
+.cta:active { transform: scale(0.97); }
+
+/* ---- Footer ------------------------------------------------------------------- */
+.foot {
+  background: var(--color-bg);
+  padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+  padding-inline:
+    max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
+  text-align: center;
+  font-size: var(--size-small);
+  color: var(--color-text-muted);
+}
+.foot__link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target);
+  padding-inline: var(--space-1);
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 0.3em;
+}
+@media (hover: hover) and (pointer: fine) {
+  .foot__link:hover { color: var(--color-text-strong); }
+}
+/* narrow screens: the link takes its own line instead of wrapping after a dangling separator */
+@media (max-width: 29.99em) {
+  .foot__sep { display: none; }
+  .foot__link { display: flex; justify-content: center; inline-size: fit-content; margin-inline: auto; margin-block-end: calc(var(--space-3) * -1); }
+}
+
+/* ==== The entrance ================================================================ */
+.entrance {
+  flex: 1 1 0;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-block-size: clamp(15rem, 40svh, 34rem);
+  /* stacked: never taller than the drawing at full width, so spare height
+     goes above the lockup and between text and drawing, not into a hole */
+  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio));
+  margin-block-start: auto;
+  margin-inline: calc(var(--space-3) * -1);
+  container-type: size;
+  pointer-events: none;
+  user-select: none;
+  /* stacked layout: the door's axis sits on the page axis (same axis as the lockup).
+     The drawing is asymmetric (lantern left, olive tree right), so it is scaled to fit
+     symmetrically around the door: --scene-axis (generated) = door axis as a fraction of the
+     drawing width; --scene-reach = drawing width / (2 x widest half around the axis), measured
+     so the outermost olive leaves may reach into the gutter. */
+  --scene-reach: 0.85886;
+}
+.scene {
+  --scene-w: min(calc(100cqw * var(--scene-reach)), calc(100cqh * var(--scene-ratio)));
+  position: relative;
+  z-index: var(--z-scene);
+  inline-size: var(--scene-w);
+  aspect-ratio: var(--scene-ratio);
+  inset-inline-start: calc(var(--scene-w) * (0.5 - var(--scene-axis)));
+  transform-origin: var(--door-cx) var(--door-cy);   /* the camera zooms around the doorway */
+}
+/* the floor line: the street the steps stand on, full width, part of the drawing so it travels with the camera */
+.scene::after {
+  content: "";
+  position: absolute;
+  inset-inline: -100vw;
+  inset-block-end: calc(var(--hairline) * -1);
+  block-size: var(--hairline);
+  background: var(--color-ground);
+}
+@supports not (container-type: size) {
+  .scene { --scene-w: min(100%, calc(44svh * var(--scene-ratio))); }
+}
+.scene__art { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+
+/* the hall behind the door plane, lit once the doors open (between the back and the front svg) */
+.hall {
+  position: absolute;
+  inset-inline-start: var(--leaf-left);
+  inset-block-start: var(--leaf-top);
+  inline-size: calc(var(--leaf-w) * 2);
+  block-size: var(--leaf-h);
+}
+.hall__dawn,
+.hall__light { position: absolute; inset: 0; opacity: 0; }
+.hall__dawn { background: var(--i-hall-dawn); }      /* Dia: first warmth, so dark never fades to sand through grey */
+.hall__light { background: var(--i-hall-light); }
+.hall__floor { position: absolute; inset: auto 0 0; block-size: var(--hall-floor); background: var(--i-hall-floor); }
+/* lamplight on the threshold and the steps (Noite only; clipped to the stone in the markup) */
+.spill {
+  position: absolute;
+  inset-inline-start: var(--spill-x);
+  inset-block-start: var(--spill-y);
+  inline-size: var(--spill-w);
+  block-size: var(--spill-h);
+  background: var(--i-spill);
+  opacity: 0;
+}
+
+/* line system: two weights, round joins, constant on screen */
+.i-line, .i-fine, .i-bar, .i-twig, .i-brass-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.i-line { stroke: var(--i-line); stroke-width: var(--line-w); }
+.i-fine, .i-bar { stroke: var(--i-fine); stroke-width: var(--line-w-fine); }
+.i-bar { stroke: var(--i-wood-line); }
+.i-twig { stroke: var(--i-trunk); stroke-width: var(--line-w-fine); }
+.i-brass-line { stroke: var(--i-brass); stroke-width: var(--line-w-fine); }
+.leaf .i-line, .i-lantern .i-line { stroke: var(--i-wood-line); }
+.leaf .i-fine { stroke: var(--i-wood-line); }
+
+/* flat fills */
+.i-stone { fill: var(--i-stone); }
+.i-lit { fill: var(--i-stone-lit); }
+.i-shade { fill: var(--i-stone-shade); }
+.i-tread { fill: var(--i-tread); }
+.i-riser { fill: var(--i-riser); }
+.i-wood { fill: var(--i-wood); }
+.i-wood-lit { fill: var(--i-wood-lit); }
+.i-wood-shade { fill: var(--i-wood-shade); }
+.i-glass { fill: var(--i-glass); }
+.i-room { fill: var(--i-room); }
+.i-room-floor { fill: var(--i-room-floor); }
+.i-room-tile { fill: var(--i-room-tile); }
+.i-brass { fill: var(--i-brass); }
+.i-lamp { fill: var(--i-lamp); }
+.i-iron { fill: var(--i-iron); }
+.i-lglass { fill: var(--i-lantern-glass); }
+.i-lglass--r { fill: var(--i-lantern-glass-shade); }
+.i-pot { fill: var(--i-pot); }
+.i-pot-shade { fill: var(--i-pot-shade); }
+.i-soil { fill: var(--i-soil); }
+.i-trunk { fill: var(--i-trunk); }
+.i-leaf-a { fill: var(--i-leaf-a); }
+.i-leaf-b { fill: var(--i-leaf-b); }
+.i-leaf-c { fill: var(--i-leaf-c); }
+.i-reveal-glow { fill: var(--i-reveal-glow); }
+.i-cast { fill: var(--i-cast); opacity: var(--o-cast); }
+.i-bulb { fill: var(--light-core); }
+.i-leaf-turn { fill: var(--i-wood-shade); opacity: var(--o-turn); }
+.i-leaf-edge { fill: var(--light-mid); opacity: var(--o-night); }
+
+/* lamplight: content of the drawing, present only at night */
+.i-night { opacity: var(--o-night); }
+.s-core { stop-color: var(--light-core); }
+.s-mid { stop-color: var(--light-mid); }
+.s-edge { stop-color: var(--light-edge); }
+.s-o6 { stop-opacity: 0.6; }
+.s-o4 { stop-opacity: 0.4; }
+.s-o1 { stop-opacity: 0.1; }
+.s-o0 { stop-opacity: 0; }
+
+/* the double door: two leaves hinged on the frame, in the drawing's own perspective */
+.door {
+  position: absolute;
+  inset: 0;
+  perspective: calc(var(--scene-w) * var(--persp));
+  perspective-origin: var(--vp-x) var(--vp-y);
+}
+.leaf {
+  position: absolute;
+  inset-block-start: var(--leaf-top);
+  block-size: var(--leaf-h);
+  inline-size: var(--leaf-w);
+  transform-style: preserve-3d;   /* the scroll swing (outer) adds to the ajar angle (inner face) */
+}
+.leaf__face { position: absolute; inset: 0; backface-visibility: hidden; }
+.leaf svg { inline-size: 100%; block-size: 100%; overflow: visible; }
+.leaf--l { inset-inline-start: var(--leaf-left); transform-origin: 0 50%; }
+.leaf--r { inset-inline-start: var(--leaf-mid); transform-origin: 100% 50%; }
+.leaf--l .leaf__face { transform-origin: 0 50%; transform: rotateY(var(--ajar-l)); }
+.leaf--r .leaf__face { transform-origin: 100% 50%; transform: rotateY(calc(var(--ajar-r) * -1)); }
+
+/* ---- Motion: the doors ease ajar once, the lamplight follows ------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .leaf--l .leaf__face { animation: ajar-l var(--dur-door) var(--ease-door) var(--delay-door) backwards; }
+  .leaf--r .leaf__face { animation: ajar-r var(--dur-door) var(--ease-door) var(--delay-door) backwards; }
+  .i-leaf-turn,
+  .i-leaf-edge,
+  .i-door-light { animation: light-in var(--dur-door) var(--ease-out) var(--delay-door) backwards; }
+  /* Dia <-> Noite without the View Transitions API */
+  .is-theming,
+  .is-theming * {
+    transition:
+      background-color var(--dur-theme) var(--ease-out),
+      color var(--dur-theme) var(--ease-out),
+      fill var(--dur-theme) var(--ease-out),
+      stroke var(--dur-theme) var(--ease-out),
+      stop-color var(--dur-theme) var(--ease-out),
+      opacity var(--dur-theme) var(--ease-out) !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--dur-theme);
+    animation-timing-function: var(--ease-out);
+  }
+}
+@keyframes ajar-l { from { transform: rotateY(0deg); } }
+@keyframes ajar-r { from { transform: rotateY(0deg); } }
+@keyframes light-in { from { opacity: 0; } }
+
+
+/* ==== The door sequence (home page) ==================================================
+   Rest state = the composition above, one screen (100svh): top bar, crest and sentence, the entrance
+   standing on the floor line, and a band below it. With JS and motion allowed, site.js adds
+   .porta-on to <html>: the wrapper grows by --porta-run and the stage pins (sticky, 100lvh so the
+   collapsing mobile toolbar never uncovers anything). Scroll progress drives the doors, the hall
+   light, the camera and the flood (site.js; transform and opacity only). */
+.porta { position: relative; }
+.porta__stage { position: relative; overflow: clip; }
+.porta__frame {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+  padding-block-start: calc(var(--topbar-pad) + var(--target));   /* the top bar overlays this */
+}
+.porta__frame > .stage { flex: 1 1 auto; padding-block-end: var(--hairline); }   /* room for the floor line, as before */
+.porta__band {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+  line-height: var(--leading-ui);
+  font-size: var(--size-small);
+}
+/* a quiet scroll cue under the floor line: static, no loop; fades out as soon as the sequence starts */
+.porta__cue {
+  display: grid;
+  place-items: center;
+  inline-size: var(--target);
+  block-size: var(--target);
+  margin-block: calc((1lh - var(--target)) / 2);
+  color: var(--color-text-muted);
+  -webkit-tap-highlight-color: transparent;
+}
+.porta__cue svg {
+  inline-size: 0.875rem;
+  block-size: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the lit hall fills the screen at the end of the walk-in; the waiting list continues on the same colour */
+.porta__flood {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--color-hall);
+  opacity: 0;
+  pointer-events: none;
+}
+/* the stage pins for --porta-run of scroll. On screens too short for the rest composition, site.js sets
+   --stick (negative): the stage first scrolls until its foot reaches the bottom of the screen, then pins,
+   so nothing is ever cut off. Its min-height keeps it under the whole large viewport while pinned. */
+.porta-on .porta::after { content: ""; display: block; block-size: var(--porta-run); }
+.porta-on .porta__stage {
+  position: sticky;
+  inset-block-start: var(--stick, 0px);
+  min-block-size: 100vh;
+  min-block-size: calc(100lvh - var(--stick, 0px));
+}
+.porta__probe { position: absolute; inset-block-start: 0; inline-size: 0; block-size: 100vh; block-size: 100svh; visibility: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .porta-on { scroll-behavior: smooth; }   /* the CTA plays the sequence on its way to the list */
+}
+
+/* ==== Waiting list ======================================================================= */
+.surface-hall { background: var(--color-bg); }
+.lista {
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+  padding-block: var(--space-8);
+  padding-inline:
+    max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
+}
+.lista__inner { inline-size: min(100%, var(--measure-form)); }
+.lista__title {
+  font-size: var(--size-title);
+  line-height: 1.1;
+  color: var(--color-text-strong);
+  text-align: center;
+}
+.lista__lede {
+  margin-block-start: var(--space-3);
+  font-size: var(--size-lede);
+  line-height: var(--leading-lede);
+  text-align: center;
+  text-wrap: balance;
+}
+.lista__noscript { margin-block-start: var(--space-5); font-size: var(--size-cta); line-height: var(--leading-read); text-align: center; }
+.form { margin-block-start: var(--space-7); }
+
+.field__label {
+  display: block;
+  margin-block-end: var(--space-2);
+  font-size: var(--size-cta);
+  color: var(--color-text-strong);
+}
+.field__input {
+  display: block;
+  inline-size: 100%;
+  block-size: var(--field);
+  margin: 0;
+  padding: 0 var(--space-4);
+  border: var(--hairline) solid var(--color-field-line);
+  border-radius: 0;
+  background: var(--color-field);
+  color: var(--color-text-strong);
+  font: inherit;
+  font-size: var(--size-cta);   /* 18px: never below 16px, so iOS does not zoom on focus */
+  appearance: none;
+}
+.field__input:focus-visible { outline-offset: 2px; }
+.field__input[aria-invalid="true"],
+.check__input[aria-invalid="true"] + .check__label .check__box {
+  border-color: var(--color-error);
+  box-shadow: inset 0 0 0 var(--hairline) var(--color-error);   /* a 2px edge without moving the text */
+}
+.field__msg {
+  margin-block-start: var(--space-2);
+  font-size: var(--size-small);
+  color: var(--color-error);
+}
+.field__msg:not([hidden]) { animation: msg-in var(--dur-state) var(--ease-out); }
+
+/* consent: the real checkbox sits invisibly over the drawn box, so it keeps native semantics, focus and hit area */
+.check { position: relative; margin-block-start: var(--space-5); }
+.check__input {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--target);
+  block-size: var(--target);
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.check__label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-block-size: var(--target);
+  padding-block: calc((var(--target) - 1.5rem) / 2) 0;
+  font-size: var(--size-cta);
+  line-height: 1.35;
+  cursor: pointer;
+}
+.check__box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: var(--hairline) solid var(--color-field-line);
+  background: var(--color-field);
+  transition: background-color var(--dur-state) var(--ease-out), border-color var(--dur-state) var(--ease-out);
+}
+.check__box svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: none;
+  stroke: var(--color-on-strong);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity var(--dur-state) var(--ease-out), transform var(--dur-state) var(--ease-out);
+}
+.check__input:checked + .check__label .check__box { background: var(--color-text-strong); border-color: var(--color-text-strong); }
+.check__input:checked + .check__label .check__box svg { opacity: 1; transform: none; }
+.check__input:focus-visible + .check__label .check__box {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+.check__text { padding-block-start: 0.05em; }
+.link-inline {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 0.2em;
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-inline:hover { color: var(--color-text); }
+}
+.form__hp {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* the button: the label swap never changes its size (both labels share one grid cell) */
+.button {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  min-block-size: var(--field);
+  margin-block-start: var(--space-6);
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  border-radius: 0;
+  background: var(--color-text-strong);
+  color: var(--color-on-strong);
+  font: inherit;
+  font-size: var(--size-cta);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color var(--dur-ui) var(--ease-out), transform var(--dur-press) var(--ease-out);
+}
+.button > span { grid-area: 1 / 1; }
+.button__busy,
+.form[data-state="sending"] .button__idle { visibility: hidden; }
+.form[data-state="sending"] .button__busy { visibility: visible; }
+.form[data-state="sending"] .button { cursor: progress; }
+@media (hover: hover) and (pointer: fine) {
+  .button:hover { background: var(--color-text); }
+}
+.button:active { transform: scale(0.97); }
+
+.form__msg {
+  margin-block-start: var(--space-4);
+  font-size: var(--size-cta);
+  line-height: var(--leading-lede);
+  color: var(--color-text-strong);
+  text-align: center;
+}
+.form__msg:empty { display: none; }
+.form__msg:focus { outline: none; }
+.form[data-state="error"] .form__msg { color: var(--color-error); animation: msg-in var(--dur-state) var(--ease-out); }
+.form[data-state="done"] { display: grid; align-content: center; }
+.form[data-state="done"] .form__set { display: none; }
+.form__set:disabled { opacity: 0.55; }   /* without JavaScript the form cannot send: it reads as unavailable */
+.form[data-state="done"] .form__msg {
+  margin-block-start: 0;
+  font-size: var(--size-lede);
+  animation: done-in 400ms var(--ease-out);
+}
+@keyframes msg-in { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes done-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* the list rises in once, as one block (one entrance per container) */
+.js-reveal [data-reveal] {
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
+}
+.js-reveal [data-reveal]:not(.is-in) { opacity: 0; transform: translateY(var(--space-5)); }
+
+/* ==== Privacy notice ====================================================================== */
+.page-notice .stage { display: none; }
+.notice {
+  inline-size: min(100%, 40rem);
+  margin-inline: auto;
+  padding-block: var(--space-6) var(--space-9);
+  padding-inline:
+    max(var(--gutter), env(safe-area-inset-left))
+    max(var(--gutter), env(safe-area-inset-right));
+  font-size: var(--size-read);
+  line-height: var(--leading-read);
+}
+.notice__home { display: flex; justify-content: center; text-decoration: none; }
+.lockup--small { font-size: 1.5rem; }          /* 24px wordmark: the minimum size of the lockup */
+.notice__title {
+  margin-block-start: var(--space-8);
+  font-size: var(--size-title);
+  line-height: 1.1;
+  color: var(--color-text-strong);
+}
+.notice__intro { margin-block-start: var(--space-4); font-size: var(--size-lede); line-height: var(--leading-lede); }
+.notice__item { margin-block-start: var(--space-6); }
+.notice__item h2 { font-size: var(--size-cta); font-weight: 600; line-height: var(--leading-ui); color: var(--color-text-strong); }
+.notice__item p { margin-block-start: var(--space-2); max-inline-size: 36em; }
+.notice__updated { margin-block-start: var(--space-7); color: var(--color-text-muted); }
+.notice__back { margin-block-start: var(--space-3); margin-inline-start: calc(var(--space-2) * -1); }
+.page-notice .link-inline { color: var(--color-text-strong); }
+
+/* ==== Split: text | entrance ============================================================ */
+@media (min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em) {
+  :root { --topbar-pad: max(var(--space-4), env(safe-area-inset-top)); }
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: var(--space-8);
+    align-items: stretch;
+    padding-block-start: var(--space-6);
+    padding-inline:
+      max(var(--gutter), env(safe-area-inset-left), calc((100% - var(--container)) / 2))
+      max(var(--gutter), env(safe-area-inset-right), calc((100% - var(--container)) / 2));
+  }
+  .intro {
+    align-self: center;
+    margin-block: 0;
+    padding-block-end: var(--space-8);
+  }
+  .lede { margin-block-start: var(--space-7); }
+  .status { margin-block-start: var(--space-4); }
+  .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; }
+  .scene { inset-inline-start: 0; }
+}
+
+/* Landscape phones: compact split; the page may scroll a little. */
+@media (orientation: landscape) and (max-height: 31.25em) {
+  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); }
+  .stage { padding-block-start: var(--space-2); column-gap: var(--space-6); }
+  .lockup { font-size: clamp(1.25rem, 5.6svh, 1.75rem); }
+  .intro { padding-block-end: var(--space-4); }
+  .lede { margin-block-start: var(--space-4); font-size: clamp(1.0625rem, 4.6svh, 1.25rem); }
+  .status { margin-block-start: var(--space-2); }
+  .entrance { min-block-size: 16rem; }
+  .cta-row { margin-block-start: 0; }
+  .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); }
+}
+
+/* Short portrait phones (320 x 568-640): tighter rhythm; the page may scroll. */
+@media (orientation: portrait) and (max-height: 42.5em) {
+  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); }
+  .stage { padding-block-start: var(--space-2); }
+  .lede { margin-block-start: var(--space-4); }
+  .status { margin-block-start: var(--space-2); }
+  .intro { margin-block-end: var(--space-3); }
+  .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
+  .cta-row { margin-block-start: 0; }
+  .porta__band { padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom)); }
+}
+
+/* ==== Preferences ======================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* no sequence: the doors stand open and the hall is lit (the final state, without the travel) */
+  .leaf--l { transform: rotateY(var(--open-l)); }
+  .leaf--r { transform: rotateY(calc(var(--open-r) * -1)); }
+  .hall__dawn, .hall__light, .spill { opacity: 1; }
+}
+@media (prefers-contrast: more) {
+  :root { --color-text-muted: var(--color-text-strong); --i-fine: var(--i-line); }
+}
+@media (forced-colors: active) {
+  .lockup__emblem, .lockup__place, .status { color: CanvasText; }
+  .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
+  .scene__art :where(path, circle, ellipse),
+  .leaf :where(path) { fill: Canvas; }
+  .i-line, .i-fine, .i-bar, .i-twig, .i-brass-line,
+  .leaf .i-line, .leaf .i-fine, .i-lantern .i-line { fill: none; stroke: CanvasText; }
+  .scene__art :where(.i-leaf-a, .i-leaf-b, .i-leaf-c, .i-trunk, .i-iron, .i-lamp),
+  .leaf .i-brass { fill: CanvasText; }
+  .i-night, .i-cast, .i-leaf-turn, .i-leaf-edge, .hall, .spill { display: none; }
+  .scene::after { background: CanvasText; }
+  .check__box { border-color: CanvasText; }
+  .check__input:checked + .check__label .check__box { background: Highlight; }
+  .button { border: var(--hairline) solid ButtonText; }
+}
+@media print {
+  .topbar, .skip, .porta__band, .porta__flood, .form, .lista__noscript { display: none; }
+  body { min-height: 0; }
+  .porta { block-size: auto !important; }
+  .porta::after { display: none !important; }
+  .porta__stage { position: static !important; block-size: auto !important; }
+  .entrance { min-block-size: 12cm; }
+  .lista { min-block-size: 0; }
+}
+
+/* ==== 404 (same tokens, no drawing) ===================================================== */
+.page-404 { grid-template-rows: 1fr auto; }
+.home { display: block; }
+.stage.stage--plain {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-block-end: 0;
+}
+.stage--plain .intro { margin-block: auto; padding: 0; }
+.stage--plain .lockup { font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem); }
+.stage--plain .lede { margin-block-start: var(--space-7); }
+.stage--plain .lede--second { margin-block-start: var(--space-1); color: var(--color-text-muted); }
+.stage--plain .status { margin-block-start: var(--space-5); }
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target);
+  padding-inline: var(--space-2);
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 0.3em;
+}
+@media (hover: hover) and (pointer: fine) {
+  .link:hover { color: var(--color-text); }
+}
