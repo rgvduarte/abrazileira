@@ -49,3 +49,15 @@ O GitHub Pages só aceita um domínio por site. O `.pt` faz um redirecionamento 
    *Dynamic* `concat("https://abrazileira.com", http.request.uri.path)` · **301** · *Preserve query string*.
 
 Alternativa sem Cloudflare: usar o reencaminhamento de URL do próprio registrar `.pt` (301 para `https://abrazileira.com`).
+
+## 4. Email `inn@abrazileira.com` (contacto da lista de espera / RGPD)
+
+O endereço aparece publicamente na nota de privacidade, por isso tem de receber mensagens:
+
+1. Cloudflare → `abrazileira.com` → **Email → Email Routing → Get started**.
+2. **Custom address:** `inn` → **Destination:** o teu email pessoal → confirmar o email de verificação.
+3. Aceitar os registos MX/TXT que o Cloudflare propõe (não colidem com os registos do GitHub Pages).
+
+## 5. Lista de espera (Supabase)
+
+As inscrições ficam no projeto Supabase **A Brazileira** — ver `supabase/README.md`.
