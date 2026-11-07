@@ -1,0 +1,14 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Never commit private project material (chat exports, plans, renders, PDFs)
+*.zip
+_private/
+private/
+
+# Tooling
+node_modules/
+.cache/
