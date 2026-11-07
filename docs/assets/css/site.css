@@ -206,16 +206,24 @@ svg { display: block; }
   min-block-size: clamp(15rem, 40svh, 34rem);
   /* stacked: never taller than the drawing at full width, so spare height
      goes above the lockup and between text and drawing, not into a hole */
-  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) / var(--scene-ratio));
+  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio));
   margin-block-start: auto;
+  /* stacked layout: the door's axis sits on the page axis (same axis as the lockup).
+     The drawing is asymmetric (lantern left, olive tree right), so it is scaled to fit
+     symmetrically around the door: --scene-axis = door axis as a fraction of the drawing
+     width, --scene-reach = drawing width / (2 x widest half around the axis). */
+  --scene-axis: 0.384836;
+  --scene-reach: 0.85886;
+  overflow-x: clip;
   margin-inline: calc(var(--space-3) * -1);
   container-type: size;
   pointer-events: none;
   user-select: none;
 }
 .scene {
-  --scene-w: min(100cqw, calc(100cqh * var(--scene-ratio)));
+  --scene-w: min(calc(100cqw * var(--scene-reach)), calc(100cqh * var(--scene-ratio)));
   position: relative;
+  inset-inline-start: calc(var(--scene-w) * (0.5 - var(--scene-axis)));
   z-index: var(--z-scene);
   inline-size: var(--scene-w);
   aspect-ratio: var(--scene-ratio);
@@ -355,7 +363,8 @@ svg { display: block; }
   }
   .lede { margin-block-start: var(--space-7); }
   .status { margin-block-start: var(--space-4); }
-  .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; }
+  .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; overflow-x: visible; }
+  .scene { inset-inline-start: 0; }
 }
 
 /* Landscape phones: compact split; the page may scroll a little. */
