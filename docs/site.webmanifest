@@ -1,5 +1,5 @@
 {
-  "name": "A Brazileira — Boutique Hotel",
+  "name": "A Brazileira · Boutique Hotel",
   "short_name": "A Brazileira",
   "lang": "pt-PT",
   "start_url": "./",
@@ -7,8 +7,20 @@
   "background_color": "#F9F0E9",
   "theme_color": "#F9F0E9",
   "icons": [
-    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
-    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "assets/img/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
   ]
 }
