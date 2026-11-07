@@ -1,0 +1,255 @@
+/* A Brazileira — coming-soon page. Consumes semantic tokens only. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; }
+h1, p { margin: 0; }
+svg { display: block; }
+
+::selection { background: var(--color-selection); color: var(--color-text); }
+
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background-color: var(--color-bg);
+  background-image: radial-gradient(ellipse 70% 55% at 50% 42%, var(--color-bg-glow), transparent 72%);
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
+}
+
+/* ---- Skip link ---- */
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transform: translateY(-200%);
+}
+.skip:focus { transform: none; }
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ---- Top bar ---- */
+.bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--gutter) 0;
+}
+.lang {
+  display: flex;
+  font-family: var(--font-display);
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.lang li + li::before {
+  content: "";
+  display: inline-block;
+  width: var(--hairline);
+  height: 0.9em;
+  margin-right: var(--space-1);
+  vertical-align: -0.1em;
+  background: var(--color-rule);
+}
+.lang a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2) 0 calc(var(--space-2) + var(--tracking-caps));
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.lang a:hover { color: var(--color-text); }
+.lang a[aria-current="page"] {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.45em;
+}
+
+/* ---- Hero ---- */
+.hero {
+  display: grid;
+  place-items: center;
+  padding: var(--space-3) var(--gutter) var(--space-5);
+  text-align: center;
+}
+.hero__inner {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  max-width: 48rem;
+}
+
+.lockup {
+  display: grid;
+  justify-items: center;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+  /* lockup proportions follow the original logo, scaled from the wordmark size */
+  font-size: var(--text-xl);
+}
+.lockup__emblem {
+  width: 2.9em;
+  aspect-ratio: 200 / 228;
+  margin-bottom: 0.42em;
+  color: var(--color-mark);
+}
+.lockup__emblem svg { width: 100%; height: 100%; }
+.lockup__name {
+  color: var(--color-text);
+  letter-spacing: var(--tracking-wordmark);
+  margin-right: calc(var(--tracking-wordmark) * -1); /* optical centring */
+}
+.lockup__kind {
+  margin-top: 0.42em;
+  font-size: 0.5em;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-kind);
+  margin-right: calc(var(--tracking-kind) * -1);
+  color: var(--color-text);
+}
+.lockup__place {
+  margin-top: 0.62em;
+  font-size: 0.4em;
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-caps);
+  margin-right: calc(var(--tracking-caps) * -1);
+  color: var(--color-accent-text);
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(10rem, 50%);
+  margin-top: clamp(var(--space-5), 4.5vh, var(--space-7));
+  color: var(--color-rule);
+}
+.rule::before,
+.rule::after {
+  content: "";
+  flex: 1;
+  height: var(--hairline);
+  background: currentColor;
+}
+.rule svg { width: 7px; height: 7px; flex: none; }
+
+.status {
+  margin-top: var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+  margin-right: calc(var(--tracking-caps) * -1);
+}
+.statement {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  font-size: var(--text-lg);
+  font-style: italic;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+}
+.support {
+  max-width: 34ch;
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+.nowrap { white-space: nowrap; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- Footer ---- */
+.foot {
+  padding: var(--space-4) var(--gutter) var(--space-5);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---- Entrance (progressive: content is complete without it) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: rise var(--dur-enter) var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 110ms + 80ms);
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* ---- Short / landscape viewports ---- */
+/* Desktop with modest height (e.g. 1280×800 laptops): tighten the vertical rhythm */
+@media (min-width: 48em) and (max-height: 52em) {
+  .lockup { font-size: clamp(1.875rem, 6.2vh, 3.75rem); }
+  .status { margin-top: var(--space-4); }
+}
+
+@media (max-height: 34em) and (orientation: landscape) {
+  .hero { padding-block: var(--space-2) var(--space-4); }
+  .lockup { font-size: 1.75rem; }
+  .rule { margin-top: var(--space-5); }
+}
+
+/* ---- Forced colours ---- */
+@media (forced-colors: active) {
+  .lockup__emblem, .rule, .lockup__place, .status { color: CanvasText; }
+  .rule::before, .rule::after { background: CanvasText; }
+}
+
+/* ---- Print ---- */
+@media print {
+  body { background: #fff; color: #000; }
+  .bar, .skip { display: none; }
+}

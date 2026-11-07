@@ -1,0 +1,153 @@
+/* ==========================================================================
+   A Brazileira — Design tokens (v0.1, coming-soon)
+   Primitives (brand words) → semantic roles (Dia / Noite).
+   Components must only consume the semantic roles below.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Cinzel";
+  src: url("../fonts/cinzel-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cinzel";
+  src: url("../fonts/cinzel-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cinzel";
+  src: url("../fonts/cinzel-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("../fonts/cormorant-garamond-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("../fonts/cormorant-garamond-latin-wght-italic.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+/* Metric-matched fallbacks keep the layout still while web fonts load */
+@font-face {
+  font-family: "Cinzel Fallback";
+  src: local("Times New Roman"), local("Liberation Serif"), local("DejaVu Serif"), local("Georgia");
+  size-adjust: 118%;
+  ascent-override: 86%;
+  descent-override: 34%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Cormorant Fallback";
+  src: local("Georgia"), local("Times New Roman"), local("Liberation Serif"), local("DejaVu Serif");
+  size-adjust: 88%;
+  ascent-override: 102%;
+  descent-override: 32%;
+  line-gap-override: 0%;
+}
+
+:root {
+  /* ---- Primitives: palette (sampled from the brand boards) ---- */
+  --papel: #F9F0E9;
+  --areia: #F0DFCF;
+  --pedra: #DECDBD;
+  --oliva: #72692E;
+  --azulejo: #6F7A4A;
+  --castanho: #804F1E;
+  --nogueira: #5F3819;
+  --tinta: #2E1E14;
+  --latao: #DB9E42;          /* decorative brass — never small text on light */
+  --latao-escuro: #A87830;   /* brass for marks/ornaments on light (3.46:1) */
+  --latao-texto: #8C5F1C;    /* brass for text on Papel (4.95:1) */
+  --noite: #1C120B;          /* walnut night */
+  --noite-2: #2A1B11;
+  --linho: #F3E6D6;          /* text on Noite (14.99:1) */
+  --linho-2: #C2AE96;        /* secondary text on Noite (8.58:1) */
+  --cinza-quente: #6B5E50;   /* secondary text on Papel (5.59:1) */
+
+  /* ---- Typography ---- */
+  --font-display: "Cinzel", "Cinzel Fallback", "Trajan Pro", "Times New Roman", serif; /* brand lockup & labels — caps only */
+  --font-serif: "Cormorant Garamond", "Cormorant Fallback", Georgia, "Times New Roman", serif; /* reading text */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --text-xs: 0.8125rem;                                  /* 13px labels */
+  --text-sm: 1rem;                                       /* 16px footer */
+  --text-md: clamp(1.1875rem, 1.05rem + 0.6vw, 1.4375rem); /* 19→23px body/lede */
+  --text-lg: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);      /* 24→36px statement */
+  --text-xl: clamp(1.875rem, 1rem + 5vw, 3.75rem);        /* 30→60px wordmark (Cinzel) */
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.25;
+  --leading-body: 1.5;
+  --tracking-wordmark: 0.045em;
+  --tracking-kind: 0.12em;
+  --tracking-caps: 0.3em;
+
+  /* ---- Space (4px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --measure: 34ch;
+
+  /* ---- Shape & lines ---- */
+  --radius-pill: 999px;
+  --hairline: 1px;
+
+  /* ---- Motion ---- */
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-enter: 900ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Breakpoints (reference only; CSS vars can't drive @media) ----
+     sm 30em (480) · md 48em (768) · lg 64em (1024) · xl 90em (1440) */
+
+  /* ---- Semantic roles: Dia (light, default) ---- */
+  color-scheme: light dark;
+  --color-bg: var(--papel);
+  --color-bg-glow: color-mix(in oklab, var(--areia) 70%, var(--papel));
+  --color-text: var(--tinta);
+  --color-text-muted: var(--cinza-quente);
+  --color-mark: var(--latao-escuro);
+  --color-accent-text: var(--latao-texto);
+  --color-rule: color-mix(in oklab, var(--latao-escuro) 55%, var(--papel));
+  --color-focus: var(--oliva);
+  --color-selection: var(--areia);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ---- Semantic roles: Noite (dark) ---- */
+    --color-bg: var(--noite);
+    --color-bg-glow: color-mix(in oklab, var(--latao) 16%, var(--noite));
+    --color-text: var(--linho);
+    --color-text-muted: var(--linho-2);
+    --color-mark: var(--latao);
+    --color-accent-text: var(--latao);
+    --color-rule: color-mix(in oklab, var(--latao) 45%, var(--noite));
+    --color-focus: var(--latao);
+    --color-selection: var(--noite-2);
+  }
+}

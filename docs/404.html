@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Página não encontrada · A Brazileira</title>
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<style>
+  :root { --bg: #F9F0E9; --text: #2E1E14; --muted: #6B5E50; --accent: #8C5F1C; --focus: #72692E; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1C120B; --text: #F3E6D6; --muted: #C2AE96; --accent: #DB9E42; --focus: #DB9E42; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 2rem 1rem;
+    background: var(--bg); color: var(--text); font: 500 1.1875rem/1.5 Georgia, "Times New Roman", serif; text-align: center; }
+  p { margin: 0 0 .75rem; }
+  .eyebrow { font-size: .8125rem; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.25rem; }
+  .muted { color: var(--muted); }
+  a { color: var(--text); text-underline-offset: .3em; display: inline-block; padding: .6rem .25rem; }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">A Brazileira</p>
+  <p>Esta página não existe.</p>
+  <p class="muted" lang="en">This page does not exist.</p>
+  <p><a id="home" href="/">Voltar ao início · <span lang="en">Back home</span></a></p>
+</main>
+<script>
+  // Project sites on github.io live under /<repo>/; on the custom domain the site is at the root.
+  (function () {
+    var seg = location.pathname.split('/')[1];
+    if (/\.github\.io$/.test(location.hostname) && seg) document.getElementById('home').href = '/' + seg + '/';
+  })();
+</script>
+</body>
+</html>

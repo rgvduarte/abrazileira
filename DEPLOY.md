@@ -6,7 +6,7 @@ O site público vive em `docs/` (HTML/CSS estático, sem build).
 
 1. GitHub → repositório `abrazileira` → **Settings → Pages**.
 2. **Source:** *Deploy from a branch*.
-3. **Branch:** o branch publicado (ex.: `main`) · pasta **`/docs`** → **Save**.
+3. **Branch:** `gd/awesome-cerf-baxxba` (o branch atual do repositório; passa a `main` quando houver) · pasta **`/docs`** → **Save**.
 4. Em 1–2 minutos fica online em `https://rgvduarte.github.io/abrazileira/`.
 
 Todos os links internos são relativos, por isso o site funciona tanto neste endereço
