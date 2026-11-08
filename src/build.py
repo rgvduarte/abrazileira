@@ -75,7 +75,6 @@ def scene_markup(idp="ab"):
         f"--leaf-h:{door_h * 100:.4f}%",
         f"--door-cx:{pc(door_cx)}",
         f"--door-cy:{pc(door_cy)}",
-        f"--hall-floor:{o['hall_floor'] / (lf['y1'] - lf['y0']) * 100:.4f}%",
         f"--spill-x:{pc(fx(sx0))}",
         f"--spill-y:{pc(fy(sy0))}",
         f"--spill-w:{pc((sx1 - sx0) / vbw)}",
@@ -86,13 +85,15 @@ def scene_markup(idp="ab"):
             f'{o["back_defs"]}\n{o["back"]}</svg>')
     front = (f'<svg class="scene__art" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
              f'{o["defs"]}\n{o["body"]}</svg>')
-    hall = f'<div class="hall"><div class="hall__dawn"></div><div class="hall__light">{o["hall"]}</div></div>'
-    spill = f'<div class="spill" style="clip-path:polygon({clip})">{sp["svg"]}</div>'
-    leaves = (f'<div class="door"><div class="leaf leaf--l"><div class="leaf__face">{scene.leaf_svg("l")}</div></div>'
-              f'<div class="leaf leaf--r"><div class="leaf__face">{scene.leaf_svg("r")}</div></div></div>')
+    # data-motion: test hooks for every moving layer (attributes only, never styled)
+    hall = (f'<div class="hall" data-motion="opening"><div class="hall__light" data-motion="light">{o["hall"]}</div>'
+            f'{o["lamp"]}<div class="hall__flat" data-motion="handoff"></div></div>')
+    spill = f'<div class="spill" data-motion="spill" style="clip-path:polygon({clip})">{sp["svg"]}</div>'
+    leaves = (f'<div class="door"><div class="leaf leaf--l" data-motion="leaf-l"><div class="leaf__face">{scene.leaf_svg("l")}</div></div>'
+              f'<div class="leaf leaf--r" data-motion="leaf-r"><div class="leaf__face">{scene.leaf_svg("r")}</div></div></div>')
     # data-door: the opening (cx cy w h) as fractions of the scene box, read once by site.js for the camera
     data = f"{door_cx:.5f} {door_cy:.5f} {door_w:.5f} {door_h:.5f}"
-    out = f'<div class="scene" data-door="{data}">\n{back}\n{hall}\n{front}\n{spill}\n{leaves}\n</div>'
+    out = f'<div class="scene" data-motion="camera" data-door="{data}">\n{back}\n{hall}\n{front}\n{spill}\n{leaves}\n</div>'
     if idp != "ab":
         out = out.replace('id="ab-', f'id="{idp}-').replace("url(#ab-", f"url(#{idp}-")
     return out, dict(vb=(vbx, vby, vbw, vbh), style=style, axis=axis)
@@ -115,7 +116,7 @@ T = {
         list_p="Deixe-nos o seu email e avisamos quando abrirmos.",
         legend="Inscrição na lista de espera",
         email="Email",
-        consent="Aceito receber emails de A Brazileira sobre a abertura. Ler a {link}.",
+        consent="Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a {link}.",
         consent_link="nota de privacidade",
         hp="Não preencher este campo",
         submit="Entrar na lista", sending="A enviar…",
@@ -141,7 +142,7 @@ T = {
         list_p="Leave your email and we will let you know when we open.",
         legend="Sign up for the waiting list",
         email="Email",
-        consent="I agree to receive emails from A Brazileira about the opening. Read the {link}.",
+        consent="I agree to receive emails from A&nbsp;Brazileira about the opening. Read the {link}.",
         consent_link="privacy notice",
         hp="Leave this field empty",
         submit="Join the list", sending="Sending…",
@@ -153,7 +154,7 @@ T = {
         privacy="Privacy",
     ),
 }
-FOOT = "© 2026 A Brazileira · Torres Vedras, Portugal"
+FOOT = "© 2026 A&nbsp;Brazileira · Torres Vedras, Portugal"
 THEME_HEAD = ('<script>try{var t=localStorage.getItem("ab-tema");'
               'if(t==="dia"||t==="noite")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>')
 CHEVRON = ('<svg viewBox="0 0 16 10" aria-hidden="true" focusable="false">'
@@ -234,7 +235,7 @@ def footer(privacy_href, label, extra="", current=False):
 def waitlist(t):
     link = f'<a class="link-inline" href="{t["privacy_href"]}">{t["consent_link"]}</a>'
     mail = f'<a class="link-inline" href="mailto:{CONTACT}">{CONTACT}</a>'
-    return f"""<section id="lista" class="lista surface-hall" aria-labelledby="lista-titulo">
+    return f"""<section id="lista" class="lista surface-hall" aria-labelledby="lista-titulo" data-motion="list">
 <div class="lista__inner" data-reveal>
 <h2 id="lista-titulo" class="lista__title">{t['list_h']}</h2>
 <p class="lista__lede">{t['list_p']}</p>
@@ -274,11 +275,11 @@ def page(k, scene_html, scene_style):
 <a class="skip" href="#conteudo">{t['skip']}</a>
 {topbar(t, p + './', p + 'en/', k)}
 <main id="conteudo">
-<div class="porta" data-porta>
-<div class="porta__stage">
+<div class="porta" data-porta data-motion="wrapper">
+<div class="porta__stage" data-motion="stage">
 <div class="porta__frame">
 <div class="stage">
-<div class="intro">
+<div class="intro" data-motion="copy">
 {lockup_html()}
 <p class="lede">{t['lede']}</p>
 <p class="status">{t['status']}</p>
@@ -288,9 +289,9 @@ def page(k, scene_html, scene_style):
 {scene_html}
 </div>
 </div>
-<div class="porta__band"><a class="porta__cue" href="#lista" tabindex="-1" aria-hidden="true">{CHEVRON}</a></div>
+<div class="porta__band"><a class="porta__cue" href="#lista" tabindex="-1" aria-hidden="true" data-motion="cue">{CHEVRON}</a></div>
 </div>
-<div class="porta__flood"></div>
+<div class="porta__flood" data-motion="flood"></div>
 </div>
 </div>
 {waitlist(t)}
@@ -309,9 +310,9 @@ PRIVACY = {
         h1="Nota de privacidade",
         intro="Esta nota explica o que acontece ao seu email quando se inscreve na lista de espera.",
         sections=[
-            ("Responsável", "A Brazileira, Torres Vedras, Portugal. Contacto: {mail}."),
+            ("Responsável", "A&nbsp;Brazileira, Torres Vedras, Portugal. Contacto: {mail}."),
             ("Dados", "O seu email, o idioma da página e a data e hora do consentimento."),
-            ("Finalidade", "Avisar sobre a abertura de A Brazileira e enviar novidades relacionadas."),
+            ("Finalidade", "Avisar sobre a abertura de A&nbsp;Brazileira e enviar novidades relacionadas."),
             ("Fundamento", "O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, "
                            "sem afetar o tratamento feito antes. Para isso, basta escrever para {mail}."),
             ("Conservação", "Até retirar o consentimento ou, no máximo, 24 meses após a inscrição."),
@@ -331,9 +332,9 @@ PRIVACY = {
         h1="Privacy notice",
         intro="This notice explains what happens to your email address when you join the waiting list.",
         sections=[
-            ("Controller", "A Brazileira, Torres Vedras, Portugal. Contact: {mail}."),
+            ("Controller", "A&nbsp;Brazileira, Torres Vedras, Portugal. Contact: {mail}."),
             ("Data", "Your email address, the language of the page and the date and time of your consent."),
-            ("Purpose", "To let you know when A Brazileira opens and to send related news."),
+            ("Purpose", "To let you know when A&nbsp;Brazileira opens and to send related news."),
             ("Legal basis", "Your consent (Article 6(1)(a) of the GDPR). You can withdraw it at any time, without "
                             "affecting the processing carried out before. To do so, write to {mail}."),
             ("Retention", "Until you withdraw your consent or, at most, 24 months after you sign up."),

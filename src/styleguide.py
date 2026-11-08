@@ -33,7 +33,10 @@ def mix(a, b, t):
 
 def halls():
     P = dict((n, h) for n, h, _ in primitives())
-    return {"hall-dia": mix(P["latao"], P["papel"], 0.22), "hall-noite": mix(P["luz-nucleo"], P["luz"], 0.72)}
+    h = {"hall-dia": P.get("sala-dia") or mix(P["latao"], P["papel"], 0.22),
+         "hall-noite": P.get("sala-noite") or mix(P["luz-nucleo"], P["luz"], 0.72)}
+    assert h["hall-dia"].upper() == mix(P["latao"], P["papel"], 0.22) and h["hall-noite"].upper() == mix(P["luz-nucleo"], P["luz"], 0.72)
+    return h
 
 
 def pairs():
@@ -55,7 +58,8 @@ def pairs():
                  ("Rodapé · " + h, "castanho", h, "texto"),
                  ("Erro · " + h, "barro", h, "texto"),
                  ("Borda do campo, foco · " + h, "nogueira", h, "não-texto ≥ 3:1")]
-    hall += [("Texto do botão", "papel", "tinta", "texto"), ("Texto no campo", "tinta", "papel", "texto")]
+    hall += [("Texto do botão", "papel", "tinta", "texto"), ("Texto no campo · Dia", "tinta", "papel", "texto"),
+             ("Texto no campo · Noite", "tinta", "luz-nucleo", "texto"), ("Borda do campo · Noite", "nogueira", "luz-nucleo", "não-texto ≥ 3:1")]
     rows = []
     for theme, lst in (("Dia", dia), ("Noite", noite), ("Sala (lista)", hall)):
         for label, fg, bg, use in lst:
@@ -119,17 +123,15 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
         for th in ("dia", "noite"))
 
     timeline = [
-        ("Texto (lockup, frase, estado, ação)", "Apoio", "0 → 0.20", "opacidade 1 → 0, sobe 24px", "easeOutCubic (0.33, 1, 0.68, 1)"),
-        ("Indicador de deslizar", "Decoração", "0 → 0.06", "opacidade 1 → 0, desce 6px", "easeOutCubic"),
-        ("Folha esquerda", "Principal", "0.04 → 0.50", "+47° (41° → 88°)", "easeInOutCubic (0.65, 0, 0.35, 1)"),
-        ("Folha direita", "Principal", "0.08 → 0.52", "+55° (27° → 82°)", "easeInOutCubic"),
-        ("Sala, primeira luz (Dia)", "Apoio", "0.06 → 0.30", "opacidade 0 → 1", "easeInOutSine (0.37, 0, 0.63, 1)"),
-        ("Sala iluminada", "Apoio", "0.20 → 0.52", "opacidade 0 → 1", "easeInOutSine"),
-        ("Luz nos degraus (Noite)", "Apoio", "0.14 → 0.56", "opacidade 0 → 1", "easeInOutSine"),
-        ("Câmara: centrar a porta", "Principal", "0.04 → 0.56", "translação até ao centro do ecrã", "easeInOutSine"),
-        ("Câmara: entrar", "Principal", "0.18 → 1", "escala geométrica 1 → S (retrato: a abertura cobre o ecrã; paisagem: a altura, até 1.5×)", "easeInOutSine sobre log(escala)"),
-        ("Luz da sala ocupa o ecrã", "Apoio", "0.80 → 1", "opacidade 0 → 1", "easeInOutSine"),
-        ("Lista de espera", "Entrada", "uma vez, ao entrar no ecrã", "opacidade 0 → 1, sobe 24px, 700ms", "--ease-out"),
+        ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 → 0.16", "opacidade 1 → 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
+        ("Indicador de deslizar", "Decoração", "0 → 0.05", "opacidade 1 → 0", "--curve-copy"),
+        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 → 0.42", "esquerda +47° (41° → 88°), direita +61° (27° → 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
+        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 → 0.42", "opacidade 0 → 1 (o valor das folhas)", "--curve-door"),
+        ("Câmara: centrar a porta", "Principal", "0 → 0.36", "translação em linha reta até ao centro do ecrã", "--curve-pan (0.35, 0.4, 0.3, 1)"),
+        ("Câmara: entrar", "Principal", "0.04 → 0.90", "escala geométrica 1 → S: a abertura cobre todo o ecrã em qualquer proporção", "--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)"),
+        ("A sala torna-se a cor da lista", "Apoio, passagem", "0.60 → 0.86", "camada lisa --color-hall dentro da porta, opacidade 0 → 1", "--curve-fade (0.45, 0, 0.55, 1)"),
+        ("Luz em todo o palco", "Apoio", "0.86 → 0.92", "a mesma cor sobre a mesma cor (cobre as folhas de perfil)", "--curve-fade"),
+        ("Lista de espera", "Chegada", "título entra no ecrã a p ≈ 0.82", "título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms", "--ease-out"),
     ]
     trows = "\n".join(f"<tr><td>{a}</td><td>{b}</td><td class=\"sg-num\">{c}</td><td>{d}</td><td>{e}</td></tr>" for a, b, c, d, e in timeline)
 
@@ -198,7 +200,7 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-open .sg-entrance {{ block-size: 20rem; margin-block-end: var(--space-3); }}
 .sg-open .leaf--l {{ transform: rotateY(var(--open-l)); }}
 .sg-open .leaf--r {{ transform: rotateY(calc(var(--open-r) * -1)); }}
-.sg-open :is(.hall__dawn, .hall__light, .spill) {{ opacity: 1; }}
+.sg-open :is(.hall__light, .spill) {{ opacity: 1; }}
 .sg-forms {{ display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); margin-block-end: var(--space-5); }}
 .sg-tag--row {{ grid-column: 1 / -1; margin: 0; }}
 .sg-form {{ padding: var(--space-5); color: var(--color-text); }}
@@ -271,7 +273,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </ul>
 
 <h2>Movimento</h2>
-<p class="sg-note">Ao deslizar, uma única sequência ligada ao scroll (p de 0 a 1 ao longo de <code>--porta-run</code> = 140svh, com o palco fixo). Só <code>transform</code> e <code>opacity</code>. Ao subir, tudo volta atrás.</p>
+<p class="sg-note">Ao deslizar, uma única sequência ligada ao scroll (p de 0 a 1 ao longo de <code>--porta-run</code> = 144svh, com o palco fixo). Um só motor em JavaScript para todos os navegadores: o progresso desenhado segue o do scroll com suavização exponencial (<code>--scroll-tau</code> 90ms), sem nunca mexer no scroll nativo. Só <code>transform</code> e <code>opacity</code>. Ao subir, tudo volta atrás; em p = 0 o herói está exatamente no estado de repouso.</p>
 <div class="sg-scroll"><table>
 <thead><tr><th>Elemento</th><th>Papel</th><th>Intervalo de p</th><th>Movimento</th><th>Curva</th></tr></thead>
 <tbody>
@@ -279,9 +281,10 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </tbody></table></div>
 <ul class="sg-rules">
 <li><code>--dur-door</code> 1100ms · <code>--ease-door</code> · ao carregar, as portas ficam entreabertas uma vez (41° e 27°).</li>
-<li><code>--dur-press</code> 160ms · botão e ação: <code>scale(0.97)</code> ao premir. <code>--dur-state</code> 200ms · mensagens do formulário, visto.</li>
+<li>A ação «Entrar na lista de espera» salta logo para a lista (sem animar a sequência) e põe o foco no campo de email.</li>
+<li><code>--dur-press</code> 160ms · botão e ação: <code>scale(0.97)</code> ao premir. <code>--dur-state</code> 200ms · mensagens do formulário, visto. Sucesso: os campos saem em 160ms e a frase entra em 240ms.</li>
 <li><code>--dur-theme</code> 400ms · troca Dia/Noite em fundido (View Transitions, ou transição de cor).</li>
-<li><code>--dur-ui</code> 160ms · cor dos controlos ao passar o rato.</li>
+<li><code>--dur-ui</code> 150ms · cor dos controlos ao passar o rato (curva <code>ease</code>).</li>
 <li><code>prefers-reduced-motion: reduce</code> · sem sequência nem palco fixo: portas abertas, sala iluminada, a ação salta para a lista. Sem JavaScript: portas entreabertas, sem palco fixo, tema do sistema.</li>
 </ul>
 

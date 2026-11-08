@@ -14,7 +14,9 @@ lamplight, by night.
 Layers (the choreography needs them separate):
   back svg     the hall in shadow (seen through the gap while the doors are ajar)
   .hall__light the lit hall (HTML colour = the waiting-list surface) with the hall drawing inside it
-  front svg    wall, stone arch, reveal, frame, fanlight, steps, lantern, olive tree, pendant
+  .hall__lamp  the pendant lamp in the hall (above the lit hall, below the hand-off)
+  .hall__flat  the hand-off: the doorway becomes the waiting-list colour
+  front svg    wall, stone arch, reveal, frame, fanlight, steps, lantern, olive tree
   .spill       lamplight on the steps (night)
   .leaf x2     the two door leaves, each its own svg, hinged in 3D by CSS
 """
@@ -373,7 +375,9 @@ def build():
     # ---------------- 8. lantern ----------------
     F.items.extend(lant_items)
 
-    # ---------------- 9. pendant in the hall (front svg so the hall light never hides it) --------
+    # ---------------- 9. pendant in the hall: its own layer inside the doorway, above the lit hall and below
+    # the hand-off, so it is there with the doors ajar and dissolves with the rest of the hall at the end --------
+    Lp = Layer()
     ZL = BACK + 1.6
     lx, ly = P(0, SILL + 2.12, ZL)
     lw = 0.17 * U * sc(ZL)
@@ -382,9 +386,9 @@ def build():
     shade = ([(-lw + k * 0.05, ly) for k in range(1)]
              + [(-lw * math.cos(math.radians(t)), ly - lh * math.sin(math.radians(t)) * (0.9 + 0.1 * math.sin(math.radians(t)))) for t in range(10, 171, 16)]
              + [(lw, ly)])
-    add("w w-lamp", pen.wash(shade, rough=0.25, step=2))
-    add("w w-l3 i-night", pen.blob(0, ly + 1.4, lw * 0.6, lh * 0.35, rough=0.3, step=2))
-    add("k k-hall", pen.line((0, top_y), (0.4, ly - lh), wob=0.3, over=(0, 0.3), lift=0)
+    Lp.add("w w-lamp", pen.wash(shade, rough=0.25, step=2))
+    Lp.add("w w-l3 i-night", pen.blob(0, ly + 1.4, lw * 0.6, lh * 0.35, rough=0.3, step=2))
+    Lp.add("k k-hall", pen.line((0, top_y), (0.4, ly - lh), wob=0.3, over=(0, 0.3), lift=0)
         + pen.curve(shade, wob=0.3, step=4, lift=0)
         + pen.line((-lw - 0.6, ly + 0.2), (lw + 0.5, ly - 0.2), wob=0.2, lift=0))
 
@@ -420,8 +424,8 @@ def build():
     out["body"] = F.svg()
     out["back"] = B.svg()
     out["hall"] = hall(lt, rb)
-    yb = P(0, SILL, HALL)[1]
-    out["hall_floor"] = (rb[1] - yb)
+    out["lamp"] = (f'<svg class="hall__art hall__lamp" viewBox="{r1(lt[0])} {r1(lt[1])} {r1(rb[0] - lt[0])} {r1(rb[1] - lt[1])}" '
+                   f'preserveAspectRatio="none" focusable="false" aria-hidden="true">{Lp.svg()}</svg>')
     sil = [P(-BW, 0, 0), P(BW, 0, 0), P(BW, .16, 0), P(BW, .16, .32), P(BW, SILL, .32), P(BW, SILL, WALL),
            P(A, SILL, WALL), P(A, SILL, BACK), P(-A, SILL, BACK), P(-A, SILL, WALL), P(-BW, SILL, WALL),
            P(-BW, SILL, .32), P(-BW, .16, .32), P(-BW, .16, 0)]

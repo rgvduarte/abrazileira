@@ -30,7 +30,7 @@ body {{ display: block; position: relative; min-height: 0; }}
 .og-art .entrance {{ position: absolute; inset: 0; min-block-size: 0; max-block-size: none; margin: 0; --scene-reach: 1; }}
 .og-art .scene {{ inset-inline-start: 0; }}
 .leaf--l, .leaf--r {{ transform: none !important; }}                 /* the rest state: doors ajar */
-.hall__dawn, .hall__light, .spill {{ opacity: 0 !important; }}
+.hall__light, .hall__flat, .spill {{ opacity: 0 !important; }}
 </style></head>
 <body>
 <div class="og-text">{build.lockup_html('p')}</div>

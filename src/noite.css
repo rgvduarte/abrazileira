@@ -9,7 +9,8 @@
     --color-focus: var(--latao);
     --color-selection: color-mix(in srgb, var(--latao) 28%, var(--noite));
     --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
-    --color-hall: color-mix(in srgb, var(--luz-nucleo) 72%, var(--luz));   /* lamplight: waiting-list surface */
+    --color-hall: var(--sala-noite);         /* lamplight = the waiting-list surface (one token) */
+    --color-field-hall: var(--luz-nucleo);   /* fields lit by the same lamp, not the pink day paper */
 
     /* the same drawing on the walnut night paper: light ink, dark earth washes, glazes of lamplight */
     --i-ink: color-mix(in srgb, var(--pedra) 58%, var(--noite));
@@ -60,4 +61,3 @@
     --o-day: 0;
     --o-turn: 0;
     --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
-    --i-hall-dawn: transparent;

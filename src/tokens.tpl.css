@@ -43,6 +43,9 @@
   --luz: #F4C978;            /* lamplight: body                          */
   --luz-borda: #B9782C;      /* lamplight: falloff                       */
   --barro: #9E3B1E;          /* terracotta (handmade ceramics): form errors on the hall surface */
+  /* the hall you walk into: ONE colour per theme, used by the doorway's final light AND the waiting list */
+  --sala-dia: #F2DEC4;       /* lime-washed hall by day (papel warmed by latao, 22%) */
+  --sala-noite: #FCE7BC;     /* lamplight by night (luz-nucleo 72% in luz)           */
 
   /* ---- Type -------------------------------------------------------------- */
   --font-display: "Cinzel", "Cinzel fallback", "Trajan Pro", "Times New Roman", serif;          /* logo lockup only */
@@ -94,22 +97,35 @@
   --line-w: 1.25px;          /* illustration contour (non-scaling)       */
   --line-w-fine: 0.75px;     /* illustration detail                       */
 
-  /* ---- Motion -------------------------------------------------------------- */
-  --dur-ui: 160ms;
+  /* ---- Motion --------------------------------------------------------------
+     One source for every curve: site.css uses them as timing functions, site.js reads the
+     scroll curves (--curve-*) once at start-up and evaluates them per frame. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* entrances, exits, presses, messages */
+  --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);         /* the doors ease ajar once on load    */
+  --dur-ui: 150ms;           /* hover colour (with the ease keyword)    */
   --dur-theme: 400ms;        /* Dia <-> Noite cross-fade                  */
   --dur-door: 1100ms;        /* doors ease ajar, once                     */
   --delay-door: 200ms;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);
   --ajar-l: 41deg;
   --ajar-r: 27deg;
   --dur-press: 160ms;        /* button and link press: scale(0.97)      */
   --dur-state: 200ms;        /* form messages, tick                      */
-  --dur-reveal: 700ms;       /* the waiting list rises in, once          */
-  /* scroll sequence (site.js drives it; these are the values it reads) */
-  --porta-run: 140svh;       /* scroll length of the pinned door sequence (wrapper = 100lvh + run) */
+  --dur-out: 160ms;          /* form controls give way to the success line */
+  --dur-success: 240ms;      /* the success line                         */
+  --dur-reveal: 560ms;       /* the list rises in, once: title + sentence */
+  --dur-reveal-2: 480ms;     /* ... then the form                         */
+  --stagger-reveal: 100ms;
+  /* scroll sequence: lengths are scroll distance, curves are evaluated on the scroll progress p */
+  --porta-run: 144svh;       /* pinned stretch (wrapper = stage + run)   */
+  --porta-overlap: 0.18;     /* the list title enters with the last 18% of the run still to go */
+  --scroll-tau: 90ms;        /* rendered progress follows the scroll: exponential, frame-rate independent */
+  --curve-copy: cubic-bezier(0.33, 1, 0.68, 1);        /* text leaves as the doors start (easeOutCubic) */
+  --curve-door: cubic-bezier(0.3, 0.55, 0.35, 1);      /* the doors move from the first pixel     */
+  --curve-pan: cubic-bezier(0.35, 0.4, 0.3, 1);        /* the doorway travels to the centre early */
+  --curve-zoom: cubic-bezier(0.5, 0.05, 0.3, 1);       /* walk-in, on log(scale): soft start and landing */
+  --curve-fade: cubic-bezier(0.45, 0, 0.55, 1);        /* light layers (symmetric in-out)         */
   --open-l: 47deg;           /* extra swing on scroll: left leaf 41 -> 88deg */
-  --open-r: 55deg;           /* right leaf 27 -> 82deg                   */
+  --open-r: 61deg;           /* right leaf 27 -> 88deg (both end edge-on, just under 90) */
 
   /* ---- Layers -------------------------------------------------------------- */
   --z-scene: 1;
@@ -139,7 +155,8 @@
   --color-focus: var(--nogueira);          /*  9.03:1 */
   --color-selection: var(--areia);
   --color-surface: var(--areia);
-  --color-hall: color-mix(in srgb, var(--latao) 22%, var(--papel));   /* the lit hall: waiting-list surface */
+  --color-hall: var(--sala-dia);           /* the lit hall = the waiting-list surface (one token) */
+  --color-field-hall: var(--papel);        /* form fields on the hall */
 
   /* ==== 3. Illustration · Dia: sepia ink and earth washes on paper (sun from the upper left) ==== */
   --i-ink: color-mix(in srgb, var(--tinta) 84%, var(--nogueira));
@@ -192,8 +209,7 @@
   --o-night: 0;              /* lamplight layers */
   --o-day: 1;                /* sun shadows, reflections */
   --o-turn: 0.22;            /* a leaf turned away from the sun reads darker */
-  /* the hall once the doors open (HTML layers between the two svgs) */
-  --i-hall-dawn: transparent;                                           /* the drawn hall is warm sepia, never grey: no bridge colour needed */
+  /* the hall once the doors open (HTML layers between the two svgs); it always ends on --color-hall */
   --i-hall-light: var(--color-hall);                                    /* lime-washed hall in daylight */
   --i-spill: none;                                                      /* no lamplight by day */
 }
@@ -210,7 +226,7 @@
   --color-focus: var(--nogueira);
   --color-ground: var(--nogueira);
   --color-selection: var(--areia);
-  --color-field: var(--papel);
+  --color-field: var(--color-field-hall);
   --color-field-line: var(--nogueira);
   --color-error: var(--barro);
   --color-on-strong: var(--papel);       /* text on a tinta button */
