@@ -41,14 +41,16 @@ Depois:
 
 ## 3. `abrazileira.pt` → redireciona para `abrazileira.com`
 
-O GitHub Pages só aceita um domínio por site. O `.pt` faz um redirecionamento 301:
+O GitHub Pages só aceita um domínio por site. O `.pt` (registado no dominios.pt) passa a ter DNS no Cloudflare,
+que responde com um redirecionamento 301 com HTTPS. **A ordem importa:** a DNS.PT só aceita nameservers que já respondam pela zona.
 
-1. Adicionar `abrazileira.pt` ao Cloudflare (plano Free) e trocar os *nameservers* no registo `.pt` (ex.: no registrar onde foi comprado) para os indicados pelo Cloudflare.
-2. DNS: `A @ 192.0.2.1` e `CNAME www abrazileira.pt`, ambos **com proxy ligado** (nuvem laranja).
-3. **Rules → Redirect Rules → Create:** quando *Hostname* contém `abrazileira.pt` →
-   *Dynamic* `concat("https://abrazileira.com", http.request.uri.path)` · **301** · *Preserve query string*.
-
-Alternativa sem Cloudflare: usar o reencaminhamento de URL do próprio registrar `.pt` (301 para `https://abrazileira.com`).
+1. Cloudflare → **Add a domain** → `abrazileira.pt` → plano **Free** → anotar os 2 nameservers indicados.
+2. Cloudflare → `abrazileira.pt` → **DNS → Records → Import** → `dns/abrazileira.pt.zone`, com **"Proxy imported DNS records" ligado** (nuvem laranja).
+3. Cloudflare → `abrazileira.pt` → **Rules → Redirect Rules → Create rule**:
+   - *Custom filter expression*: `(http.host eq "abrazileira.pt") or (http.host eq "www.abrazileira.pt")`
+   - *Then*: **Dynamic** · `concat("https://abrazileira.com", http.request.uri.path)` · **301** · *Preserve query string* ligado → **Deploy**.
+4. dominios.pt → `abrazileira.pt` → **Servidores de Nome** → *Usar nameservers personalizados* → DNS 1 e DNS 2 = os do Cloudflare,
+   apagar DNS 3–5 → **Alterar Nameservers**. Pode demorar até 24 h; o Cloudflare envia email quando a zona fica ativa.
 
 ## 4. Email `inn@abrazileira.com` (contacto da lista de espera / RGPD)
 

@@ -1,0 +1,8 @@
+; abrazileira.pt -> 301 redirect to https://abrazileira.com (via Cloudflare Redirect Rule)
+; Import in Cloudflare: DNS > Records > Import, and CHECK "Proxy imported DNS records" (orange cloud).
+; 192.0.2.1 / 100:: are placeholders: traffic never reaches them, the proxied redirect answers first.
+$ORIGIN abrazileira.pt.
+$TTL 3600
+@    IN A     192.0.2.1
+@    IN AAAA  100::
+www  IN CNAME abrazileira.pt.
