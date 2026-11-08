@@ -4,6 +4,7 @@
     --color-text: var(--linho);
     --color-text-muted: var(--linho-escuro); /*  8.58:1 */
     --color-accent-text: var(--latao);       /*  7.87:1 */
+    --color-status-small: var(--color-text-muted);   /* «Abre brevemente.» on phones: quieter than the action */
     --color-mark: var(--latao);
     --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.41:1, floor line */
     --color-focus: var(--latao);
@@ -55,7 +56,7 @@
     --w-htile: var(--nogueira);       --wo-htile: 0.18;
     --w-hdado: var(--azulejo);        --wo-hdado: 0.16;
     --w-hdeep: var(--nogueira);       --wo-hdeep: 0.32;
-    --wo-hwin: 0;
+    --wo-hwin: 0.7;          /* the inner door's window is lit at night too: never a dull slab inside the golden hall */
     --wo-hpool: 0;
     --i-brass: var(--latao);
     --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));

@@ -147,10 +147,13 @@ def build():
     wall = [Q(1.0, SILL - 0.02, WALL), Q(1.06, 1.6, WALL), Q(1.32, 2.2, WALL), Q(1.45, 1.2, WALL), Q(1.55, SILL - 0.02, WALL)]
     add("w w-wall i-day", pen.wash(wall, rough=3.5, step=15, lumpy=1.4))
 
-    # ---------------- night: lamplight on the wall around the lantern (glazes, stepped like watercolour) -----
+    # ---------------- night: lamplight on the wall around the lantern -----
+    # Light has no edge: the glaze is fully transparent from 0.8 of its radius, so the patch's loose outline always
+    # falls on clear paint, and it carries no rim stroke (lg-flat). (The same pen call as before: the rest of the
+    # drawing keeps its seeded geometry.)
     lc = lantern_centre()
     s0 = sc(WALL) * U
-    glow(pen, F, "ab-halo", lc[0] + 2, lc[1] + 5, 0.6 * s0, 0.56 * s0, stops=((0, "core", 0.6), (0.25, "mid", 0.34), (0.65, "mid", 0.1), (1, "mid", 0.015)), gc=lc)
+    glow(pen, F, "ab-halo", lc[0] + 2, lc[1] + 5, 0.6 * s0, 0.56 * s0, stops=((0, "core", 0.6), (0.25, "mid", 0.34), (0.55, "mid", 0.1), (0.8, "mid", 0)), gc=lc, cls="lg-flat i-night")
 
     # ---------------- 2. sun shadows on the wall (Dia): the surround's thickness, the lantern ----------------
     cs = (0.075 * U * sc(WALL), 0.06 * U * sc(WALL))
@@ -173,6 +176,11 @@ def build():
     add("w w-stone2", pen.wash(pat, rough=2.0, step=9))
     pat = [P(A, SILL, WALL, False), P(RO + PLX, SILL, WALL, False), P(RO, SILL + 1.1, WALL, False), P(A, SILL + 0.9, WALL, False)]
     add("w w-stone2", pen.wash(pat, rough=2.0, step=9))
+    # night: the lantern also warms the stone of the left jamb beside it (a very faint glaze laid over the stone,
+    # fading to nothing; its own pen, so nothing else in the drawing moves)
+    # (centred on the lamp and wider than its zero: the patch's edge never shows)
+    glow(Pen(43), F, "ab-halo-jamb", lc[0], lc[1] + 0.04 * s0, 0.8 * s0, 0.8 * s0,
+         stops=((0, "mid", 0.16), (0.45, "mid", 0.08), (0.78, "mid", 0)), gc=lc, cls="lg-flat i-night")
 
     # ---------------- 4. reveal (wall thickness) and soffit ----------------
     lrev = [P(-A, SILL, WALL), P(-A, IMP, WALL), P(-A, IMP, BACK), P(-A, SILL, BACK)]

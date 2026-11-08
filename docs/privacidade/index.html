@@ -20,15 +20,15 @@
 <link rel="preload" href="../assets/fonts/cinzel-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/alegreya-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/alegreya-sans-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../assets/css/tokens.288b10399d.css">
-<link rel="stylesheet" href="../assets/css/site.a124242b0c.css">
-<script src="../assets/js/site.c9d4e84e27.js" defer></script>
+<link rel="stylesheet" href="../assets/css/tokens.92abf4386d.css">
+<link rel="stylesheet" href="../assets/css/site.844f6f88a9.css">
+<script src="../assets/js/site.4945e9a8ae.js" defer></script>
 </head>
 <body class="page-notice">
 <a class="skip" href="#conteudo">Saltar para o conteúdo</a>
 <header class="topbar">
 <div class="controls" role="group" aria-label="Tema" data-theme-switch hidden>
-<button class="ctl" type="button" data-theme-set="dia" aria-pressed="false">Dia</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" data-theme-set="noite" aria-pressed="false">Noite</button>
+<button class="ctl" type="button" data-theme-set="dia" aria-pressed="false">Dia</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" data-theme-set="noite" aria-pressed="false">Noite</button><span class="controls__note" id="sol-note"><span class="controls__note-dia">É dia em Torres Vedras.</span><span class="controls__note-noite">É noite em Torres Vedras.</span></span>
 </div>
 <nav class="controls controls--lang" aria-label="Idioma">
 <a class="ctl" href="../privacidade/" hreflang="pt-PT" lang="pt-PT" aria-current="page">PT<span class="sr"> · Português</span></a><span class="controls__sep" aria-hidden="true">·</span><a class="ctl" href="../en/privacy/" hreflang="en" lang="en">EN<span class="sr"> · English</span></a>
@@ -40,12 +40,14 @@
 <p class="notice__intro">Esta nota explica o que acontece ao seu email quando se inscreve na lista de espera.</p>
 <section class="notice__item" aria-labelledby="s1"><h2 id="s1">Responsável</h2><p>A&nbsp;Brazileira, Torres Vedras, Portugal. Contacto: <a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>.</p></section>
 <section class="notice__item" aria-labelledby="s2"><h2 id="s2">Dados</h2><p>O seu email, o idioma da página e a data e hora do consentimento.</p></section>
-<section class="notice__item" aria-labelledby="s3"><h2 id="s3">Finalidade</h2><p>Avisar sobre a abertura de A&nbsp;Brazileira e enviar novidades relacionadas.</p></section>
-<section class="notice__item" aria-labelledby="s4"><h2 id="s4">Fundamento</h2><p>O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes. Para isso, basta escrever para <a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>.</p></section>
+<section class="notice__item" aria-labelledby="s3"><h2 id="s3">Finalidade</h2><p>Avisar sobre a abertura de A&nbsp;Brazileira.</p></section>
+<section class="notice__item" aria-labelledby="s4"><h2 id="s4">Fundamento</h2><p>O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Dar o email é opcional; sem ele, não o podemos avisar. Pode retirar o consentimento a qualquer momento, sem afetar a licitude do tratamento feito antes. Para isso, basta escrever para <a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>.</p></section>
 <section class="notice__item" aria-labelledby="s5"><h2 id="s5">Conservação</h2><p>Até retirar o consentimento ou, no máximo, 24 meses após a inscrição.</p></section>
-<section class="notice__item" aria-labelledby="s6"><h2 id="s6">Subcontratante</h2><p>Supabase, que aloja a base de dados em servidores na União Europeia (Paris).</p></section>
-<section class="notice__item" aria-labelledby="s7"><h2 id="s7">Direitos</h2><p>Tem direito de acesso, retificação, apagamento, limitação, oposição e portabilidade, através de <a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados (<a class="link-inline" href="https://www.cnpd.pt/" hreflang="pt-PT">www.cnpd.pt</a>).</p></section>
-<section class="notice__item" aria-labelledby="s8"><h2 id="s8">Cookies</h2><p>Este site não usa cookies nem ferramentas de análise. O único pedido a terceiros acontece quando envia o formulário.</p></section>
+<section class="notice__item" aria-labelledby="s6"><h2 id="s6">Subcontratante</h2><p>Supabase, que aloja a base de dados em servidores na União Europeia (Paris). Ao receber o formulário, regista também, por pouco tempo, dados técnicos do pedido (endereço IP e navegador).</p></section>
+<section class="notice__item" aria-labelledby="s7"><h2 id="s7">Alojamento</h2><p>Este site é servido pelo GitHub Pages (GitHub, Inc.), que regista os endereços IP de quem o visita, por razões de segurança.</p></section>
+<section class="notice__item" aria-labelledby="s8"><h2 id="s8">Transferências</h2><p>A Supabase e a GitHub são empresas dos Estados Unidos. Se tratarem dados fora da União Europeia, fazem-no com as garantias previstas no RGPD, como o Quadro de Privacidade de Dados UE-EUA ou cláusulas contratuais-tipo.</p></section>
+<section class="notice__item" aria-labelledby="s9"><h2 id="s9">Direitos</h2><p>Tem direito de acesso, retificação, apagamento, limitação, oposição e portabilidade, através de <a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados (<a class="link-inline" href="https://www.cnpd.pt/" hreflang="pt-PT">www.cnpd.pt</a>).</p></section>
+<section class="notice__item" aria-labelledby="s10"><h2 id="s10">Cookies</h2><p>Este site não usa cookies nem ferramentas de análise. Se escolher Dia ou Noite, essa escolha fica guardada apenas no seu navegador. Além do alojamento, o único pedido a terceiros acontece quando envia o formulário.</p></section>
 <p class="notice__updated">Última atualização: novembro de 2026.</p>
 <p class="notice__back"><a class="link" href="../">Voltar ao início</a></p>
 </main>

@@ -1,10 +1,12 @@
-// Regression test for the client report «Quando se faz o scroll back, o título do site desaparece» (iPhone Safari).
+// Regression test: the site title must never disappear when scrolling back up (reported on iPhone Safari).
 // Usage (from the repository root, after python3 src/build.py; needs Playwright with Chromium):
 //   node src/tests/reverse-scroll.test.js docs
 // Scrolls down and back with wheel, touch drags, programmatic jumps, emulated rubber-band overscroll (scrollY < 0 and
 // > max) and a viewport-height change mid-sequence (mobile toolbar). After each scenario the hero must be at its exact
 // rest state: .intro computed opacity 1 and transform none, no inline style left, lockup at its original place,
 // camera/leaves/light/flood at rest. During every scenario: opacity stays within [0, 1], scale within [1, S].
+// Fast flicks (F): the title is back within 100ms of reaching the top, and a fling down never shows the list panel's
+// edge over a stage that is not yet flat hall colour.
 setTimeout(()=>{console.log('TIMEOUT');process.exit(2)},900000);
 const {chromium}=require('playwright'),serve=require('./serve.js');
 const [,,dir]=process.argv;
@@ -71,6 +73,26 @@ for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
   await pg.evaluate(y=>scrollTo(0,y),Math.round(geo.run*0.8));await pg.waitForTimeout(400);
   await pg.setViewportSize({width:+w,height:+h+60});await pg.waitForTimeout(150);await pg.evaluate(()=>scrollTo(0,0));await pg.setViewportSize({width:+w,height:+h});
   await check('E2 viewport taller at p~0.8, jump to top, restore');
+  // F. fast flicks (3000-3500 px/s). A recorder reads every frame after the driver has written it (a ResizeObserver
+  // fires after the frame's rAF callbacks and layout): F1 a flick back to the top must find the title there within
+  // 100ms of scrollY reaching 0; F2 a fling down through the hand-off must never show the list panel's edge over a
+  // stage that is not yet flat hall colour (the flood covers the stage before the panel arrives).
+  const REC=()=>{const q=s=>document.querySelector(s);window.__rf=[];const d=document.createElement('div');d.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;pointer-events:none;opacity:0';document.body.appendChild(d);
+    const ro=new ResizeObserver(()=>{let o=1;for(let e=q('.lockup');e;e=e.parentElement)o*=+getComputedStyle(e).opacity;__rf.push([performance.now(),scrollY,o,+(q('.porta__flood').style.opacity||0),Math.round(q('.porta').getBoundingClientRect().bottom),innerHeight])});ro.observe(d);
+    let k=0;const L=()=>{d.style.width=(1+(k++%2))+'px';if(window.__rf.length<900)requestAnimationFrame(L)};requestAnimationFrame(L)};
+  const cdpF=await c.newCDPSession(pg);
+  const flick=async(dy,speed)=>cdpF.send('Input.synthesizeScrollGesture',{x:Math.round(+w/2),y:Math.round(+h*(dy>0?0.3:0.7)),yDistance:dy,speed,gestureSourceType:'mouse',preventFling:true});
+  await pg.evaluate(y=>scrollTo(0,y),Math.round(geo.run*0.6));await pg.waitForTimeout(700);
+  await pg.evaluate(REC);await flick(Math.round(geo.run*0.6+geo.run*0.25),3000);await pg.waitForTimeout(900);
+  {const rf=await pg.evaluate(()=>__rf);const i0=rf.findIndex(f=>f[1]<=0);const i1=i0<0?-1:rf.findIndex((f,i)=>i>=i0&&f[2]>=0.9);
+   const ms=i0<0||i1<0?999:Math.round(rf[i1][0]-rf[i0][0]);const ok=ms<=100;(ok?pass++:fail++);
+   console.log(ok?'PASS':'FAIL',n,scheme,'F1 flick to the top at 3000px/s: title back within',ms+'ms',ok?'':JSON.stringify(rf.slice(Math.max(0,i0-2),i0+6).map(f=>f.map(v=>+(+v).toFixed(2)))));}
+  await check('F1 rest after the flick');
+  await pg.evaluate(REC);await flick(-Math.round(geo.max),3500);await pg.waitForTimeout(900);
+  {const rf=await pg.evaluate(()=>__rf);const seam=rf.filter(f=>f[4]<f[5]-0.5&&f[3]<1);const ok=rf.length>10&&seam.length===0;(ok?pass++:fail++);
+   console.log(ok?'PASS':'FAIL',n,scheme,'F2 fling down at 3500px/s: frames with the panel on screen over an unflooded stage:',seam.length,ok?'':JSON.stringify(seam.slice(0,4)));}
+  for(let y=geo.max;y>-300;y-=200){await pg.mouse.wheel(0,-200);await pg.waitForTimeout(16);}
+  await check('F2 rest after the fling, wheel back up');
   if(errs.length){fail++;console.log('FAIL errors',errs)}
   await c.close();}
 console.log(`reverse-scroll regression: ${pass} passed, ${fail} failed`);await b.close();srv.close();process.exit(fail?1:0);})();

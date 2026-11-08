@@ -39,6 +39,44 @@ def emblem(idp="ab-emblem"):
 
 
 # ---------------------------------------------------------------- scene
+NUM = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+
+
+def painted_top(markup):
+    """The highest point any path in the drawing paints (end and control points, which bound the curves). The
+    plaster washes are loose and reach above the modelled extents the viewBox is cut to; the stacked layout keeps
+    that overshoot clear of the text above (--scene-over)."""
+    top = float("inf")
+    for d in re.findall(r' d="([^"]*)"', markup):
+        x = y = sx = sy = 0.0
+        for cmd, args in re.findall(r"([MmLlHhVvCcSsQqTtZz])([^MmLlHhVvCcSsQqTtZz]*)", d):
+            n = [float(v) for v in NUM.findall(args)]
+            rel = cmd.islower()
+            c = cmd.upper()
+            if c == "Z":
+                x, y = sx, sy
+                continue
+            if c == "H":
+                for v in n:
+                    x = x + v if rel else v
+                continue
+            if c == "V":
+                for v in n:
+                    y = y + v if rel else v
+                    top = min(top, y)
+                continue
+            k = {"M": 2, "L": 2, "T": 2, "C": 6, "S": 4, "Q": 4}[c]
+            for i in range(0, len(n) - k + 1, k):
+                grp = n[i:i + k]
+                for j in range(1, k, 2):
+                    top = min(top, grp[j] + (y if rel else 0))
+                nx, ny = grp[k - 2] + (x if rel else 0), grp[k - 1] + (y if rel else 0)
+                if c == "M" and i == 0:
+                    sx, sy = nx, ny
+                x, y = nx, ny
+    return top
+
+
 def scene_markup(idp="ab"):
     """The entrance: back svg (hall), hall light (HTML), front svg (everything else), light spill, door leaves.
     Only the HTML layers move (opacity / transform), so the drawing is never repainted while it animates."""
@@ -60,6 +98,7 @@ def scene_markup(idp="ab"):
     door_cx, door_cy = fx(0), fy((lf["y0"] + lf["y1"]) / 2)
     sx0, sx1 = min(q[0] for q in sp["pts"]), max(q[0] for q in sp["pts"])
     sy0, sy1 = min(q[1] for q in sp["pts"]), max(q[1] for q in sp["pts"])
+    over = max(0.0, (vby - painted_top(o["body"] + o["back"])) / vbh)   # wash above the box, share of its height
     clip = ",".join(f"{(q[0] - sx0) / (sx1 - sx0) * 100:.2f}% {(q[1] - sy0) / (sy1 - sy0) * 100:.2f}%" for q in sp["pts"])
     axis = fx(0)
     style = ";".join([
@@ -79,6 +118,7 @@ def scene_markup(idp="ab"):
         f"--spill-y:{pc(fy(sy0))}",
         f"--spill-w:{pc((sx1 - sx0) / vbw)}",
         f"--spill-h:{pc((sy1 - sy0) / vbh)}",
+        f"--scene-over:{over:.4f}",
     ])
     vb = f"{scene.r1(vbx)} {scene.r1(vby)} {scene.r1(vbw)} {scene.r1(vbh)}"
     back = (f'<svg class="scene__art scene__art--back" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
@@ -86,8 +126,11 @@ def scene_markup(idp="ab"):
     front = (f'<svg class="scene__art" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
              f'{o["defs"]}\n{o["body"]}</svg>')
     # data-motion: test hooks for every moving layer (attributes only, never styled)
-    hall = (f'<div class="hall" data-motion="opening"><div class="hall__light" data-motion="light">{o["hall"]}</div>'
-            f'{o["lamp"]}<div class="hall__flat" data-motion="handoff"></div></div>')
+    # the pendant: by night it hangs lit above the lit hall, so it shows in the gap of the ajar doors; by day it is
+    # part of the lit hall and appears with it (in daylight an unlit shade in the dark gap read as a stray blot)
+    lamp = o["lamp"].replace('class="hall__art hall__lamp"', 'class="hall__art hall__lamp {}"')
+    hall = (f'<div class="hall" data-motion="opening"><div class="hall__light" data-motion="light">{o["hall"]}'
+            f'{lamp.format("i-day")}</div>{lamp.format("i-night")}<div class="hall__flat" data-motion="handoff"></div></div>')
     spill = f'<div class="spill" data-motion="spill" style="clip-path:polygon({clip})">{sp["svg"]}</div>'
     leaves = (f'<div class="door"><div class="leaf leaf--l" data-motion="leaf-l"><div class="leaf__face">{scene.leaf_svg("l")}</div></div>'
               f'<div class="leaf leaf--r" data-motion="leaf-r"><div class="leaf__face">{scene.leaf_svg("r")}</div></div></div>')
@@ -96,7 +139,7 @@ def scene_markup(idp="ab"):
     out = f'<div class="scene" data-motion="camera" data-door="{data}">\n{back}\n{hall}\n{front}\n{spill}\n{leaves}\n</div>'
     if idp != "ab":
         out = out.replace('id="ab-', f'id="{idp}-').replace("url(#ab-", f"url(#{idp}-")
-    return out, dict(vb=(vbx, vby, vbw, vbh), style=style, axis=axis)
+    return out, dict(vb=(vbx, vby, vbw, vbh), style=style, axis=axis, over=over)
 
 
 # ---------------------------------------------------------------- copy
@@ -108,6 +151,7 @@ T = {
         desc="A Brazileira, hotel em Torres Vedras. Uma casa antiga em restauro. Abre brevemente.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: o logótipo e o desenho de uma entrada em arco com as portas entreabertas, à noite.",
         skip="Saltar para o conteúdo", theme="Tema", day="Dia", night="Noite", langnav="Idioma",
+        sol_day="É dia em Torres Vedras.", sol_night="É noite em Torres Vedras.",
         lede="Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.",
         status="Abre brevemente.",
         cta="Entrar na lista de espera",
@@ -119,11 +163,11 @@ T = {
         consent="Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a {link}.",
         consent_link="nota de privacidade",
         hp="Não preencher este campo",
-        submit="Entrar na lista", sending="A enviar…",
-        msg_ok="Obrigado. Avisamos quando abrirmos.",
+        submit="Entrar na lista de espera", sending="A enviar…",
+        msg_ok="Obrigado. Já está na lista.",
         msg_email="Verifique o email.",
         msg_consent="Confirme que aceita receber emails.",
-        msg_error="Não foi possível enviar. Tente de novo dentro de momentos.",
+        msg_error="Não foi possível enviar. Tente de novo dentro de momentos ou escreva para {mail}.",
         noscript="Para se inscrever, ative o JavaScript ou escreva para {mail}.",
         privacy="Privacidade",
     ),
@@ -134,6 +178,7 @@ T = {
         desc="A Brazileira, a hotel in Torres Vedras, Portugal. An old house under restoration. Opening soon.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: the logo and a drawing of an arched entrance with its doors ajar, at night.",
         skip="Skip to content", theme="Theme", day="Day", night="Night", langnav="Language",
+        sol_day="It is daytime in Torres Vedras.", sol_night="It is night in Torres Vedras.",
         lede="An old house in Torres Vedras is being restored to welcome guests.",
         status="Opening soon.",
         cta="Join the waiting list",
@@ -145,11 +190,11 @@ T = {
         consent="I agree to receive emails from A&nbsp;Brazileira about the opening. Read the {link}.",
         consent_link="privacy notice",
         hp="Leave this field empty",
-        submit="Join the list", sending="Sending…",
-        msg_ok="Thank you. We will let you know when we open.",
+        submit="Join the waiting list", sending="Sending…",
+        msg_ok="Thank you. You are on the list.",
         msg_email="Please check the email address.",
         msg_consent="Please confirm you agree to receive emails.",
-        msg_error="We could not send it. Please try again in a moment.",
+        msg_error="We could not send it. Please try again in a moment or write to {mail}.",
         noscript="To sign up, please enable JavaScript or write to {mail}.",
         privacy="Privacy",
     ),
@@ -175,11 +220,14 @@ T["pt"]["lede"] = T["pt"]["lede"].replace("para receber hóspedes", "para\u00a0r
 # the town is its own span: on phones it takes a second line by rule, not by a near miss in width
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
         '<span class="foot__place">' + nb("Torres Vedras, Portugal") + "</span>")
-# Dia / Noite before the first paint: the visitor's choice if there is one; otherwise the sky over Torres Vedras
-# (39.09 N, 9.26 W) at this moment: Dia while the sun is above the horizon (altitude > -0.833 deg, the standard
-# sunrise/sunset), Noite otherwise. The sun's position is a low-precision solar ephemeris (about 1 minute against
-# published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn the lights on at sunset.
-# data-sol marks a theme the sky chose (never stored). Without JavaScript the page follows the system theme.
+# Dia / Noite before the first paint: the visitor's choice on this site if there is one; otherwise the sky over
+# Torres Vedras (39.09 N, 9.26 W) at this moment, as the brief asks («when the visitor has not chosen»): Dia while the
+# sun is above the horizon (altitude > -0.833 deg, the standard sunrise/sunset), Noite otherwise. A system dark mode is
+# not a choice made here, so it does not override the house's sky (decided in round 2; DESIGN.md › Dia & Noite); one
+# press on Noite is remembered. The sun's position is a low-precision solar ephemeris (about 1 minute against
+# published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn the lights on at sunset. data-sol
+# marks a theme the sky chose (never stored); a line under the control then says so («É noite em Torres Vedras.»).
+# Without JavaScript the page follows the system theme.
 THEME_HEAD = ('<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}catch(e){}'
               'r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,'
               'L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,'
@@ -188,8 +236,10 @@ THEME_HEAD = ('<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}
               'return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};'
               'if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}'
               'r.setAttribute("data-theme",t)})(document.documentElement)</script>')
+# the scroll cue, drawn with the drawing's pen rather than set as an icon: two strokes, one a little longer and
+# bowed, that cross where they meet (the pen's overshoot), at the contour weight (site.css)
 CHEVRON = ('<svg viewBox="0 0 16 10" aria-hidden="true" focusable="false">'
-           '<path d="M1.5 1.5 8 8l6.5-6.5"/></svg>')
+           '<path d="M1.1 1.6c2.2 2.3 4.4 4.6 7.2 6.9"/><path d="M7.5 8.7c2.3-2.2 4.6-4.6 7.3-7.5"/></svg>')
 TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
         '<path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg>')
 
@@ -248,9 +298,14 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 def topbar(t, pt_href, en_href, k):
     cur_pt = ' aria-current="page"' if k == "pt" else ""
     cur_en = ' aria-current="page"' if k == "en" else ""
+    # the note: a short sentence in the house's voice under the control, shown only while the sky chose the theme
+    # (html[data-sol]); both phrases are in the markup and the theme shows one, so it is right from the first paint;
+    # it also describes the two buttons (site.js)
+    note = (f'<span class="controls__note" id="sol-note"><span class="controls__note-dia">{t["sol_day"]}</span>'
+            f'<span class="controls__note-noite">{t["sol_night"]}</span></span>')
     return f"""<header class="topbar">
 <div class="controls" role="group" aria-label="{t['theme']}" data-theme-switch hidden>
-<button class="ctl" type="button" data-theme-set="dia" aria-pressed="false">{t['day']}</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" data-theme-set="noite" aria-pressed="false">{t['night']}</button>
+<button class="ctl" type="button" data-theme-set="dia" aria-pressed="false">{t['day']}</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" data-theme-set="noite" aria-pressed="false">{t['night']}</button>{note}
 </div>
 <nav class="controls controls--lang" aria-label="{t['langnav']}">
 <a class="ctl" href="{pt_href}" hreflang="pt-PT" lang="pt-PT"{cur_pt}>PT<span class="sr"> · Português</span></a><span class="controls__sep" aria-hidden="true">·</span><a class="ctl" href="{en_href}" hreflang="en" lang="en"{cur_en}>EN<span class="sr"> · English</span></a>
@@ -273,13 +328,13 @@ def waitlist(t):
     return f"""<section id="lista" class="lista surface-hall" aria-labelledby="lista-titulo" data-motion="list">
 <div class="lista__inner" data-reveal>
 <h2 id="lista-titulo" class="lista__title">{t['list_h']}</h2>
-<p class="lista__lede">{t['list_p']}</p>
-<form class="form" data-waitlist data-lang="{t['lang']}" data-msg-ok="{t['msg_ok']}" data-msg-email="{t['msg_email']}" data-msg-consent="{t['msg_consent']}" data-msg-error="{t['msg_error']}" novalidate>
+<p class="lista__lede" id="lista-lede">{t['list_p']}</p>
+<form class="form" data-waitlist data-lang="{t['lang']}" data-msg-ok="{t['msg_ok']}" data-msg-email="{t['msg_email']}" data-msg-consent="{t['msg_consent']}" data-msg-error="{t['msg_error']}" data-mail="{CONTACT}" novalidate>
 <fieldset class="form__set" disabled>
 <legend class="sr">{t['legend']}</legend>
 <div class="field">
 <label class="field__label" for="email">{t['email']}</label>
-<input class="field__input" id="email" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required>
+<input class="field__input" id="email" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="lista-lede">
 <p class="field__msg" id="email-msg" hidden></p>
 </div>
 <div class="check">
@@ -308,7 +363,7 @@ def page(k, scene_html, scene_style):
 </head>
 <body class="home">
 <a class="skip" href="#conteudo">{t['skip']}</a>
-{topbar(t, p + './', p + 'en/', k)}
+{topbar(t, p or './', p + 'en/', k)}
 <main id="conteudo">
 <div class="porta" data-porta data-motion="wrapper">
 <div class="porta__stage" data-motion="stage">
@@ -347,15 +402,24 @@ PRIVACY = {
         sections=[
             ("Responsável", "A&nbsp;Brazileira, Torres Vedras, Portugal. Contacto: {mail}."),
             ("Dados", "O seu email, o idioma da página e a data e hora do consentimento."),
-            ("Finalidade", "Avisar sobre a abertura de A&nbsp;Brazileira e enviar novidades relacionadas."),
-            ("Fundamento", "O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, "
-                           "sem afetar o tratamento feito antes. Para isso, basta escrever para {mail}."),
+            ("Finalidade", "Avisar sobre a abertura de A&nbsp;Brazileira."),
+            ("Fundamento", "O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Dar o email é opcional; sem ele, "
+                           "não o podemos avisar. Pode retirar o consentimento a qualquer momento, sem afetar a licitude "
+                           "do tratamento feito antes. Para isso, basta escrever para {mail}."),
             ("Conservação", "Até retirar o consentimento ou, no máximo, 24 meses após a inscrição."),
-            ("Subcontratante", "Supabase, que aloja a base de dados em servidores na União Europeia (Paris)."),
+            ("Subcontratante", "Supabase, que aloja a base de dados em servidores na União Europeia (Paris). Ao receber "
+                               "o formulário, regista também, por pouco tempo, dados técnicos do pedido (endereço IP e "
+                               "navegador)."),
+            ("Alojamento", "Este site é servido pelo GitHub Pages (GitHub, Inc.), que regista os endereços IP de quem "
+                           "o visita, por razões de segurança."),
+            ("Transferências", "A Supabase e a GitHub são empresas dos Estados Unidos. Se tratarem dados fora da União "
+                               "Europeia, fazem-no com as garantias previstas no RGPD, como o Quadro de Privacidade de "
+                               "Dados UE-EUA ou cláusulas contratuais-tipo."),
             ("Direitos", "Tem direito de acesso, retificação, apagamento, limitação, oposição e portabilidade, "
                          "através de {mail}. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados "
                          "({cnpd})."),
-            ("Cookies", "Este site não usa cookies nem ferramentas de análise. O único pedido a terceiros acontece "
+            ("Cookies", "Este site não usa cookies nem ferramentas de análise. Se escolher Dia ou Noite, essa escolha "
+                        "fica guardada apenas no seu navegador. Além do alojamento, o único pedido a terceiros acontece "
                         "quando envia o formulário."),
         ],
         updated="Última atualização: novembro de 2026.",
@@ -369,15 +433,24 @@ PRIVACY = {
         sections=[
             ("Controller", "A&nbsp;Brazileira, Torres Vedras, Portugal. Contact: {mail}."),
             ("Data", "Your email address, the language of the page and the date and time of your consent."),
-            ("Purpose", "To let you know when A&nbsp;Brazileira opens and to send related news."),
-            ("Legal basis", "Your consent (Article 6(1)(a) of the GDPR). You can withdraw it at any time, without "
-                            "affecting the processing carried out before. To do so, write to {mail}."),
+            ("Purpose", "To let you know when A&nbsp;Brazileira opens."),
+            ("Legal basis", "Your consent (Article 6(1)(a) of the GDPR). Giving your email address is optional; "
+                            "without it, we cannot let you know. You can withdraw your consent at any time, without "
+                            "affecting the lawfulness of processing carried out before. To do so, write to {mail}."),
             ("Retention", "Until you withdraw your consent or, at most, 24 months after you sign up."),
-            ("Processor", "Supabase, which hosts the database on servers in the European Union (Paris)."),
+            ("Processor", "Supabase, which hosts the database on servers in the European Union (Paris). When it "
+                          "receives the form, it also keeps technical request data (IP address and browser) for a "
+                          "short time."),
+            ("Hosting", "This site is served by GitHub Pages (GitHub, Inc.), which logs visitors' IP addresses for "
+                        "security purposes."),
+            ("Transfers", "Supabase and GitHub are companies based in the United States. If they process data outside "
+                          "the European Union, they do so with the safeguards provided for in the GDPR, such as the "
+                          "EU-US Data Privacy Framework or standard contractual clauses."),
             ("Your rights", "You have the right of access, rectification, erasure, restriction, objection and "
                             "portability, through {mail}. You can also lodge a complaint with the Portuguese data "
                             "protection authority, CNPD ({cnpd})."),
-            ("Cookies", "This site does not use cookies or analytics tools. The only request to a third party "
+            ("Cookies", "This site does not use cookies or analytics tools. If you choose Day or Night, that choice "
+                        "is stored only in your browser. Apart from hosting, the only request to a third party "
                         "happens when you submit the form."),
         ],
         updated="Last updated: November 2026.",
@@ -430,6 +503,7 @@ BASE_JS = ('<script>(function(){var p=location.pathname.split("/").filter(Boolea
 
 
 def page404():
+    # the same top bar as every page (Dia · Noite, PT · EN); the script is resolved against <base> like the styles
     return f"""<!doctype html>
 <html lang="pt-PT">
 <head>
@@ -440,8 +514,10 @@ def page404():
 <title>Página não encontrada · A Brazileira</title>
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
+<script src="assets/js/site.js" defer></script>
 </head>
 <body class="page-404">
+{topbar(T["pt"], "./", "en/", None)}
 <main class="stage stage--plain">
 <div class="intro">
 {lockup_html('p')}
@@ -462,6 +538,29 @@ def tokens_css():
     css = tpl.replace("/*NOITE*/", noite, 1)
     css = css.replace("/*NOITE*/", "\n".join(l[2:] if l.startswith("  ") else l for l in noite.split("\n")), 1)
     return css
+
+
+# ---------------------------------------------------------------- shipped CSS / JS
+# src/ keeps every comment (they are the documentation); docs/ ships without them. The sources have no "/*" or
+# "//" comment markers inside strings or regular expressions except the URLs below (checked), so stripping is
+# a plain pass; the build asserts nothing else changed shape (same tokens once whitespace is ignored).
+def min_css(css):
+    out = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    out = re.sub(r"\s+", " ", out)
+    out = re.sub(r"\s*([{};,>])\s*", r"\1", out)
+    out = re.sub(r"\s*:\s*(?=[^{}]*;)", ":", out)       # declarations only (never selectors like a:hover)
+    out = out.replace(";}", "}").strip() + "\n"
+    bare = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    assert out.count("{") == bare.count("{") and out.count("}") == bare.count("}"), "CSS blocks changed"
+    assert re.sub(r"\s", "", out) == re.sub(r"\s", "", bare).replace(";}", "}"), "CSS changed beyond whitespace"
+    return out
+
+
+def min_js(js):
+    out = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
+    out = "\n".join(l.strip() for l in out.split("\n") if l.strip())
+    assert "//" not in out.replace("https://", ""), "a // comment would need a real parser"
+    return out + "\n"
 
 
 def sitemap():
@@ -517,9 +616,9 @@ def main():
     write(os.path.join(DOCS, "privacidade/index.html"), page_privacy("pt"))
     write(os.path.join(DOCS, "en/privacy/index.html"), page_privacy("en"))
     write(os.path.join(DOCS, "404.html"), page404())
-    write(os.path.join(DOCS, "assets/css/tokens.css"), tokens_css())
-    write(os.path.join(DOCS, "assets/css/site.css"), read(os.path.join(SRC, "site.css")))
-    write(os.path.join(DOCS, "assets/js/site.js"), read(os.path.join(SRC, "site.js")))
+    write(os.path.join(DOCS, "assets/css/tokens.css"), min_css(tokens_css()))
+    write(os.path.join(DOCS, "assets/css/site.css"), min_css(read(os.path.join(SRC, "site.css"))))
+    write(os.path.join(DOCS, "assets/js/site.js"), min_js(read(os.path.join(SRC, "site.js"))))
     for f in ["cinzel-latin-400-normal.woff2", "cinzel-latin-600-normal.woff2", "cinzel-latin-700-normal.woff2",
               "alegreya-latin-400-normal.woff2", "alegreya-sans-latin-500-normal.woff2",
               "OFL-cinzel.txt", "OFL-alegreya.txt", "OFL-alegreya-sans.txt"]:
@@ -547,7 +646,7 @@ def main():
         ],
     }, ensure_ascii=False, indent=2) + "\n")
     import styleguide
-    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist))
+    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD))
     stamp(DOCS)
     print("built", DOCS, {k: (round(v, 4) if isinstance(v, float) else v) for k, v in info.items() if k != "style"})
 

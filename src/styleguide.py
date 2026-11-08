@@ -31,17 +31,10 @@ def mix(a, b, t):
     return "#" + "".join(f"{round(int(a[i:i + 2], 16) * t + int(b[i:i + 2], 16) * (1 - t)):02X}" for i in (0, 2, 4))
 
 
-def halls():
-    P = dict((n, h) for n, h, _ in primitives())
-    h = {"hall-dia": P.get("sala-dia") or mix(P["latao"], P["papel"], 0.22),
-         "hall-noite": P.get("sala-noite") or mix(P["luz-nucleo"], P["luz"], 0.72)}
-    assert h["hall-dia"].upper() == mix(P["latao"], P["papel"], 0.22) and h["hall-noite"].upper() == mix(P["luz-nucleo"], P["luz"], 0.72)
-    return h
-
-
 def pairs():
     P = dict((n, h) for n, h, _ in primitives())
-    P.update(halls())
+    # the hall tokens are stored as exact hex; they must stay the mixes they were derived from
+    assert P["sala-dia"] == mix(P["latao"], P["papel"], 0.22) and P["sala-noite"] == mix(P["luz-nucleo"], P["luz"], 0.72)
     dia = [("Texto forte · wordmark", "tinta", "papel", "texto"),
            ("Texto · lede", "nogueira", "papel", "texto"),
            ("Texto discreto · controlos, rodapé", "castanho", "papel", "texto"),
@@ -52,7 +45,7 @@ def pairs():
              ("Texto discreto · controlos, rodapé", "linho-escuro", "noite", "texto"),
              ("Latão · Torres Vedras, estado, emblema, foco", "latao", "noite", "texto")]
     hall = []
-    for h in ("hall-dia", "hall-noite"):
+    for h in ("sala-dia", "sala-noite"):
         hall += [("Título, rótulos, ligações · " + h, "tinta", h, "texto"),
                  ("Texto · " + h, "nogueira", h, "texto"),
                  ("Rodapé · " + h, "castanho", h, "texto"),
@@ -67,8 +60,10 @@ def pairs():
     return rows
 
 
-def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
+def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=""):
     prims = primitives()
+    # the form copies link to the real notice: from /design/ that is one level up
+    T_sg = dict(T["pt"], privacy_href="../" + T["pt"]["privacy_href"])
     sw = "\n".join(
         f'<li class="sg-sw"><span class="sg-chip" style="background:var(--{n})"></span>'
         f'<span class="sg-sw__name">--{n}</span><span class="sg-sw__hex">{h}</span><span class="sg-sw__note">{note}</span></li>'
@@ -92,8 +87,8 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
 
     def form_state(theme, state, k, label):
         """The real waiting-list form (from build.waitlist), with unique ids and a fixed state."""
-        html = waitlist(T["pt"])
-        f = html[html.index("<form"):html.index("</form>") + 7]
+        html = waitlist(T_sg)
+        f = html[html.index("<form"):html.index("</form>") + 7].replace(' aria-describedby="lista-lede"', "")
         for i in ("email", "consent", "website", "email-msg", "consent-msg"):
             for attr in ("id", "for"):
                 f = f.replace(f'{attr}="{i}"', f'{attr}="{i}-{k}"')
@@ -107,31 +102,39 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
         if state in ("sending", "error"):
             f = f.replace(f'id="email-{k}" type="email"', f'id="email-{k}" type="email" value="ana@exemplo.pt"')
             f = f.replace(f'id="consent-{k}" type="checkbox"', f'id="consent-{k}" type="checkbox" checked')
+        if state == "nojs":
+            f = f.replace('<fieldset class="form__set">', '<fieldset class="form__set" disabled>')
+            f += ('<p class="lista__noscript">Para se inscrever, ative o JavaScript ou escreva para '
+                  '<a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>.</p>')
         if state == "sending":
             f = f.replace('<button class="button" type="submit">', '<button class="button" type="submit" aria-disabled="true">')
-        msg = {"error": "Não foi possível enviar. Tente de novo dentro de momentos.", "done": "Obrigado. Avisamos quando abrirmos."}.get(state, "")
+        msg = {"error": "Não foi possível enviar. Tente de novo dentro de momentos ou escreva para "
+                        '<a class="link-inline" href="mailto:inn@abrazileira.com">inn@abrazileira.com</a>.',
+               "done": "Obrigado. Já está na lista."}.get(state, "")
         f = f.replace('<p class="form__msg" role="status" tabindex="-1"></p>', f'<p class="form__msg" role="status" tabindex="-1">{msg}</p>')
         if state == "done":
             f = f.replace('class="form" data-state="done"', 'class="form" data-state="done" style="min-block-size:21rem"')
         return f'<div class="sg-form surface-hall"><p class="sg-tag">{label}</p>{f}</div>'
 
     states = [("idle", "Em repouso"), ("invalid", "Erro de validação (foco no primeiro campo)"), ("sending", "A enviar (botão inativo)"),
-              ("done", "Enviado"), ("error", "Erro de envio")]
+              ("done", "Enviado"), ("error", "Erro de envio"), ("nojs", "Sem JavaScript (inativo, com o email de contacto)")]
+    # the row caption sits on the page's own ground (outside the themed row), so it always reads in the page theme
     forms = "\n".join(
-        f'<div class="sg-forms" data-theme="{th}"><p class="sg-tag sg-tag--row">{th.capitalize()} · superfície da sala <code>--color-hall</code></p>'
+        f'<p class="sg-tag sg-tag--row">{th.capitalize()} · superfície da sala <code>--color-hall</code></p>'
+        f'<div class="sg-forms" data-theme="{th}">'
         + "".join(form_state(th, st, f"{th}{i}", lab) for i, (st, lab) in enumerate(states)) + "</div>"
         for th in ("dia", "noite"))
 
     timeline = [
-        ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 a 0.16", "opacidade 1 a 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
+        ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 a 0.14", "opacidade 1 a 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
         ("Indicador de deslizar", "Decoração", "0 a 0.05", "opacidade 1 a 0", "--curve-copy"),
-        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 a 0.42", "esquerda +47° (41° a 88°), direita +61° (27° a 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
-        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 a 0.42", "opacidade 0 a 1 (o valor das folhas)", "--curve-door"),
-        ("Câmara: centrar a porta", "Principal", "0 a 0.36", "translação em linha reta até ao centro do ecrã", "--curve-pan (0.35, 0.4, 0.3, 1)"),
-        ("Câmara: entrar", "Principal", "0.04 a 0.90", "escala geométrica 1 a S: a abertura cobre todo o ecrã em qualquer proporção", "--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)"),
-        ("A sala torna-se a cor da lista", "Apoio, passagem", "0.60 a 0.86", "camada lisa --color-hall dentro da porta, opacidade 0 a 1", "--curve-fade (0.45, 0, 0.55, 1)"),
-        ("Luz em todo o palco", "Apoio", "0.86 a 0.92", "a mesma cor sobre a mesma cor (cobre as folhas de perfil)", "--curve-fade"),
-        ("Lista de espera", "Chegada", "título entra no ecrã por volta de p = 0.82", "título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms", "--ease-out"),
+        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 a 0.36", "esquerda +47° (41° a 88°), direita +61° (27° a 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
+        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 a 0.36", "opacidade 0 a 1 (o valor das folhas)", "--curve-door"),
+        ("Câmara: centrar a porta", "Principal", "0 a 0.30", "translação em linha reta até ao centro do ecrã; em ecrãs ao alto a subida acompanha o crescimento (a linha do chão fica aos pés de quem entra e sai pela margem de baixo)", "--curve-pan (0.35, 0.4, 0.3, 1); ao alto, presa ao zoom"),
+        ("Câmara: entrar", "Principal", "0.01 a 0.76", "escala geométrica 1 a S por quatro pontos (1; a sala começa a dissolver-se; a sala é toda luz; a abertura cobre o ecrã), curva monótona que começa suave e não trava: a câmara continua até só haver luz", "cúbica monótona sobre log(escala), por ecrã"),
+        ("A sala dissolve-se na luz", "Apoio, passagem", "0.50 a 0.66", "camada lisa --color-hall dentro da porta, opacidade 0 a 1, enquanto a sala ainda se lê como sala; depois só as ombreiras e as folhas passam para fora do ecrã", "--curve-fade (0.45, 0, 0.55, 1)"),
+        ("Uma só cor", "Apoio", "a partir de 0.76", "opacidade 0 ou 1: a mesma cor sobre a mesma cor (cobre as folhas de perfil); a página por trás do palco toma a mesma cor", "degrau (nunca uma mistura a meio)"),
+        ("Lista de espera", "Chegada", "0.745 a 0.94", "título, frase e formulário começam juntos quando o ecrã é uma só cor e assentam um a seguir ao outro (0.88, 0.90, 0.94): opacidade 0 a 1, sobem 16px (o formulário 10px) além do próprio scroll; em repouso no fim do percurso", "--ease-out sobre p"),
     ]
     trows = "\n".join(f"<tr><td>{a}</td><td>{b}</td><td class=\"sg-num\">{c}</td><td>{d}</td><td>{e}</td></tr>" for a, b, c, d, e in timeline)
 
@@ -163,7 +166,7 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>try{{var t=localStorage.getItem("ab-tema");if(t==="dia"||t==="noite")document.documentElement.setAttribute("data-theme",t)}}catch(e){{}}</script>
+{theme_head}
 <title>Sistema de design · A Brazileira</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="light dark">
@@ -174,11 +177,11 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
 body {{ display: block; font-size: var(--size-ui); }}
 .sg {{ max-inline-size: var(--container); margin-inline: auto; padding: var(--space-7) max(var(--gutter), env(safe-area-inset-left)) var(--space-9); }}
 .sg h1, .sg h2 {{ margin: 0; font-family: var(--font-title); font-weight: var(--weight-text); letter-spacing: var(--track-lede); color: var(--color-text-strong); }}
-.sg h1 {{ font-size: var(--size-lede); }}
-.sg h2 {{ font-size: var(--size-lede); margin-block: var(--space-8) var(--space-4); padding-block-start: var(--space-4); border-block-start: var(--hairline) solid var(--color-ground); }}
+.sg h1, .sg h2 {{ font-size: var(--size-title); line-height: var(--leading-title); letter-spacing: var(--track-title); }}
+.sg h2 {{ margin-block: var(--space-8) var(--space-4); padding-block-start: var(--space-4); border-block-start: var(--hairline) solid var(--color-ground); }}
 :where(.sg) p, :where(.sg) ul {{ margin: 0; }}
 .sg-intro {{ display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }}
-.sg-intro .lockup {{ font-size: 1.5rem; }}
+.sg-intro .lockup {{ font-size: var(--size-lockup-min); }}
 .sg-intro p + p {{ margin-block-start: var(--space-2); color: var(--color-text-muted); }}
 .sg-note {{ max-inline-size: var(--measure-read); font-family: var(--font-text); font-weight: var(--weight-text); font-size: var(--size-read); line-height: var(--leading-read); letter-spacing: 0; font-variant-numeric: var(--num-text); color: var(--color-text); text-wrap: pretty; }}
 .sg-sws {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-4); padding: 0; list-style: none; }}
@@ -191,7 +194,7 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-tag {{ color: var(--color-text-muted); margin-block-end: var(--space-4); }}
 .sg-panel__grid {{ display: grid; gap: var(--space-6); align-items: end; }}
 .sg-panel__text {{ display: flex; flex-direction: column; align-items: center; text-align: center; }}
-.sg-panel .lockup {{ font-size: 2rem; }}
+.sg-panel .lockup {{ font-size: var(--size-lockup-plain); }}
 .sg-controls {{ display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-5); margin-block-start: var(--space-5); }}
 .sg-foot {{ margin-block-start: var(--space-4); font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-entrance {{ flex: none; block-size: 26rem; max-block-size: none; margin: 0; overflow: clip; }}
@@ -201,8 +204,13 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-open .leaf--l {{ transform: rotateY(var(--open-l)); }}
 .sg-open .leaf--r {{ transform: rotateY(calc(var(--open-r) * -1)); }}
 .sg-open :is(.hall__light, .spill) {{ opacity: 1; }}
-.sg-forms {{ display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); margin-block-end: var(--space-5); }}
-.sg-tag--row {{ grid-column: 1 / -1; margin: 0; }}
+.sg-forms {{ display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--measure-form)), 1fr)); margin-block-end: var(--space-5); }}
+.sg-tag--row {{ margin-block: var(--space-6) var(--space-3); }}
+.sg-states {{ display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); padding: var(--space-5); border: var(--hairline) solid var(--color-ground); }}
+.sg-states .is-focus {{ outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); border-radius: var(--radius-focus); }}
+.sg-states .is-hover {{ color: var(--color-text-strong); text-decoration-color: currentColor; }}
+.sg-states .skip {{ position: static; transform: none; }}
+.sg-states figure {{ margin: 0; display: grid; justify-items: center; gap: var(--space-2); color: var(--color-text-muted); }}
 .sg-form {{ padding: var(--space-5); color: var(--color-text); }}
 .sg-form .form {{ margin: 0; }}
 @media (min-width: 56.25em) {{ .sg-panel__grid {{ grid-template-columns: 1fr 1fr; }} .sg-panels {{ grid-template-columns: 1fr; }} }}
@@ -211,13 +219,15 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg th {{ font-weight: var(--weight-ui); color: var(--color-text-strong); }}
 .sg-num {{ font-variant-numeric: lining-nums; color: var(--color-text-strong); }}
 .sg-scroll {{ overflow-x: auto; }}
+.sg-h2 {{ font-family: var(--font-ui); font-weight: var(--weight-ui); color: var(--color-text-strong); }}
+.sg-scroll:focus-visible {{ outline-offset: var(--space-1); }}
 .sg-type li {{ display: grid; gap: var(--space-1); padding-block: var(--space-4); border-block-end: var(--hairline) solid var(--color-surface); }}
 .sg-type small {{ font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-type ul, .sg-space, .sg-rules {{ padding: 0; list-style: none; }}
 .sg-space li {{ display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-1); }}
 .sg-bar {{ block-size: var(--space-3); background: var(--color-text-muted); }}
 .sg-rules li {{ padding-block: var(--space-2); border-block-end: var(--hairline) solid var(--color-surface); max-inline-size: 48em; }}
-code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.875em; }}
+code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.875em; }}   /* this page only: token names */
 </style>
 </head>
 <body>
@@ -233,10 +243,22 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </ul>
 
 <h2>Dia e Noite</h2>
-<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública o tema segue o sistema e o botão Dia · Noite guarda a escolha.</p>
+<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, até o visitante escolher, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite guarda a escolha, que passa a valer sempre; tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
 <div class="sg-panels">
 {panel("dia", scene_d, info_d["style"], "Dia", "Noite")}
 {panel("noite", scene_n, info_n["style"], "Dia", "Noite")}
+</div>
+
+<h2>Estados e peças pequenas</h2>
+<p class="sg-note">Foco (anel de 2px, a 3px; no campo, a 2px por dentro do espaço da linha), passagem do rato (o sublinhado passa de 45% a tinta inteira), a ligação de saltar, o indicador de deslizar, a ligação de regresso e o nome de secção da nota de privacidade.</p>
+<div class="sg-states">
+<figure><a class="cta is-focus" href="#sg-lista">Entrar na lista de espera</a><figcaption>ação · foco</figcaption></figure>
+<figure><a class="cta is-hover" href="#sg-lista">Entrar na lista de espera</a><figcaption>ação · rato por cima</figcaption></figure>
+<figure><span class="controls"><button class="ctl is-focus" type="button" aria-pressed="true">Dia</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" aria-pressed="false">Noite</button></span><figcaption>controlo · atual + foco</figcaption></figure>
+<figure><a class="skip" href="#sg-lista">Saltar para o conteúdo</a><figcaption>ligação de saltar (visível com foco)</figcaption></figure>
+<figure><span class="porta__cue" aria-hidden="true"><svg viewBox="0 0 16 10" aria-hidden="true" focusable="false"><path d="M1.5 1.5 8 8l6.5-6.5"/></svg></span><figcaption>indicador de deslizar</figcaption></figure>
+<figure><a class="link" href="../">Voltar ao início</a><figcaption>ligação de regresso</figcaption></figure>
+<figure><span class="notice__item"><span class="sg-h2">Finalidade</span></span><figcaption>nome de secção (nota de privacidade)</figcaption></figure>
 </div>
 
 <h2>A porta aberta</h2>
@@ -251,7 +273,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 {forms}
 
 <h2>Contraste medido (WCAG 2.x)</h2>
-<div class="sg-scroll"><table>
+<div class="sg-scroll" tabindex="0" role="region" aria-label="Contraste medido"><table>
 <thead><tr><th>Tema</th><th>Uso</th><th>Cor</th><th>Fundo</th><th>Rácio</th><th>Mínimo</th></tr></thead>
 <tbody>
 {rows}
@@ -265,8 +287,9 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 <li><span class="lista__title" style="text-align:start">Lista de espera</span><small>Alegreya 400 · <code>--size-title</code> 26 a 34px · altura de linha 1.18 · tracking –0.01em · títulos de secção e de página</small></li>
 <li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Alegreya 400 · <code>--size-lede</code> 18px (320) a 19px (390) a 26px · linha 1em + 7.2px (19/26, 26/33) · tracking –0.005em · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
 <li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>Alegreya 400 · <code>--size-read</code> 18/28px · algarismos de texto · medida 26.5em (até 68 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
-<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>Alegreya Sans 500 · <code>--size-cta</code> 16px no telemóvel, 18px a partir de 900px · tracking 0.018em / 0.015em · a ação e o botão</small></li>
-<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>Alegreya Sans 500 · <code>--size-ui</code> 16px · tracking 0.018em · frase normal; PT e EN com 0.06em · o estado mais calmo que a ação: latão, mais perto da frase</small></li>
+<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>Alegreya Sans 500 · <code>--size-cta</code> 16px no telemóvel, 18px a partir de 900px, 20px a partir de 1200px · tracking 0.018em / 0.015em · sublinhado 1.5px · a ação, o botão e a ligação de regresso</small></li>
+<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>Alegreya Sans 500 · <code>--size-ui</code> 16px · tracking 0.018em · frase normal; PT e EN com 0.06em · o estado mais calmo que a ação: latão, mais perto da frase (no telemóvel, de Noite, a tinta calma: a ação tem lá o mesmo tamanho)</small></li>
+<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);color:var(--color-text-muted)">É noite em Torres Vedras.</span><small>Alegreya 400 · <code>--size-ui</code> 16/20px · a nota do sol: uma frase da casa, por baixo de Dia · Noite, só quando o sol escolheu o tema, em todos os ecrãs</small></li>
 <li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>Alegreya 400 · <code>--size-ui</code> 16/24px · o consentimento (o rótulo «Email» e as mensagens em Alegreya Sans 16px)</small></li>
 <li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Alegreya Sans 500 · <code>--size-ui</code> 16/24px · algarismos alinhados</small></li>
 </ul></div>
@@ -277,25 +300,27 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </ul>
 
 <h2>Movimento</h2>
-<p class="sg-note">Ao deslizar, uma única sequência ligada ao scroll (p de 0 a 1 ao longo de <code>--porta-run</code> = 144svh, com o palco fixo). Um só motor em JavaScript para todos os navegadores: o progresso desenhado segue o do scroll com suavização exponencial (<code>--scroll-tau</code> 90ms), sem nunca mexer no scroll nativo. Só <code>transform</code> e <code>opacity</code>. Ao subir, tudo volta atrás; em p = 0 o herói está exatamente no estado de repouso.</p>
-<div class="sg-scroll"><table>
+<p class="sg-note">Ao deslizar, uma única sequência ligada ao scroll (p de 0 a 1 ao longo de <code>--porta-run</code> = 115svh, com o palco fixo): do topo até ao título e ao campo de email legíveis, cerca de um ecrã de scroll. As portas abrem desde o primeiro píxel, a câmara entra até o ecrã ser uma só cor (a luz da sala, <code>--color-hall</code>) e a lista sobe nessa luz. Um só motor em JavaScript para todos os navegadores: o progresso desenhado segue o do scroll com suavização exponencial (<code>--scroll-tau</code> 90ms), sem nunca mexer no scroll nativo. Só <code>transform</code> e <code>opacity</code>. Ao subir, tudo volta atrás; em p = 0 o herói está exatamente no estado de repouso.</p>
+<div class="sg-scroll" tabindex="0" role="region" aria-label="Sequência ao deslizar"><table>
 <thead><tr><th>Elemento</th><th>Papel</th><th>Intervalo de p</th><th>Movimento</th><th>Curva</th></tr></thead>
 <tbody>
 {trows}
 </tbody></table></div>
 <ul class="sg-rules">
 <li><code>--dur-door</code> 1100ms · <code>--ease-door</code> · ao carregar, as portas ficam entreabertas uma vez (41° e 27°).</li>
-<li>A ação «Entrar na lista de espera» salta logo para a lista (sem animar a sequência) e põe o foco no campo de email.</li>
+<li><code>--dur-flight</code> 1200ms · <code>--curve-flight</code> (0.45, 0, 0.3, 1) · <code>--flight-weight</code> 2 · a ação «Entrar na lista de espera» (e o indicador de deslizar) faz a entrada pela porta: o mesmo motor desliza a página até à lista, as portas abrem e a câmara entra; cada píxel do caminho pesa 1 + 2 × a mudança de escala, por isso a passagem pela porta lê-se com calma e a subida da lista é mais rápida. Um caminho mais curto dura menos (× √ da fração, nunca menos de 35%). Qualquer roda, toque, tecla ou clique fora da ação para-a onde está (uma tecla mantida premida ou um segundo clique na própria ação não a param). No fim, o foco vai para o campo de email (<code>preventScroll</code>), que é descrito pela frase da lista. Movimento reduzido: o mesmo destino, de uma vez.</li>
+<li>Progresso desenhado: as portas, a luz e a câmara seguem o progresso suavizado; o texto do herói usa o menor dos dois (sai com as portas, volta com o próprio scroll); a passagem para a cor da sala usa o maior entre o suavizado e o do scroll menos 0.1 (num deslize rápido o palco já é cor da sala quando a lista chega).</li>
 <li><code>--dur-press</code> 160ms · botão e ação: <code>scale(0.97)</code> ao premir. <code>--dur-state</code> 200ms · mensagens do formulário, visto. Sucesso: os campos saem em 160ms e a frase entra em 240ms.</li>
-<li><code>--dur-theme</code> 400ms · troca Dia/Noite em fundido (View Transitions, ou transição de cor).</li>
+<li><code>--dur-theme</code> 400ms · <code>--ease-out</code> · troca Dia/Noite escolhida pelo visitante, em fundido (View Transitions, ou transição de cor). <code>--dur-sky</code> 1400ms · <code>--ease-sky</code> (0.45, 0, 0.55, 1) · a troca que o sol faz sozinho, mais lenta e suave. Sem fundido enquanto a sequência se move (espera que pare) e com movimento reduzido.</li>
 <li><code>--dur-ui</code> 150ms · cor dos controlos ao passar o rato (curva <code>ease</code>).</li>
-<li><code>prefers-reduced-motion: reduce</code> · sem sequência nem palco fixo: portas abertas, sala iluminada, a ação salta para a lista. Sem JavaScript: portas entreabertas, sem palco fixo, tema do sistema.</li>
+<li><code>prefers-reduced-motion: reduce</code> · sem sequência nem palco fixo: portas abertas, sala iluminada, a ação leva logo à lista e põe o foco no email. Sem JavaScript: portas entreabertas, sem palco fixo, o tema do sistema, a ação é uma ligação simples para a lista.</li>
 </ul>
 
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
 <li>Maiúsculas espaçadas só dentro do logótipo. Frases em Alegreya 400; interface em Alegreya Sans 500, frase normal, 16 a 18px. Quatro tamanhos de texto fora do logótipo, nada abaixo de 16px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
-<li>Fundos planos: Papel de dia, Noite (nogueira) à noite. O único gradiente é a luz dentro do desenho, à noite.</li>
+<li>Fundos planos: Papel de dia, Noite (#1C120B, nogueira escura) à noite. O único gradiente é a luz dentro do desenho, à noite.</li>
+<li>O sublinhado é só para ligações. O estado atual de um controlo é tinta forte e um traço curto em latão; o estado nunca é só cor.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>
 <li>Sem itálicos decorativos, pontos de exclamação, emoji ou palavras de virtude.</li>
 <li>Nenhum valor de cor fora de tokens.css; componentes leem só papéis semânticos.</li>

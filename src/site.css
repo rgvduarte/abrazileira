@@ -66,7 +66,8 @@ svg { display: block; }
   background: var(--color-surface);
   color: var(--color-text-strong);
   text-decoration: underline;
-  text-underline-offset: 0.25em;
+  text-decoration-thickness: var(--underline);
+  text-underline-offset: var(--underline-offset);
   transform: translateY(-200%);
 }
 .skip:focus-visible { transform: none; }
@@ -76,9 +77,10 @@ svg { display: block; }
   position: relative;
   z-index: var(--z-chrome);
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;                          /* with a very large default text size the two groups stack */
+  align-items: flex-start;                  /* the two rows of controls line up; the sun note hangs below its own */
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: 0 var(--space-4);
   padding-block: var(--topbar-pad) 0;
   padding-inline:
     max(calc(var(--gutter) - var(--space-3)), env(safe-area-inset-left))
@@ -89,9 +91,35 @@ svg { display: block; }
 .controls[hidden] { display: none; }
 .controls--lang { margin-inline-start: auto; }
 .controls__sep { color: var(--color-text-muted); user-select: none; }
+/* the sun note: while the sky over Torres Vedras chose the theme (html[data-sol]), one short sentence under the
+   control says so, on every screen: «É noite em Torres Vedras.» It is the house speaking, not a control: the
+   serif (Alegreya 400, like every sentence the house says), muted, on its own line, aligned with the control's
+   text. It also describes the two buttons for screen readers. The theme shows the matching phrase; it is there
+   from the first paint (the head script sets data-sol), so nothing moves and nothing is added later. On the home
+   page the stage clears it by --sol-h. */
+.controls[data-theme-switch] { position: relative; }
+.controls__note {
+  position: absolute;                              /* hangs under the row: the bar's layout never changes */
+  inset-block-start: calc(100% - var(--space-2));  /* tucked under the row, just below the tick */
+  inset-inline-start: 0;
+  padding-inline: var(--space-3);
+  font-family: var(--font-text);
+  font-weight: var(--weight-text);
+  font-size: var(--size-ui);
+  line-height: var(--leading-ui);
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+:root:not([data-sol]) .controls__note,
+[data-theme="dia"] .controls__note-noite,
+[data-theme="noite"] .controls__note-dia { display: none; }
+:root[data-sol] { --sol-h: calc(var(--size-ui) * var(--leading-ui) - var(--space-2)); }
+@media (min-width: 56.25em) and (min-height: 37.5em) { :root[data-sol] { --sol-h: 0px; } }   /* room enough above the crest */
 
 /* one control style for every switch: sentence case, the interface tracking (Alegreya Sans 500 at 16px) */
 .ctl {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -110,19 +138,27 @@ svg { display: block; }
   touch-action: manipulation;
   transition: color var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
 }
-/* current / pressed: stronger ink and an underline, so state is never colour alone */
+/* current / pressed: the strongest ink and a short brass tick under the word, so state is never colour alone.
+   An underline would say "link" (it does everywhere else on the site); the tick is a mark, not a link. */
 .ctl[aria-current="page"],
-.ctl[aria-pressed="true"] {
-  color: var(--color-text-strong);
-  text-decoration: underline;
-  text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.3em;
+.ctl[aria-pressed="true"] { color: var(--color-text-strong); }
+.ctl[aria-current="page"]::after,
+.ctl[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: calc(50% - var(--tick-w) / 2);
+  inset-block-start: calc(50% + 0.7em);
+  inline-size: var(--tick-w);
+  border-block-end: var(--tick-h) solid var(--color-accent-text);
 }
 @media (hover: hover) and (pointer: fine) {
   .ctl:hover { color: var(--color-text-strong); }
 }
-.ctl:active { color: var(--color-text); transform: scale(0.97); }   /* the same press as the action and the button */
+.ctl:active { transform: scale(0.97); }   /* the same press as the action and the button; the colour holds */
 @media (prefers-reduced-motion: reduce) { .ctl:active { transform: none; } }
+/* Dia and Noite: their own fallback, sized so the pair sets to the web font's width (PT and EN), so the sun note
+   beside them never moves when the font arrives */
+.ctl[data-theme-set] { font-family: var(--font-theme); }
 /* PT and EN are capitals: the same 16px, spaced so they sit at the weight of Dia and Noite */
 .ctl[hreflang] { letter-spacing: var(--track-caps); }
 
@@ -153,7 +189,7 @@ svg { display: block; }
   align-items: center;
   font-family: var(--font-display);
   font-size: var(--size-wordmark);
-  font-weight: 600;
+  font-weight: var(--weight-wordmark);
   line-height: var(--leading-lockup);
   text-transform: uppercase;
   letter-spacing: 0;
@@ -173,14 +209,14 @@ svg { display: block; }
 .lockup__kind {
   margin-block-start: 0.34em;
   font-size: var(--lockup-kind);
-  font-weight: 700;
+  font-weight: var(--weight-kind);
   letter-spacing: var(--track-kind);
   margin-inline-end: calc(var(--track-kind) * -1);
 }
 .lockup__place {
   margin-block-start: 0.7em;
   font-size: var(--lockup-place);
-  font-weight: 400;
+  font-weight: var(--weight-place);
   letter-spacing: var(--track-place);
   margin-inline-end: calc(var(--track-place) * -1);
   color: var(--color-accent-text);
@@ -213,6 +249,9 @@ svg { display: block; }
   font-family: var(--font-status);
   color: var(--color-accent-text);
 }
+/* on phones the action is set at the status's size (16px): there the status keeps the quieter ink in Noite, where
+   brass is the most saturated text on the screen, so «Abre brevemente.» never weighs as much as the action */
+@media (max-width: 56.24em) { .status { color: var(--color-status-small, var(--color-accent-text)); } }
 
 /* ---- The one action: a text link-button to the waiting list -------------------- */
 .cta-row { margin-block-start: var(--space-4); }
@@ -226,11 +265,11 @@ svg { display: block; }
   font-size: var(--size-cta);
   letter-spacing: var(--track-cta);
   text-decoration: underline;
-  text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.28em;
+  text-decoration-thickness: var(--underline-cta);
+  text-underline-offset: var(--underline-offset);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: color var(--dur-ui) ease, text-decoration-color var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
+  transition: color var(--dur-ui) ease, text-decoration-color var(--dur-ui) ease, text-decoration-thickness var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
 }
 .cta:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) { .cta:active { transform: none; } }
@@ -248,15 +287,17 @@ svg { display: block; }
   line-height: var(--leading-text);
   color: var(--color-text-muted);
 }
+/* the link's tap padding is taken back by its margin, so both « · » separators in the line are spaced alike */
 .foot__link {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--target);
   padding-inline: var(--space-1);
+  margin-inline: calc(var(--space-1) * -1);
   color: inherit;
   text-decoration: underline;
-  text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.3em;
+  text-decoration-thickness: var(--underline);
+  text-underline-offset: var(--underline-offset);
 }
 /* narrow screens: the link takes its own line instead of wrapping after a dangling separator */
 @media (max-width: 29.99em) {
@@ -283,7 +324,7 @@ svg { display: block; }
   min-block-size: clamp(15rem, 40svh, 34rem);
   /* stacked: never taller than the drawing at full width, so spare height
      goes above the lockup and between text and drawing, not into a hole */
-  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio));
+  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio) * (1 + var(--scene-lift)) + var(--scene-clear));
   margin-block-start: auto;
   margin-inline: calc(var(--space-3) * -1);
   container-type: size;
@@ -293,11 +334,16 @@ svg { display: block; }
      The drawing is asymmetric (lantern left, olive tree right), so it is scaled to fit
      symmetrically around the door: --scene-axis (generated) = door axis as a fraction of the
      drawing width; --scene-reach = drawing width / (2 x widest half around the axis), measured
-     so the outermost olive leaves may reach into the gutter. */
+     so the outermost olive leaves may reach into the gutter.
+     The loose plaster wash above the arch paints above the drawing's box (--scene-over, generated: 7% of its
+     height). Stacked, that overshoot and 8px more stay inside the entrance, so the wash never rises into the
+     action above it (painted top at least 32px under the action's box). */
   --scene-reach: 0.8543;
+  --scene-lift: var(--scene-over, 0);
+  --scene-clear: var(--space-2);
 }
 .scene {
-  --scene-w: min(calc(100cqw * var(--scene-reach)), calc(100cqh * var(--scene-ratio)));
+  --scene-w: min(calc(100cqw * var(--scene-reach)), calc((100cqh - var(--scene-clear)) * var(--scene-ratio) / (1 + var(--scene-lift))));
   position: relative;
   z-index: var(--z-scene);
   inline-size: var(--scene-w);
@@ -356,29 +402,29 @@ svg { display: block; }
   stroke: var(--i-ink);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: calc(1.15px * var(--ink-k) * var(--ink-u));
+  stroke-width: calc(var(--pen-contour) * var(--ink-k) * var(--ink-u));
   stroke-opacity: var(--ink-o);
 }
-.k-2 { stroke-width: calc(0.82px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-o2); }
-.k-h { stroke-width: calc(0.52px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-oh); }
-.k-x { stroke-width: calc(0.48px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-ox); }
-.k-f { stroke-width: calc(0.55px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-of); }
-.k-leaf { stroke: var(--i-ink-leaf); stroke-width: calc(0.5px * var(--ink-k)); stroke-opacity: var(--ink-of); }
-.k-iron { stroke: var(--i-ink-bar); stroke-width: calc(0.7px * var(--ink-k)); stroke-opacity: 1; }
+.k-2 { stroke-width: calc(var(--pen-detail) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-o2); }
+.k-h { stroke-width: calc(var(--pen-hatch) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-oh); }
+.k-x { stroke-width: calc(var(--pen-cross) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-ox); }
+.k-f { stroke-width: calc(var(--pen-fine) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-of); }
+.k-leaf { stroke: var(--i-ink-leaf); stroke-width: calc(var(--pen-leaf) * var(--ink-k)); stroke-opacity: var(--ink-of); }
+.k-iron { stroke: var(--i-ink-bar); stroke-width: calc(var(--pen-iron) * var(--ink-k)); stroke-opacity: 1; }
 .k-bar { stroke: var(--i-ink-bar); }
 .k-wood { stroke: var(--i-ink-wood); }
 .k-grain { stroke-opacity: var(--ink-ograin); }
-.k-hall { stroke: var(--i-ink-hall); stroke-width: calc(0.62px * var(--ink-k)); stroke-opacity: 0.9; }
-.k-hf { stroke-width: calc(0.45px * var(--ink-k)); stroke-opacity: 0.7; }
-.k-hh { stroke-width: calc(0.4px * var(--ink-k)); stroke-opacity: 0.6; }
-.k-hm { stroke-width: calc(0.35px * var(--ink-k)); stroke-opacity: 0.55; }
+.k-hall { stroke: var(--i-ink-hall); stroke-width: calc(var(--pen-hall) * var(--ink-k)); stroke-opacity: var(--ink-ohall); }
+.k-hf { stroke-width: calc(var(--pen-hall-fine) * var(--ink-k)); stroke-opacity: var(--ink-ohall-f); }
+.k-hh { stroke-width: calc(var(--pen-hall-hatch) * var(--ink-k)); stroke-opacity: var(--ink-ohall-h); }
+.k-hm { stroke-width: calc(var(--pen-hall-motif) * var(--ink-k)); stroke-opacity: var(--ink-ohall-m); }
 .k-fill { fill: var(--i-iron); }
 .w {
   fill: var(--wc);
   fill-opacity: var(--wo);
   stroke: var(--wc);
-  stroke-opacity: calc(var(--wo) * 0.55);
-  stroke-width: calc(1.1px * var(--ink-u));
+  stroke-opacity: calc(var(--wo) * var(--wo-rim));
+  stroke-width: calc(var(--pen-rim) * var(--ink-u));
   stroke-linejoin: round;
 }
 .w-wall { --wc: var(--w-wall); --wo: var(--wo-wall); }
@@ -480,7 +526,20 @@ svg { display: block; }
     animation-duration: var(--dur-theme);
     animation-timing-function: var(--ease-out);
   }
+  /* the sun's own change (nobody pressed anything): slower and symmetric, the lamps come on, not a flash */
+  .is-sky::view-transition-old(root),
+  .is-sky::view-transition-new(root) {
+    animation-duration: var(--dur-sky);
+    animation-timing-function: var(--ease-sky);
+  }
+  .is-theming.is-sky,
+  .is-theming.is-sky *:not([data-motion]) {
+    transition-duration: var(--dur-sky) !important;
+    transition-timing-function: var(--ease-sky) !important;
+  }
 }
+/* a theme change lands at once on the controls and links (no colour transition catching up behind it) */
+.is-instant :is(.ctl, .cta, .link, .foot__link, .link-inline, .porta__cue, .button, .field__input, .check__box) { transition: none !important; }
 @keyframes ajar-l { from { transform: rotateY(0deg); } }
 @keyframes ajar-r { from { transform: rotateY(0deg); } }
 @keyframes light-in { from { opacity: 0; } }
@@ -491,8 +550,8 @@ svg { display: block; }
    standing on the floor line, and a band below it. With JS and motion allowed, site.js adds
    .porta-on to <html>: the wrapper grows by --porta-run and the stage pins (sticky, 100lvh so the
    collapsing mobile toolbar never uncovers anything). Scroll progress drives the doors, the hall
-   light, the camera and the flood (site.js; transform and opacity only). The waiting list rises over
-   the last --porta-overlap of the run, on the same colour. */
+   light, the camera and the flood (site.js; transform and opacity only). The waiting list rises in over
+   the last quarter of the run, on the same colour, and is at rest when the run ends. */
 .porta { position: relative; }
 .porta__stage { position: relative; overflow: clip; }
 .porta__frame {
@@ -500,7 +559,7 @@ svg { display: block; }
   flex-direction: column;
   min-block-size: 100vh;
   min-block-size: 100svh;
-  padding-block-start: calc(var(--topbar-pad) + var(--target));   /* the top bar overlays this */
+  padding-block-start: calc(var(--topbar-pad) + var(--target) + var(--sol-h, 0px));   /* the top bar overlays this */
 }
 .porta__frame > .stage { flex: 1 1 auto; padding-block-end: var(--hairline); }   /* room for the floor line, as before */
 .porta__band {
@@ -524,11 +583,13 @@ svg { display: block; }
 .porta__cue svg {
   inline-size: 0.875rem;
   block-size: auto;
+  overflow: visible;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.25;
+  stroke-width: var(--pen-contour);          /* the drawing's contour pen, not an icon's stroke */
   stroke-linecap: round;
   stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 /* once the doorway covers the screen, the flood hides the edge-on leaves: it only ever fades the hall
    colour over the hall colour, never over the stone (the camera reaches cover first) */
@@ -569,24 +630,32 @@ svg { display: block; }
     max(var(--gutter), env(safe-area-inset-right));
 }
 .lista { --lista-pad: clamp(var(--space-7), 22svh, 14rem); }   /* the title sits a little above the optical centre */
-.lista__inner { inline-size: min(100%, var(--measure-form)); }
-/* the room you walked into: with the sequence on, the list is pulled up over the end of the run, so its
-   title enters the screen with --porta-overlap of the run still to go and rises over the light while the
-   walk-in ends. Its first stretch is transparent; its colour starts exactly where the pinned stage ends,
-   the same token, so there is no seam. */
+.lista { grid-template-columns: minmax(0, 1fr); }   /* the column can always shrink to the screen (large text sizes) */
+.lista__inner { inline-size: min(100%, var(--measure-form)); min-inline-size: 0; overflow-wrap: anywhere; }
+/* the room you walked into: with the sequence on, the list is pulled up by one large viewport, so it starts
+   exactly where the stage releases (the end of the run) and lies over the pinned stage. During the run its
+   content comes up with the scroll, hidden (site.js holds it at opacity 0, no pointer target) until the screen is
+   one flat colour; then it rises in on that light and is at rest when the run ends. Its first screen is
+   transparent (the stage behind it is the same flat colour); its own colour starts exactly where the pinned
+   stage ends, the same token, so there is no seam. It is at least one large viewport tall, so the footer always
+   starts below the stage. */
 .porta-on .lista {
-  --porta-lap: calc(var(--lista-pad) + var(--porta-run) * var(--porta-overlap));
   z-index: 1;
-  margin-block-start: calc(var(--porta-lap) * -1);
+  margin-block-start: -100vh;
+  margin-block-start: -100lvh;
+  min-block-size: 100vh;
+  min-block-size: 100lvh;
   background: none;
 }
 .porta-on .lista::before {
   content: "";
   position: absolute;
-  inset: var(--porta-lap) 0 0;
+  inset: 100vh 0 0;
+  inset-block-start: 100lvh;
   z-index: -1;
   background: var(--color-bg);
 }
+.porta-on [data-reveal] > * { opacity: 0; pointer-events: none; }   /* until the run brings them in (site.js) */
 .lista__title,
 .notice__title {
   font-family: var(--font-title);
@@ -598,7 +667,7 @@ svg { display: block; }
   color: var(--color-text-strong);
   text-wrap: balance;
 }
-.lista__title { text-align: center; }
+.lista__title { position: relative; text-align: center; }
 .lista__lede,
 .notice__intro {
   font-family: var(--font-list);
@@ -646,7 +715,7 @@ svg { display: block; }
   appearance: none;
   transition: border-color var(--dur-ui) ease;
 }
-.field__input:focus-visible { outline-offset: 2px; }
+.field__input:focus-visible { outline-offset: var(--focus-offset-field); }
 .field__input[aria-invalid="true"],
 .check__input[aria-invalid="true"] + .check__label .check__box {
   border-color: var(--color-error);
@@ -718,12 +787,17 @@ svg { display: block; }
 .check__text { min-inline-size: 0; }
 .check__more { display: block; }                      /* «Ler a nota de privacidade.» on its own line */
 .check__text .link-inline { white-space: nowrap; }   /* «nota de privacidade» reads and taps as one unit */
+/* its tap area reaches 44px tall into the free space under the line (never up into the consent sentence,
+   which toggles the box), without moving anything or enlarging the focus ring */
+.check__more .link-inline { position: relative; }
+.check__more .link-inline::after { content: ""; position: absolute; inset: -0.25em -0.25em -1.15em; }
 .link-inline {
   color: var(--color-text-strong);
   text-decoration: underline;
-  text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.2em;
+  text-decoration-thickness: var(--underline);
+  text-underline-offset: var(--underline-offset-inline);
 }
+.link-inline:focus-visible { outline-offset: var(--focus-offset-inline); }
 .form__hp {
   position: absolute;
   inline-size: 1px;
@@ -777,11 +851,11 @@ svg { display: block; }
   text-align: center;
   text-wrap: balance;
 }
-.form__msg:empty { display: none; }
+.form__msg:empty { margin: 0; }   /* always rendered (a polite live region must exist before it speaks); empty, it takes no space */
 .form__msg:focus { outline: none; }
 .form[data-state="error"] .form__msg { color: var(--color-error); animation: msg-in var(--dur-state) var(--ease-out); }
 /* success: the controls give way (160ms) while the sentence takes their place (240ms), in the form's own height */
-.form[data-state="done"] { position: relative; display: grid; align-content: center; }
+.form[data-state="done"] { position: relative; display: grid; align-content: start; }   /* the sentence sits where the field was */
 .form[data-state="done"] .form__set {
   position: absolute;
   inset: 0;
@@ -813,19 +887,6 @@ svg { display: block; }
   .check__box svg { transform: none; }
 }
 
-/* the list rises in once, in two beats: title + sentence, then the form (the panel itself does not
-   move: its colour is the light the camera walked into) */
-.js-reveal [data-reveal] > * {
-  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
-}
-.js-reveal [data-reveal] > .form {
-  transition-duration: var(--dur-reveal-2);
-  transition-delay: var(--stagger-reveal);
-}
-.js-reveal [data-reveal]:not(.is-in) > * { opacity: 0; transform: translateY(var(--space-3)); }
-.js-reveal [data-reveal]:not(.is-in) > .form { transform: translateY(var(--space-2)); }
-.js-reveal [data-reveal].is-now > * { transition: none; }   /* focus or a jump got there first: no entrance */
-
 /* ==== Privacy notice ====================================================================== */
 .page-notice .stage { display: none; }
 .notice {
@@ -843,9 +904,9 @@ svg { display: block; }
   font-variant-numeric: var(--num-text);    /* old-style figures in the reading text: art. 6.º, 24 meses */
 }
 .notice__home { display: flex; justify-content: center; text-decoration: none; }
-.lockup--small { font-size: 1.5rem; }          /* 24px wordmark: the minimum size of the lockup */
+.lockup--small { font-size: var(--size-lockup-min); }          /* 24px wordmark: the minimum size of the lockup */
 .notice__title { margin-block-start: var(--space-8); max-inline-size: var(--measure-title); }
-.notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
+.notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); font-size: var(--size-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
 .notice__item { margin-block-start: var(--space-6); }
 /* section names are signposts, not titles: the interface voice, strong ink */
 .notice__item h2 {
@@ -877,7 +938,7 @@ svg { display: block; }
   color: var(--color-text-muted);
 }
 .notice__back { margin-block-start: var(--space-3); margin-inline-start: calc(var(--space-2) * -1); }
-.notice__back .link { font-size: var(--size-cta); letter-spacing: var(--track-cta); font-variant-numeric: var(--num-ui); }
+.notice__back .link { font-variant-numeric: var(--num-ui); }
 .page-notice .link-inline { color: var(--color-text-strong); }
 
 /* ==== Split: text | entrance ============================================================ */
@@ -900,16 +961,22 @@ svg { display: block; }
   }
   .lede { margin-block-start: var(--space-7); }
   .status { margin-block-start: var(--space-3); }
-  .cta-row { margin-block-start: var(--space-5); }
-  .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; }
+  .cta-row { margin-block-start: var(--space-7); }   /* the one action stands apart from the status: 48px */
+  .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }
   .scene { inset-inline-start: 0; }
+  /* the top bar lines up with the composition (container) on wide screens instead of the window's edges */
+  .topbar {
+    padding-inline:
+      max(calc(var(--gutter) - var(--space-3)), env(safe-area-inset-left), calc((100% - var(--container)) / 2 - var(--space-3)))
+      max(calc(var(--gutter) - var(--space-3)), env(safe-area-inset-right), calc((100% - var(--container)) / 2 - var(--space-3)));
+  }
 }
 
 /* Landscape phones: compact split; the page may scroll a little. */
 @media (orientation: landscape) and (max-height: 31.25em) {
   :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); }
   .stage { padding-block-start: var(--space-2); column-gap: var(--space-6); }
-  .lockup { font-size: clamp(1.25rem, 5.6svh, 1.75rem); }
+  .lockup { font-size: var(--size-lockup-short); }   /* never under the 24px minimum of the logo */
   .intro { padding-block-end: var(--space-4); }
   .lede { margin-block-start: var(--space-4); font-size: var(--size-read); }
   .status { margin-block-start: var(--space-1); }
@@ -927,7 +994,17 @@ svg { display: block; }
   .intro { margin-block-end: var(--space-3); }
   .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
   .cta-row { margin-block-start: var(--space-2); }   /* the action still stands apart from the status */
+  .entrance { --scene-clear: var(--space-4); }       /* the wash stays clear of the action: 28px under its box */
   .porta__band { padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom)); }
+}
+/* Very short portrait screens (320 x 568; iPhone SE in Safari, 375 x 553): the logo at its 24px minimum, a
+   tighter rhythm, no scroll cue, and a drawing that takes the height that is left, so the door still stands on
+   the floor line inside the first screen (tested: the floor line is never below the small viewport). */
+@media (orientation: portrait) and (max-height: 37.5em) {
+  .lockup { font-size: var(--size-lockup-min); }
+  .lede { margin-block-start: var(--space-3); }
+  .entrance { min-block-size: clamp(9rem, 28svh, 18rem); }
+  .porta__band { display: none; }   /* no room for the cue: the drawing keeps the height (the action invites on) */
 }
 
 /* ==== Preferences ======================================================================= */
@@ -938,8 +1015,12 @@ svg { display: block; }
   .leaf--r { transform: rotateY(calc(var(--open-r) * -1)); }
   .hall__light, .spill { opacity: 1; }
 }
+/* more contrast: muted text takes the strong ink (on the hall too), and the drawing's fine lines, hatching and
+   cross-hatching are drawn at (nearly) full ink */
 @media (prefers-contrast: more) {
-  :root { --color-text-muted: var(--color-text-strong); --i-fine: var(--i-line); }
+  :root { --color-text-muted: var(--color-text-strong); }
+  .surface-hall { --color-text-muted: var(--tinta); }
+  .scene { --ink-of: 1; --ink-oh: 0.9; --ink-ox: 0.8; --ink-ograin: 0.7; }
 }
 @media (forced-colors: active) {
   .lockup__emblem, .lockup__place, .status { color: CanvasText; }
@@ -961,11 +1042,11 @@ svg { display: block; }
   .porta::after { display: none !important; }
   .porta__stage { position: static !important; block-size: auto !important; }
   .entrance { min-block-size: 12cm; }
-  .lista { min-block-size: 0; margin: 0 !important; }
+  .lista { min-block-size: 0 !important; margin: 0 !important; }
+  [data-reveal] > * { opacity: 1 !important; transform: none !important; }
 }
 
-/* ==== 404 (same tokens, no drawing) ===================================================== */
-.page-404 { grid-template-rows: 1fr auto; }
+/* ==== 404 (same tokens and top bar, no drawing) ========================================== */
 .home { display: block; }
 .stage.stage--plain {
   display: flex;
@@ -974,10 +1055,11 @@ svg { display: block; }
   border-block-end: 0;
 }
 .stage--plain .intro { margin-block: auto; padding: 0; }
-.stage--plain .lockup { font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem); }
+.stage--plain .lockup { font-size: var(--size-lockup-plain); }
 .stage--plain .lede { margin-block-start: var(--space-7); }
 .stage--plain .lede--second { margin-block-start: var(--space-1); color: var(--color-text-muted); }
 .stage--plain .status { margin-block-start: var(--space-5); }
+/* the back link («Voltar ao início»): the action's size on every page (privacy notice and 404 alike) */
 .link {
   display: inline-flex;
   align-items: center;
@@ -985,19 +1067,24 @@ svg { display: block; }
   padding-inline: var(--space-2);
   font-family: var(--font-back);
   font-weight: var(--weight-ui);
+  font-size: var(--size-cta);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--track-cta);
   color: var(--color-text-strong);
   text-decoration: underline;
-  text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.3em;
+  text-decoration-thickness: var(--underline);
+  text-underline-offset: var(--underline-offset);
 }
 
 /* ---- Links: one hover for every text link ----------------------------------------
    The underline is the affordance. Where a pointer can hover, it rests in the link's own ink at 45%
    (--color-link-line) and takes the full ink on hover, with the text at its strongest: 150ms, colour only,
-   nothing moves. Touch screens keep the full underline (they never see the hover). */
+   nothing moves. Touch screens keep the full underline (they never see the hover). The one action keeps its
+   full ink at rest (1.5px) and firms to 2px on hover. */
 .link, .foot__link, .link-inline, .porta__cue { transition: color var(--dur-ui) ease, text-decoration-color var(--dur-ui) ease; }
 @media (hover: hover) and (pointer: fine) {
-  .cta, .link, .foot__link, .link-inline { text-decoration-color: var(--color-link-line); }
+  .link, .foot__link, .link-inline { text-decoration-color: var(--color-link-line); }
+  .cta:hover { text-decoration-thickness: var(--underline-cta-hover); }
   .cta:hover, .link:hover, .foot__link:hover, .link-inline:hover, .porta__cue:hover {
     color: var(--color-text-strong);
     text-decoration-color: currentColor;

@@ -56,6 +56,7 @@
 @font-face { font-family: "Alegreya Sans back fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 86.75%; ascent-override: 92.22%; descent-override: 23.05%; line-gap-override: 0%; }
 @font-face { font-family: "Alegreya Sans status fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 88.50%; ascent-override: 90.40%; descent-override: 22.60%; line-gap-override: 0%; }
 @font-face { font-family: "Alegreya Sans status fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 87.05%; ascent-override: 91.90%; descent-override: 22.98%; line-gap-override: 0%; }
+@font-face { font-family: "Alegreya Sans theme fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 93.00%; ascent-override: 86.02%; descent-override: 21.51%; line-gap-override: 0%; }
 /*FB-END*/
 
 :root {
@@ -106,10 +107,17 @@
   --font-foot-place: "Alegreya Sans", "Alegreya Sans place fallback", Arial, sans-serif;         /* Torres Vedras, Portugal */
   --font-sep: "Alegreya Sans", "Alegreya Sans sep fallback", Arial, sans-serif;                  /* « · » between links */
   --font-back: "Alegreya Sans", "Alegreya Sans back fallback", Arial, sans-serif;                 /* Voltar ao início */
+  --font-theme: "Alegreya Sans", "Alegreya Sans theme fallback", Arial, sans-serif;               /* Dia · Noite: their width holds the sun note still */
   --weight-text: 400;        /* the only Alegreya file                   */
   --weight-ui: 500;          /* the only Alegreya Sans file (Medium)     */
   /* lockup: one size, the rest are ratios of the original logo */
   --size-wordmark: clamp(1.75rem, min(1.05rem + 2.75vw, 6.4svh), 3.5rem);   /* 28 -> 56px */
+  --size-lockup-min: 1.5rem;   /* 24px: the smallest the lockup is ever set (privacy home link; short landscape phones) */
+  --size-lockup-short: clamp(var(--size-lockup-min), 5.6svh, 1.75rem);       /* landscape phones: 24 -> 28px */
+  --size-lockup-plain: clamp(var(--size-lockup-min), 1rem + 2vw, 2.25rem);   /* 404: 24 -> 36px */
+  --weight-wordmark: 600;    /* Cinzel files: one per line of the lockup */
+  --weight-kind: 700;
+  --weight-place: 400;
   --lockup-kind: 0.5em;
   --lockup-place: 0.4em;
   --lockup-emblem: 2.9em;
@@ -121,7 +129,8 @@
   --size-lede: clamp(1.125rem, min(0.84rem + 1.43vw, 3.2svh), 1.625rem);      /* 18 (320) -> 19 (390) -> 26px: Alegreya, the sentence */
   --size-read: 1.125rem;     /* 18px: Alegreya reading text and the email field; Alegreya Sans action from 900px */
   --size-ui: 1rem;           /* 16px: Alegreya Sans controls, status, labels, messages, footer, the action on phones; Alegreya consent */
-  --size-cta: var(--size-ui);   /* the action and the button: 16px on phones, 18px from 900px (below the lede, above the status) */
+  --size-cta: var(--size-ui);   /* the action, the button, the back link: 16px on phones, 18px from 900px, 20px from 1200px */
+  --size-intro: max(var(--size-lede), 1.3125rem);   /* the privacy intro: never under 21px, a clear step over the 18px body */
   /* leading: the lede tightens as it grows (19/26, 26/33); reading 18/28; interface 16/24 */
   --leading-lockup: 1.05;
   --leading-title: 1.18;
@@ -166,8 +175,35 @@
   --radius-focus: 2px;       /* the only radius: focus ring corners      */
   --focus-width: 2px;
   --focus-offset: 3px;
-  --line-w: 1.25px;          /* illustration contour (non-scaling)       */
-  --line-w-fine: 0.75px;     /* illustration detail                       */
+  --focus-offset-field: 2px; /* the email field: its ring sits closer, inside the 8px above the next label */
+  --focus-offset-inline: 1px;   /* a link inside a sentence: the ring never covers the letters beside it */
+  /* underlines belong to links only (a current control is marked with a tick, not an underline) */
+  --underline: var(--hairline);
+  --underline-cta: 1.5px;    /* the one action: a firmer line, full ink at rest */
+  --underline-cta-hover: 2px;
+  --underline-offset: 0.3em; /* the interface: action, back link, footer, skip link */
+  --underline-offset-inline: 0.2em;   /* links inside a sentence */
+  --tick-w: 0.75em;          /* the current control: a short brass tick under the word */
+  --tick-h: 2px;
+  /* the pen (the drawing's ink, multiplied by --ink-k and --ink-u in site.css): contour, detail, hatching,
+     cross-hatching, fine; the olive leaves, the lantern's iron; the hall seen through the door (finer) */
+  --pen-contour: 1.15px;
+  --pen-detail: 0.82px;
+  --pen-hatch: 0.52px;
+  --pen-cross: 0.48px;
+  --pen-fine: 0.55px;
+  --pen-leaf: 0.5px;
+  --pen-iron: 0.7px;
+  --pen-hall: 0.62px;
+  --pen-hall-fine: 0.45px;
+  --pen-hall-hatch: 0.4px;
+  --pen-hall-motif: 0.35px;
+  --pen-rim: 1.1px;          /* a wash's pooled edge */
+  --ink-ohall: 0.9;          /* the hall's ink, then its fine lines, hatching and tile motifs */
+  --ink-ohall-f: 0.7;
+  --ink-ohall-h: 0.6;
+  --ink-ohall-m: 0.55;
+  --wo-rim: 0.55;            /* a wash's rim, as a share of its glaze */
 
   /* ---- Motion --------------------------------------------------------------
      One source for every curve: site.css uses them as timing functions, site.js reads the
@@ -175,7 +211,9 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* entrances, exits, presses, messages */
   --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);         /* the doors ease ajar once on load    */
   --dur-ui: 150ms;           /* hover colour (with the ease keyword)    */
-  --dur-theme: 400ms;        /* Dia <-> Noite cross-fade                  */
+  --dur-theme: 400ms;        /* Dia <-> Noite cross-fade (the visitor's choice) */
+  --dur-sky: 1400ms;         /* ... when the sun changes it on its own: slower, gentler */
+  --ease-sky: cubic-bezier(0.45, 0, 0.55, 1);
   --dur-door: 1100ms;        /* doors ease ajar, once                     */
   --delay-door: 200ms;
   --ajar-l: 41deg;
@@ -184,19 +222,15 @@
   --dur-state: 200ms;        /* form messages, tick                      */
   --dur-out: 160ms;          /* form controls give way to the success line */
   --dur-success: 240ms;      /* the success line                         */
-  --dur-reveal: 560ms;       /* the list rises in, once: title + sentence */
-  --dur-reveal-2: 480ms;     /* ... then the form                         */
-  --stagger-reveal: 100ms;
   /* scroll sequence: lengths are scroll distance, curves are evaluated on the scroll progress p */
-  --porta-run: 144svh;       /* pinned stretch (wrapper = stage + run)   */
-  --porta-overlap: 0.18;     /* the list title enters with the last 18% of the run still to go */
+  --porta-run: 115svh;       /* pinned stretch (wrapper = stage + run): the whole walk-in, list included */
+  --rise-list: 16px;         /* the list rises this much (plus the scroll itself) as it comes in on the light */
   --scroll-tau: 90ms;        /* rendered progress follows the scroll: exponential, frame-rate independent */
   --curve-copy: cubic-bezier(0.33, 1, 0.68, 1);        /* text leaves as the doors start (easeOutCubic) */
   --curve-door: cubic-bezier(0.3, 0.55, 0.35, 1);      /* the doors move from the first pixel     */
   --curve-pan: cubic-bezier(0.35, 0.4, 0.3, 1);        /* the doorway travels to the centre early */
-  --curve-zoom: cubic-bezier(0.5, 0.05, 0.3, 1);       /* walk-in, on log(scale): soft start and landing */
   --curve-fade: cubic-bezier(0.45, 0, 0.55, 1);        /* light layers (symmetric in-out)         */
-  --dur-flight: 1500ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
+  --dur-flight: 1200ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
   --curve-flight: cubic-bezier(0.45, 0, 0.3, 1);      /* its time curve: soft start, long gentle settle */
   --flight-weight: 2;        /* the walk-in weighs 3x a plain pixel: the doorway is crossed at a readable pace */
   --open-l: 47deg;           /* extra swing on scroll: left leaf 41 -> 88deg */
@@ -207,11 +241,16 @@
   --z-chrome: 10;
   --z-skip: 100;
 
-  /* ---- Breakpoints (reference; custom properties cannot drive @media) -----
-     stack  portrait (phones and tablets): lockup, text, entrance at the foot
-     split  landscape >= 37.5em (600px): text | entrance
-     short  landscape, max-height 31.25em (500px): compact split
-     tight  portrait, max-height 42.5em (680px): tighter rhythm            */
+  /* ---- Breakpoints (reference; custom properties cannot drive @media; DESIGN.md › Responsive behavior) ----
+     stack   below 56.25em (900px), portrait: lockup, text, entrance at the foot
+     split   min-width 56.25em (900px), or landscape from 37.5em (600px): text | entrance
+     short   landscape, max-height 31.25em (500px): compact split, lockup 24-28px
+     tight   portrait, max-height 42.5em (680px): tighter rhythm, smaller emblem
+     cta     min-width 56.25em: the action 18px; min-width 75em (1200px): 20px
+     foot    max-width 29.99em (480px): the footer on three lines
+     lede    20em-22.49em (320-359px): the Portuguese lede one phrase a line
+     note    min-width 37.5em (600px): the sun note is visible (below: screen readers only)
+     wide    min-width 120em (1920px): root 112.5%; 160em (2560px): 131.25%      */
 
 }
 
@@ -325,8 +364,10 @@
   --smoothing-moz: auto;
 }
 
-/* From 900px the action and the button step up to 18px: under the 26px lede, clearly above the 16px status. */
+/* From 900px the action and the button step up to 18px, and to 20px from 1200px: under the 26px lede, clearly
+   above the 16px status, so the one action holds its own beside a large drawing. */
 @media (min-width: 56.25em) { :root { --size-cta: var(--size-read); --track-cta: 0.015em; } }
+@media (min-width: 75em) { :root { --size-cta: 1.25rem; } }
 
 /* Very wide screens: more air and scale, never more content. */
 @media (min-width: 120em) { :root { font-size: 112.5%; } }   /* >= 1920 */
