@@ -4,9 +4,10 @@ name: A Brazileira · Boutique Hotel
 description: >-
   A coming-soon page for a boutique hotel in Torres Vedras, Portugal, and step 1 of its design system.
   The canvas is warm paper (papel #F9F0E9), never white, and by night a walnut dark (noite #1C120B), never
-  black. The voice is the hotel's original logo: a crowned B in a laurel wreath over A BRAZILEIRA /
-  BOUTIQUE HOTEL / TORRES VEDRAS in Cinzel roman capitals; what the house says is set in Alegreya and the
-  interface in Alegreya Sans, both in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
+  black. The voice is the client's identity pitch: the original crowned B in a laurel wreath over the wordmark
+  A BRAZILEIRA (a heavy flared Roman with the ornamental B and kicked R's, the pitch's reading of the façade's 1930s lettering) and
+  BOUTIQUE HOTEL · TORRES VEDRAS in widely spaced Cinzel capitals; everything the house says, and the interface, is
+  set in EB Garamond, in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
   switch the whole page, including the photograph. The signature is a photograph of an arched limestone doorway
   (walnut double door, fanlight, wall lantern, an olive in a clay pot), cut into layers: scrolling swings the doors
   inwards, walks in through the doorway into a warm, out-of-focus hall and on into its light, one flat colour,
@@ -44,7 +45,7 @@ colors:
   color-text-on-night: "#F3E6D6"       # linho
   color-text-muted: "#804F1E"          # castanho: inactive controls, separators, footer, scroll cue
   color-text-muted-on-night: "#C2AE96" # linho-escuro
-  color-accent-text: "#83602C"         # latao-texto: TORRES VEDRAS, the status, the sun note, the control tick
+  color-accent-text: "#83602C"         # latao-texto: the status, the sun note, the control tick
   color-accent-text-on-night: "#DB9E42"   # latao
   color-mark: "#A57638"                # latao-marca: the emblem (graphic)
   color-mark-on-night: "#DB9E42"       # latao
@@ -75,62 +76,63 @@ colors:
   color-on-strong: "#F9F0E9"           # papel: text and tick on the tinta button / checked box
 
 typography:
-  wordmark:
-    fontFamily: "Cinzel, 'Cinzel fallback', 'Trajan Pro', 'Times New Roman', serif"
-    fontSize: "clamp(1.75rem, min(1.05rem + 2.75vw, 6.4svh), 3.5rem)"   # 28 -> 56px
-    fontWeight: 600
+  wordmark:                   # «A Brazileira»: the large A, the ornamental B, RAZILEIR at 72% (.lockup__sc), the large closing A
+    fontFamily: "'Brazileira Wordmark', 'Wordmark fallback', 'Times New Roman', serif"
+    fontSize: "clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem)"   # 36 -> 72px
+    fontWeight: 900
     lineHeight: 1.05
-    letterSpacing: 0.045em
+    letterSpacing: 0.01em
     textTransform: uppercase
-  kind:                       # BOUTIQUE HOTEL
-    fontFamily: Cinzel
-    fontSize: 0.5em           # of the wordmark
-    fontWeight: 700
-    letterSpacing: 0.12em
+  label-lockup:               # BOUTIQUE HOTEL · TORRES VEDRAS
+    fontFamily: "Cinzel, 'Cinzel lockup fallback', 'Times New Roman', serif"
+    fontSize: "max(0.32em, 11px) of the wordmark on two lines; max(0.19em, 11.2px) on one line (home, from 1024 x 700, when it fits the column)"
+    fontWeight: 400
+    lineHeight: 1.3
+    letterSpacing: 0.32em
     textTransform: uppercase
-  place:                      # TORRES VEDRAS
-    fontFamily: Cinzel
-    fontSize: 0.4em
+  label:                      # «Lista de espera» (19px); the privacy notice's section names (17px)
+    fontFamily: "Cinzel, 'Cinzel list fallback', 'Times New Roman', serif"
+    fontSize: "19px (list) / 17px (section names)"
     fontWeight: 400
-    letterSpacing: 0.3em
+    lineHeight: "1.3 / 1.47"
+    letterSpacing: 0.2em
     textTransform: uppercase
-  title:                      # «Lista de espera», «Nota de privacidade»
-    fontFamily: "Alegreya, 'Alegreya title fallback', 'Times New Roman', serif"
-    fontSize: "clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem)"   # 26 -> 34px
+  title:                      # «Nota de privacidade»
+    fontFamily: "'EB Garamond', 'Garamond title fallback', 'Times New Roman', serif"
+    fontSize: "clamp(1.75rem, 1.5rem + 1vw, 2.375rem)"   # 28 -> 38px
     fontWeight: 400
-    lineHeight: 1.18
-    letterSpacing: -0.01em
-  lede:                       # the sentence; the list sentence; the privacy intro (never under 21px); the 404 lines; the thank-you
-    fontFamily: "Alegreya, 'Alegreya lede fallback', 'Times New Roman', serif"
-    fontSize: "clamp(1.125rem, min(0.84rem + 1.43vw, 3.2svh), 1.625rem)"   # 18 (320) -> 19 (390) -> 26px
+    lineHeight: 1.15
+    letterSpacing: 0
+  lede:                       # the sentence; the list sentence; the privacy intro (never under 22px); the 404 lines; the thank-you
+    fontFamily: "'EB Garamond', 'Garamond lede fallback', 'Times New Roman', serif"
+    fontSize: "clamp(1.1875rem, min(0.9rem + 1.5vw, 3.4svh), 1.75rem)"   # 19 (320) -> 20 (390) -> 28px
     fontWeight: 400
-    lineHeight: "calc(1em + 0.45rem)"   # 19/26, 26/33
-    letterSpacing: -0.005em
+    lineHeight: "calc(1em + 0.45rem)"   # 20/27, 28/35
+    letterSpacing: 0
   read:                       # privacy notice body; the email the guest types; the no-JS line
-    fontFamily: "Alegreya, 'Alegreya fallback', 'Times New Roman', serif"
-    fontSize: 18px
+    fontFamily: "'EB Garamond', 'Garamond fallback', 'Times New Roman', serif"
+    fontSize: 19px
     fontWeight: 400
-    lineHeight: 1.5556        # 18/28
+    lineHeight: 1.5789        # 19/30
     letterSpacing: 0
   consent:
-    fontFamily: "Alegreya, 'Alegreya consent fallback', 'Times New Roman', serif"
-    fontSize: 16px
+    fontFamily: "'EB Garamond', 'Garamond consent fallback', 'Times New Roman', serif"
+    fontSize: 17px
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.47          # 17/25
     letterSpacing: 0
   cta:                        # the one action, the button, the back link
-    fontFamily: "'Alegreya Sans', 'Alegreya Sans cta fallback', Arial, sans-serif"
-    fontSize: "16px below 900px, 18px from 900px, 20px from 1200px"
+    fontFamily: "'EB Garamond', 'Garamond cta fallback', 'Times New Roman', serif"
+    fontSize: "17px below 900px, 19px from 900px, 21px from 1200px"
     fontWeight: 500
     lineHeight: 1.25
-    letterSpacing: "0.018em / 0.015em"
-  ui:                         # Dia · Noite, PT · EN (0.06em), status, labels, messages, section names, footer
-    fontFamily: "'Alegreya Sans', 'Alegreya Sans fallback', Arial, sans-serif"
-    fontSize: 16px
+    letterSpacing: "0.01em / 0.008em"
+  ui:                         # Dia · Noite, PT · EN (0.08em), status, labels, messages, footer
+    fontFamily: "'EB Garamond', 'Garamond UI fallback', 'Times New Roman', serif"
+    fontSize: 17px
     fontWeight: 500
-    lineHeight: "1.25 one line, 1.5 multi-line"
-    letterSpacing: 0.018em
-    fontVariantNumeric: lining-nums
+    lineHeight: "1.25 one line, 1.47 multi-line"
+    letterSpacing: 0.01em
 
 rounded:
   none: 0px                   # everything, fields and button included
@@ -156,9 +158,9 @@ components:
   lockup:
     textColor: "{colors.color-text-strong}"
     markColor: "{colors.color-mark}"
-    placeColor: "{colors.color-accent-text}"
-    typography: "{typography.wordmark}"
-    minSize: "24px wordmark (--size-lockup-min)"
+    labelColor: "{colors.color-text-strong}; its « · » {colors.color-mark}"
+    typography: "{typography.wordmark}; {typography.label-lockup}"
+    minSize: "30px wordmark (--size-lockup-min)"
   control:                    # theme buttons and language links share one recipe
     textColor: "{colors.color-text-muted}"
     typography: "{typography.ui}"
@@ -175,7 +177,7 @@ components:
     outline: "2px solid {colors.color-focus}, offset 3px, 2px corners"
   sun-note:                   # «É noite em Torres Vedras.»: only while the sky chose the theme (html[data-sol])
     textColor: "{colors.color-text-muted}"
-    typography: "Alegreya 400, 16px / 20px, tracking 0 (the house speaking, not a control)"
+    typography: "EB Garamond 400, 17px / 21px, tracking 0 (the house speaking, not a control)"
     placement: "its own line under Dia · Noite, aligned with the control text, on every width; also the buttons' description"
   cta:                        # «Entrar na lista de espera»: a text link-button
     textColor: "{colors.color-text-strong}"
@@ -233,7 +235,7 @@ components:
     backgroundColor: "{colors.color-field}"
     borderColor: "{colors.color-field-line}"
     textColor: "{colors.color-text-strong-hall}"
-    typography: "{typography.read}"   # Alegreya 400, lining figures
+    typography: "{typography.read}"   # EB Garamond 400, lining figures
     height: 48px
     rounded: "{rounded.none}"
   text-input-hover:           # fine pointers, not when invalid or without JS
@@ -286,7 +288,7 @@ components:
 ## Overview
 
 A Brazileira reads like the hotel's own card left on a stone step: warm paper, the gold crest of the original
-logo in roman capitals, one sentence, one action, and the house's door. The door is a photograph: an arched
+logo over the wordmark of the client's identity pitch, one sentence in a Garamond, one action, and the house's door. The door is a photograph: an arched
 limestone doorway with a walnut double door and a fanlight, a wall lantern on the left and an olive in a clay
 pot on the right, the house number 11 on the keystone. It is graded to the brand (lime plaster between Papel and
 Areia, limestone in the Pedra family, walnut rich but not orange) and its margin fades into the page, so it sits
@@ -307,15 +309,17 @@ colour, the hall's light; the waiting list rises in on that light at once. The h
 night), so the form always reads dark ink on a light ground.
 
 Colour discipline: nogueira is the workhorse (text, focus ring, field borders). Latão is ceremonial: the emblem
-and TORRES VEDRAS by day, the accent text by night. The photograph carries its own colour (graded to the
+and the « · » of the lockup's line by day, the accent text by night. The photograph carries its own colour (graded to the
 palette); no interface colour is sampled from it. Barro (terracotta) exists only for form errors. The interface
 itself is 95% neutral.
 
 **Key characteristics**
 - Canvas `{colors.papel}` by day, `{colors.noite}` by night; the hall `{colors.color-hall}`; all flat.
-- The original logo, unchanged: emblem.svg inline + Cinzel 600 / 700 / 400 lockup at the logo's ratios.
-- One voice in two cuts: Alegreya 400 for what the house says, Alegreya Sans 500 for the interface (same
-  designers, same skeleton), roman, sentence case. Tracked capitals exist only in the logo.
+- The pitch's lockup: the original emblem.svg inline over «A Brazileira» in the wordmark face (a large A, the
+  ornamental B, RAZILEIR at 72% with both R's kicked out on the baseline, a large closing A) and, close under it,
+  BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel capitals, widely spaced.
+- Three voices, as on the pitch: the wordmark (logo only), Cinzel capitals for labels (the lockup's line and
+  section names), EB Garamond for everything said (400) and the interface (500), roman, sentence case.
 - One accent: brass, `{colors.latao-texto}` by day (5.08:1), `{colors.latao}` by night (7.87:1).
 - One action on the first screen: «Entrar na lista de espera» / «Join the waiting list».
 - Square corners everywhere; the only radius is the 2px corner of the focus ring.
@@ -331,21 +335,47 @@ itself is 95% neutral.
 
 - **Source**: `src/assets/img/emblem.svg` (vector rebuild of the original: crown with cross, dense laurel,
   bow, Trajan-style B). It is inlined in the h1 with `currentColor`, `aria-hidden`; the accessible name is the
-  live text "A Brazileira, Boutique Hotel, Torres Vedras".
-- **Lockup** (exactly as the original): emblem 2.9em wide (of the wordmark size) · A BRAZILEIRA Cinzel 600,
-  tracking 0.045em · BOUTIQUE HOTEL Cinzel 700, 0.5em, tracking 0.12em · TORRES VEDRAS Cinzel 400, 0.4em,
-  tracking 0.3em, brass. Trailing tracking is compensated with a negative end margin so each line is
-  optically centred.
-- **Colour**: Dia: emblem `latao-marca`, wordmark and kind `tinta`, place `latao-texto`. Noite: emblem and
-  place `latao`, wordmark and kind `linho`. Forced colours: CanvasText.
+  live text "A Brazileira, Boutique Hotel, Torres Vedras". The drawn wordmark (`A B` + `razileir` + `a`, three
+  text runs) is `aria-hidden`; a visually hidden «A Brazileira» carries the name as one run, so a screen reader
+  that walks text runs (VoiceOver swiping) never reads «A B» and «razileir» apart.
+- **Lockup** (as on the client's identity pitch, «Interpretação para a marca»): the emblem 2.27em wide (of the
+  wordmark size; the same pixel size as before) · «A Brazileira» in Brazileira Wordmark 900: the large plain A, the
+  ornamental B, then RAZILEIR in capitals at 72% (`--lockup-sc`), both R's with the leg kicked out on the
+  baseline, and a large plain A to close, as on the board (its two A's are the same height), tracking 0.01em ·
+  BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel 400 capitals, tracking 0.32em, close under the letters as on the board
+  (wordmark baseline to the line's capitals: 0.2 of the B's height, the board's 0.18; `--lockup-pull` -0.2em on
+  the wordmark): on one line with a brass « · » where the wordmark is large (the home page in the split layout,
+  from 1024 × 700: max(0.19em, 11.2px), 13.7px at 72px, 0.81 of the wordmark's width as on the board, never over
+  0.9), on two lines (max(0.32em, 11px), 11.5px at 36px) everywhere else. Trailing tracking is compensated with a
+  negative end margin so each line is optically centred. The pitch's shield monogram is not used: the crowned
+  laurel B stays.
+- **Enlarged text** (WCAG 1.4.4; checked with the root size at 125–200%): nothing in the lockup is held on one
+  line by force. The wordmark breaks after its A («A / BRAZILEIRA»); the one-line label is a container query on
+  the lockup (`container-type: inline-size`, home split only), `(min-width: 5.3em) and (min-width: 19.5rem)` in the
+  wordmark's em, so it falls back to two lines as soon as one line no longer fits the column; each label line may
+  break between its words; on a phone the wordmark's minimum yields to 16vw (13vw for the 30px size), which only
+  binds with text enlarged. At 200%: 320 × 640 and 390 × 844 wrap to «A / BRAZILEIRA» inside the screen, 1024 ×
+  768 takes the two-line label; no letter is cut.
+- **Wordmark face**: Cinzel Decorative Black (Natanael Gama, OFL) is the closest open face to the pitch's
+  lettering (flared Roman serifs, heavy stems, an ornamental B). It is modified for this one use (the ornamental
+  B kept; the ornamental R kept with its swash tail, which dips well below the baseline in the original, redrawn
+  as the board's kick along the baseline: the part below the baseline pulled up, y / (1 + 0.01|y|), the tail past
+  the advance shortened by half, smooth joins kept; every other letter mapped to the plain Roman capital, upper
+  and lower case alike, A-Z only, 3.0 KB; built by `tools/fonts.py`) and, as the Reserved Font Name «Cinzel» of
+  Cinzel Decorative (2012) requires of a modified version, renamed «Brazileira Wordmark»
+  (`assets/fonts/OFL-cinzel-decorative.txt`). Compared by eye against the board with Elsie + Elsie Swash Caps
+  (closest B and R swashes, but Didone hairlines and ball terminals) and Limelight (Art Deco, too far from the
+  board's Roman); Cinzel Decorative won on serifs, weight and proportions.
+- **Colour**: Dia: emblem and the « · » `latao-marca`, wordmark and line `tinta`. Noite: emblem and the « · »
+  `latao`, wordmark and line `linho`. Forced colours: CanvasText.
 - **Clear space**: at least 0.75em of the wordmark size on every side (about the cap height of
   A BRAZILEIRA). The page keeps 24px or more (0.86em at the smallest size).
-- **Minimum size**: wordmark 24px (`--size-lockup-min`; lockup about 220px wide; used at exactly this size as
-  the home link on the privacy notice, on landscape phones and on portrait screens up to 600px tall, where
-  TORRES VEDRAS is then 9.6px, the logo's own ratio). Below that, use the emblem alone (favicon.svg, app icons),
+- **Minimum size**: wordmark 30px (`--size-lockup-min`; the wordmark about 187px wide; used at exactly this size
+  as the home link on the privacy notice, on landscape phones and on portrait screens up to 600px tall, where the
+  line is held at 11px, not the lockup's own 9.6px: Cinzel Regular's hairlines break up below that). Below that, use the emblem alone (favicon.svg, app icons),
   which holds at 16px.
 - **Don't**: redraw, outline, recolour outside the two schemes, add a background plate, set the words in
-  another face, change the tracking, put the lockup on the photograph, animate the emblem.
+  another face, add more swashes (the B and the two R's are the only ones), change the tracking, put the lockup on the photograph, animate the emblem.
 
 ## Colors
 
@@ -400,17 +430,17 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 
 | Theme | Element | Foreground | Background | Ratio | Rule |
 |---|---|---|---|---|---|
-| Dia | Wordmark, kind, active control, CTA | tinta #2E1E14 | papel #F9F0E9 | 14.23:1 | text |
+| Dia | Wordmark, lockup line (BOUTIQUE HOTEL · TORRES VEDRAS, 9.6–13px; 17px at 2560), privacy section names, active control, CTA | tinta #2E1E14 | papel #F9F0E9 | 14.23:1 | text |
 | Dia | Active-control tick, sun note | latao-texto #83602C | papel | 5.08:1 | text / non-text ≥ 3:1 |
 | Dia | Lede, privacy body | nogueira #5F3819 | papel | 9.03:1 | text |
 | Dia | Inactive control, separators, footer, scroll cue | castanho #804F1E | papel | 6.11:1 | text / graphic |
-| Dia | TORRES VEDRAS (9.6–22.4px; 25.2px at 1920), status | latao-texto #83602C | papel | 5.08:1 | text (part of the logo below 14px) |
-| Dia | Emblem | latao-marca #A57638 | papel | 3.56:1 | graphic ≥ 3:1 (logo) |
+| Dia | Status | latao-texto #83602C | papel | 5.08:1 | text |
+| Dia | Emblem, the lockup line's « · » (aria-hidden) | latao-marca #A57638 | papel | 3.56:1 | graphic ≥ 3:1 (logo) |
 | Dia | Focus ring | nogueira | papel | 9.03:1 | non-text ≥ 3:1 |
-| Noite | Wordmark, kind, lede, active control, CTA | linho #F3E6D6 | noite #1C120B | 14.99:1 | text |
+| Noite | Wordmark, lockup line, section names, lede, active control, CTA | linho #F3E6D6 | noite #1C120B | 14.99:1 | text |
 | Noite | Inactive control, separators, footer, scroll cue | linho-escuro #C2AE96 | noite | 8.58:1 | text / graphic |
-| Noite | TORRES VEDRAS, status, emblem, focus ring, active-control tick, sun note | latao #DB9E42 | noite | 7.87:1 | text |
-| Hall (Dia / Noite) | List title, labels, consent link | tinta | hall #F2DEC4 / #FCE7BC | 12.21 / 13.18:1 | text |
+| Noite | Status, emblem, the lockup line's « · », focus ring, active-control tick, sun note | latao #DB9E42 | noite | 7.87:1 | text |
+| Hall (Dia / Noite) | List name (Cinzel capitals), labels, consent link | tinta | hall #F2DEC4 / #FCE7BC | 12.21 / 13.18:1 | text |
 | Hall | List sentence, consent text | nogueira | hall | 7.75 / 8.37:1 | text |
 | Hall | Footer (home), muted | castanho | hall | 5.24 / 5.66:1 | text |
 | Hall | Error message, invalid field edge | barro #9E3B1E | hall | 5.17 / 5.58:1 | text |
@@ -423,79 +453,103 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 
 ## Typography
 
+The client asked for type «mais em linha com o que está aqui (tipos de letras no pitch)»: the identity board
+shows a lettered wordmark drawn from the façade («PASTEIS DE FEIJÃO», «CAFÉ A BRAZILEIRA DE TÔRRES»), labels in
+widely spaced Roman capitals and a Garamond specimen for text. The site now follows it, three voices.
+
 ### Font family
-- **Cinzel** 400 / 600 / 700, latin subset, self-hosted woff2 (12.5 / 13.6 / 13.6 KB), byte-identical to the
-  original logo files. Logo lockup only.
-- **Alegreya** 400 (Huerta Tipográfica), roman only: every sentence the house says (lede, titles, the list
-  sentence, the consent, the privacy notice) and the email a guest types. 12.5 KB.
-- **Alegreya Sans** 500, roman only: the interface (Dia · Noite, PT · EN, status, the action, labels, messages,
-  the button, section names, the footer). 9.0 KB. The sans is the serif without its serifs, so the page speaks
-  with one voice; it was chosen over the Garamond because it is calligraphic and humane, not a template face.
-- Subset to Latin + Portuguese (ASCII, nbsp, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €),
-  layout features `kern`, `liga` (fi, fl, Th only) and `lnum`, unhinted. No italic, no bold: one file per
-  family, `font-synthesis: none`. Licences: `assets/fonts/OFL-*.txt` (neither name is reserved, so subsetting
-  is allowed).
+- **Brazileira Wordmark** 900 (Cinzel Decorative Black, modified and renamed, see Logo usage): «A Brazileira»
+  only. 3.0 KB.
+- **Cinzel** 400 (Cinzel 2.000, Natanael Gama, OFL), capitals only (A-Z, the Portuguese accented capitals,
+  figures, the punctuation a label may carry: . , : ; · - – — ‘ ’ “ ” « » ? ! … ' & ( ) / © º ª): the label voice,
+  always `text-transform: uppercase`, widely spaced: the lockup's line, the waiting list's name, the privacy
+  notice's section names. 5.9 KB. Cinzel 2.000 (2020) declares no Reserved Font Name (`OFL-cinzel.txt`), so the
+  subset keeps its name; only the wordmark, from Cinzel Decorative (2012, RFN «Cinzel»), is renamed.
+- **EB Garamond** 400 and 500 (Georg Duffner, Octavio Pardo; OFL): 400 for every sentence the house says (lede,
+  the page title, the list sentence, the consent, the privacy notice, the sun note) and the email a guest types;
+  500 for the interface (Dia · Noite, PT · EN, status, the action, the field label, messages, the button, the
+  footer). 14.6 KB + 15.5 KB. EB Garamond rather than Cormorant: the board's specimen is a book Garamond (calm,
+  normal x-height), not a display one, and the client found Cormorant «too AI».
+- Subset to Latin + Portuguese (ASCII, nbsp, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €,
+  × ÷ −), layout features `kern` (GPOS), `liga` and `locl` (GSUB): the only ones the Latin files carry; unhinted.
+  Δ and √ are not in EB Garamond's Latin files: the two places that use them (motion notes on /design/) fall back
+  to Times. No italic; one file per weight,
+  `font-synthesis: none`. EB Garamond in this build has lining figures only (© 2026, art. 6.º). Licences:
+  `assets/fonts/OFL-*.txt`. The previous Cinzel 400/600/700 and Alegreya / Alegreya Sans files are gone.
 
 ### Hierarchy (computed, Chromium)
 
-Five text roles outside the logo (ui, read, cta, lede, title), nothing under 16px. Squint order on every width:
-lockup > lede > action > status and controls. Computed in Chromium (`r1fix-tools/type.js` in the review notes);
-320px is 320 × 640, 390px is 390 × 844, 1440px is 1440 × 900.
+At most five text sizes outside the logo on any page and width (measured: home 3-4, privacy 4-5), nothing under
+17px. Squint order on every width: lockup > lede > action > status and controls; on the list, the sentence leads
+and its name is a spaced label above it. 320px is 320 × 640, 390px is 390 × 844, 1440px is 1440 × 900.
 
 | Token | Family | 320px | 390px | 1440px | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|---|---|---|
-| wordmark | Cinzel | 28px (24px when the screen is ≤ 600px tall, and on landscape phones) | 28px | 56px | 600 | 1.05 | 0.045em | A BRAZILEIRA |
-| kind | Cinzel | 14px (12px) | 14px | 28px | 700 | 1.05 | 0.12em | BOUTIQUE HOTEL |
-| place | Cinzel | 11.2px (9.6px) | 11.2px | 22.4px | 400 | 1.05 | 0.3em | TORRES VEDRAS |
-| title | Alegreya | 26px | 26px | 34px | 400 | 1.18 | −0.01em | Lista de espera, Nota de privacidade |
-| lede | Alegreya | 18px | 19px | 26px | 400 | 1em + 7.2px (25.2 / 26.2 / 33.2px) | −0.005em | the sentence, the list sentence, 404, thank-you |
-| intro (`--size-intro`) | Alegreya | 21px | 21px | 26px | 400 | 1em + 7.2px (28.2 / 33.2px) | −0.005em | the privacy intro: the lede, never under 21px (a clear step over the 18px body) |
-| read | Alegreya | 18px | 18px | 18px | 400 | 28px | 0 | privacy notice; the email field (lining figures) |
-| consent | Alegreya | 16px | 16px | 16px | 400 | 24px | 0 | the consent line |
-| cta | Alegreya Sans | 16px | 16px | 20px (18px from 900 to 1199px) | 500 | 1.25 | 0.018em / 0.015em | the action, the button, «Voltar ao início» on every page |
-| ui | Alegreya Sans | 16px | 16px | 16px | 500 | 20px / 24px | 0.018em (PT · EN 0.06em) | Dia · Noite, PT · EN, status, labels, messages, section names, footer |
-| sun note | Alegreya | 16px | 16px | 16px | 400 | 20px | 0 | «É noite em Torres Vedras.» under the theme control |
+| wordmark | Brazileira Wordmark | 36px (30px when the screen is ≤ 600px tall, and on landscape phones) | 36px | 72px | 900 | 1.05 | 0.01em | A Brazileira (RAZILEIR at 72%) |
+| lockup line | Cinzel | 11.5px, two lines (11px) | 11.5px, two lines | 13.7px, one line with « · » | 400 | 1.3 | 0.32em | BOUTIQUE HOTEL · TORRES VEDRAS |
+| label | Cinzel | 19px | 19px | 19px | 400 | 1.3 | 0.2em | LISTA DE ESPERA (the privacy section names 17px, 1.47) |
+| title | EB Garamond | 28px | 28px | 38px | 400 | 1.15 | 0 | Nota de privacidade |
+| lede | EB Garamond | 19.2px | 20.25px | 28px | 400 | 1em + 7.2px (26.4 / 27.5 / 35.2px) | 0 | the sentence, the list sentence, 404, thank-you |
+| intro (`--size-intro`) | EB Garamond | 22px | 22px | 28px | 400 | 1em + 7.2px | 0 | the privacy intro: never under 22px (a clear step over the 19px body) |
+| read | EB Garamond | 19px | 19px | 19px | 400 | 30px | 0 | privacy notice; the email field |
+| consent | EB Garamond | 17px | 17px | 17px | 400 | 25px | 0 | the consent line |
+| cta | EB Garamond | 17px | 17px | 21px (19px from 900 to 1199px) | 500 | 1.25 | 0.01em / 0.008em | the action, the button, «Voltar ao início» on every page |
+| ui | EB Garamond | 17px | 17px | 17px | 500 | 21px / 25px | 0.01em (PT · EN 0.08em) | Dia · Noite, PT · EN, status, the field label, messages, footer |
+| sun note | EB Garamond | 17px | 17px | 17px | 400 | 21px | 0 | «É noite em Torres Vedras.» under the theme control |
 
 From 1920px the root size grows to 112.5% (131.25% from 2560px): everything scales together, never more
-content. The field is 18px, never below 16px, so iOS Safari does not zoom on focus.
+content. The field is 19px, never below 16px, so iOS Safari does not zoom on focus.
 
 ### Principles
-- What the house says is serif; what you operate is sans. Never Alegreya for controls, labels or buttons.
+- What the house says is EB Garamond 400; what you operate is EB Garamond 500; names are Cinzel capitals. Never
+  capitals for controls, buttons or sentences: spaced capitals belong to the lockup and to labels, as on the pitch.
 - The status is quieter than the action by colour (brass, not ink, no underline; on phones in Noite, where the
-  action is the same 16px and brass is the most saturated text on the screen, the muted linen), size from 900px and space
+  action is the same 17px and brass is the most saturated text on the screen, the muted linen), size from 900px and space
   (8px under the sentence, 12px from 900px; 16px before the action stacked, 8px on short phones, 48px from
-  900px), never by weight. The lede leads by size: 19px over a 16px action on phones, 26px over 18–20px from
+  900px), never by weight. The lede leads by size: 20px over a 17px action on phones, 28px over 19–21px from
   900px. The action carries the only full-ink underline of the first screen (1.5px); the current control is
   marked by a short brass tick, never by an underline.
-- Figures: old-style in the serif (art. 6.º, 24 meses), lining in the interface and the field (© 2026).
-- Tracked capitals live only inside the logo; PT and EN get 0.06em because capitals need air.
+- Figures: EB Garamond's lining figures everywhere (the only set the files carry).
+- PT and EN get 0.08em because capitals need air.
 - Line breaks by rule, not by luck: `text-wrap: balance` on the ledes and titles; on 320–359px phones the
   Portuguese lede is set one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada / para
-  receber hóspedes.»: a plain wrap at 14.4em, with «para receber hóspedes» tied); `text-wrap: pretty` on
-  reading text; no hyphenation anywhere (the privacy notice is read word by word). Ties at build time
-  (`nb()` in build.py): «A Brazileira», «Torres Vedras», «© 2026», and every one-letter word holds to the next
-  («e avisamos», «a ser»). «nota de privacidade» never splits and sits on its own line under the consent.
+  receber hóspedes.»: a plain wrap at 13.4em, between the first phrase at 12.6em and the first phrase with «está»
+  at 14.2em, with «para receber hóspedes» tied); the lockup's line takes one or two lines by rule (a media query
+  for the size, a container query so it never overflows its column), not by a near miss in width; `text-wrap: pretty` on reading text; no hyphenation anywhere (the privacy notice is read word by word).
+  Ties at build time (`nb()` in build.py): «A Brazileira», «Torres Vedras», «© 2026», and every one-letter word
+  holds to the next («e avisamos», «a ser»). «nota de privacidade» never splits and sits on its own line under
+  the consent.
 - Below 480px the footer sets «© 2026 A Brazileira» / «Torres Vedras, Portugal» / «Privacidade» on three lines.
 - Quotes: «» in Portuguese, “” in English (`q:lang()`). Noite text uses grayscale smoothing on macOS.
 - Height-aware sizes (`svh` inside `min()`) keep the lockup and lede in one screen on short laptops.
 
 ### Font loading and fallbacks
-All five files are `font-display: swap`; Cinzel 600, Alegreya and Alegreya Sans are preloaded. Cinzel's
-fallbacks are unchanged (Times / Liberation Serif: 400 `size-adjust 100.19%`, 600 `97.12%`, 700 `105.16%`).
-Alegreya and Alegreya Sans have one local fallback per role (Times New Roman / Arial, or the metric-compatible
-Liberation and Tinos / Arimo), sized so each role's own strings set to the web font's width in Chromium, with
-English variants where the sentence differs (`[lang|=en]` swaps the stacks): lede 101.8 / 99.6%, list 100.4 /
-97.0%, intro 101.15 / 101.0%, title 101.3%, consent 100.2%, reading 100.9 / 100.71%; sans: interface 85.25%,
-action 86.0 / 90.0%, status 88.5 / 87.05%, back link 88.6 / 86.75%, footer name 87.62%, place 86.2%,
-separators 63.8%, footer link 88.05 / 86.06%, theme buttons 93.0% (Dia + Noite and Day + Night as a pair, so the
-sun note beside them never moves when the font lands; `--font-theme`). Ascent and descent overrides carry Alegreya's 1.016 / 0.345 and
-Alegreya Sans' typo 0.8 / 0.2 through the size-adjust. The privacy notice body uses the same Alegreya file
-under a second name with `font-display: optional` («Alegreya Text»): preloaded, so it is there on a normal
-load, and on a slow first visit the long paragraphs stay in their fallback for that view instead of
-re-wrapping around their links. Checked with every woff2 held back 2s: CLS 0 on home PT/EN, privacy PT/EN and
-404 at 320×568, 360, 375, 390, 430, 844×390, 768, 1024, 1280, 1440 and 1920, motion on and off; and the fallback
-layout matches the web font (no line-count change, no text start moving 3px or more) at about 200 widths from
-320 to 2560px. Regenerate the values after any copy change (they follow the strings).
+All five faces are `font-display: swap`, and the four files (wordmark, Cinzel capitals, EB Garamond 400 and
+500, 40 KB together) are preloaded on every page. Every role has its own local fallback (Times New Roman, or
+the metric-compatible Liberation Serif / Tinos; the wordmark's is Times Bold), sized so that role's own strings
+set to the web font's width in Chromium, with English variants where the sentence differs (`[lang|=en]` swaps
+the stacks). Centred multi-line text (the ledes) and wrapped text near a break (the consent, the privacy intro)
+are matched on the line that decides the break, not on the average. Values (size-adjust, PT / EN):
+wordmark «A B» 108.9%, its RAZILEIR 103.26%, its closing A 99.7% (each run its own fallback, set from the
+measured width ratio, so each run starts where the web font starts it);
+lockup line BOUTIQUE HOTEL 103.15%, TORRES VEDRAS 98.6%, its « · » 80.49%;
+list name 97.37 / 101.77%; section names 102.05%;
+lede 92.74 / 93.51%; list sentence 93.14 / 91.31%;
+intro 92.33 / 93.31%; title 94.28%;
+consent 92.45 / 93.6%; text (sun note, field) 93.15 / 93.69%;
+interface 97.94%; action 97.33 / 98.09%;
+status 97.8 / 99.82%; back link 97.58 / 97.14%;
+theme buttons 101.54 / 101.04% (so the sun note beside them never moves when the font lands;
+`--font-theme`); PT · EN 104.67%; the «·» between controls 65.9%; footer name 95.62%,
+place 97.91%, « · » 77.52%, link 96.87 / 94.75%. Ascent and descent
+overrides carry EB Garamond's 1.007 / 0.298 and Cinzel's 0.976 / 0.372 through the size-adjust. The privacy
+notice body uses the same EB Garamond 400 file under a second name with `font-display: optional` («EB Garamond
+Text»): preloaded, so it is there on a normal load, and on a slow first visit the long paragraphs stay in their
+fallback for that view instead of re-wrapping around their links. Checked with every woff2 held back 2s: CLS 0
+on home PT/EN, privacy PT/EN and 404 at 320×568, 360, 375, 390, 430, 844×390, 768, 1024, 1280, 1440 and 1920,
+motion on and off (77 runs); and the fallback layout matches the web font (no line-count change, no visible text
+start moving 3px or more) at about 250 widths from 320 to 2560px on every page. Regenerate the values after any
+copy change (they follow the strings): `tools` in the type pass measure each role's strings in both fonts.
 
 ## Layout
 
@@ -562,7 +616,7 @@ The arch is architecture, not a UI radius.
 
 **`lockup`** (h1 on the home page; a 24px home link on the privacy notice): see Logo usage. States: none.
 
-**`control`** (`.ctl`, buttons and links): Alegreya Sans 500 16px, tracking 0.018em (PT · EN 0.06em), sentence
+**`control`** (`.ctl`, buttons and links): EB Garamond 500 17px, tracking 0.01em (PT · EN 0.08em), sentence
 case, muted colour, 44 × 44px minimum.
 - Default: `--color-text-muted`. Hover (fine pointer only): `--color-text-strong`, 150ms `ease`. Pressed:
   `scale(0.97)`, 160ms `--ease-out`, the colour unchanged (the same press as the action and the button; none
@@ -588,7 +642,7 @@ for that frame, `.is-instant`), so nothing catches up after it.
 line under the control says why the page looks as it does: «É noite em Torres Vedras.» / «É dia em Torres
 Vedras.» («It is night in Torres Vedras.» / «It is daytime in Torres Vedras.»). On every width, phones included
 (it used to be screen-reader-only below 600px, so the touch was invisible where most visitors arrive). It is
-the house speaking, not a control: Alegreya 400 16/20px, tracking 0, `--color-text-muted`, a verb and a full
+the house speaking, not a control: EB Garamond 400 17/21px, tracking 0, `--color-text-muted`, a verb and a full
 stop, aligned with the control's text and tucked 8px under the row, out of the menu row so the menus hold only
 Dia · Noite and PT · EN (it used to sit in the row in the control's voice and read as a third, broken menu
 item). Both phrases are in the markup and the theme shows one, so it is right from the first paint (no shift:
@@ -600,7 +654,7 @@ crest, measured: 8px at 320 × 568 and 844 × 390, 16px at 390 × 844, 72px at 1
 other language's notice.
 
 **`cta`** (`.cta`, «Entrar na lista de espera» / «Join the waiting list» → `#lista`): the only action on the
-first screen, a text link-button under the status. Alegreya Sans 500, 16px on phones, 18px from 900px and 20px
+first screen, a text link-button under the status. EB Garamond 500, 17px on phones, 19px from 900px and 21px
 from 1200px, tinta / linho, a 1.5px underline 0.3em below in full ink at rest (`--underline-cta`), 44px tall,
 48px under the status from 900px (squint test: after a blur it still reads as the next step beside a large
 photograph). Hover (fine pointer): the underline firms to 2px, 150ms. Pressed: `scale(0.97)`, 160ms `--ease-out`. Click, tap, Enter or Space (it
@@ -815,7 +869,7 @@ unlit at night.
 - **idle**: as above; the email field is described by the list sentence (`aria-describedby="lista-lede"`), so
   focus landing in it (Tab, or the walk-in on request) reads what it is for. **invalid** (client check, or the
   server's 400 `invalid_email` / `consent_required`): the field gets `aria-invalid="true"`, a 2px barro edge and
-  an inline message in barro 16px below it, which replaces the description; focus moves to the first invalid
+  an inline message in barro 17px below it, which replaces the description; focus moves to the first invalid
   field; the message clears as soon as the value is fixed (and the description returns). **sending**: `aria-busy` on the form, `aria-disabled` on the button (focus stays on it), label
   «A enviar…» / «Sending…», further submits ignored. **success**: the fields give way to «Obrigado. Já está na
   lista.» / «Thank you. You are on the list.» in the form's own height (nothing around it moves), anchored at the
@@ -838,16 +892,16 @@ unlit at night.
   `credentials: omit`, `referrerPolicy: no-referrer`, `cache: no-store`. The key is public by design: the
   table is not readable, only this function is callable. Nothing is sent before submit.
 
-**`footer`**: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (EN «Privacy»), Alegreya Sans
-16/24px muted, lining figures; the link is 44px tall. Its 4px tap padding is taken back by a −4px margin, so both
+**`footer`**: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (EN «Privacy»), EB Garamond 500
+17/25px muted; the link is 44px tall. Its 4px tap padding is taken back by a −4px margin, so both
 « · » separators are spaced alike. Below 480px name, place and link take a line each (no dangling separator), and
 the link's box takes back only 4px of the footer's 12px bottom padding, so its focus ring (2px at a 3px offset)
 fits inside the page at its foot (review r1: at 320 × 568 the ring's bottom edge was cut off by the document's end).
 
-**`privacy notice`** (`privacidade/`, `en/privacy/`): same top bar and tokens; the lockup (24px) as home
-link; h1 title (Alegreya 26–34px); a short intro at `--size-intro` (the lede, never under 21px, so on phones it
-is a clear step over the 18px body, not a 1px one); ten short sections (section name in Alegreya Sans 500 16px +
-one Alegreya paragraph at 18/28px, measure 26.5em, no hyphenation): controller and contact; data; purpose (to let
+**`privacy notice`** (`privacidade/`, `en/privacy/`): same top bar and tokens; the lockup (30px, its line on
+two lines) as home link; h1 title (EB Garamond 28–38px); a short intro at `--size-intro` (the lede, never under
+22px, so on phones it is a clear step over the 19px body, not a 1px one); ten short sections (section name as a
+label, Cinzel capitals 17px tracked 0.2em, + one EB Garamond paragraph at 19/30px, measure 27em, no hyphenation): controller and contact; data; purpose (to let
 you know about the opening: exactly what the consent covers); legal basis (consent, art. 6(1)(a) GDPR; giving the
 email is optional; withdrawable without affecting the lawfulness of earlier processing); retention (until
 withdrawal, at most 24 months); processor (Supabase, EU servers in Paris, and its short-lived request logs: IP
@@ -1274,7 +1328,8 @@ pt-PT first, EN second. Facts only.
 The only contact on the site is inn@abrazileira.com (privacy notice, the no-JS line and the send error).
 The round 3 copy changes (sun note, success, send error, button label) are new pt-PT lines: they need the client's
 sign-off.
-Open Graph: `assets/img/og.jpg`, 1200 × 630, 57 KB, Noite: the lockup and the photograph of the entrance (doors
+Open Graph: `assets/img/og.jpg`, 1200 × 630, 58 KB, Noite: the lockup (its line on two lines at 23px, 0.36em,
+so it still reads at about 10px when a link preview shows the card 500px wide) and the photograph of the entrance (doors
 closed, the lantern lit, the hall's light in the gap), rendered by `src/og.py` from the real components and
 layers (`--replace` writes it into `src/assets/img/`); JPEG, since it is a photograph (the PNG of the same frame is
 about ten times larger). `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
@@ -1333,7 +1388,7 @@ accessibility tree (nothing is made inert or hidden).
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
   rest after a reload at the bottom, on six screens including 844 × 390 and 1440 × 900 at 200%; the scroll to the
   readable form is 0.9–1.2 screens on six viewports; the send error carries the mailto link and the success line
-  sits where the field was, PT and EN; the sun note shows on phones, in Alegreya, with dark mode not overriding
+  sits where the field was, PT and EN; the sun note shows on phones, in EB Garamond, with dark mode not overriding
   the sky, clear of the crest at five sizes). `src/tests/png.js` decodes the screenshots (Node's zlib only).
 - Output: `docs/index.html`, `docs/en/index.html`, `docs/privacidade/index.html`, `docs/en/privacy/index.html`,
   `docs/404.html`, `docs/design/index.html` (noindex, unlinked styleguide), `assets/css/tokens.css`,
@@ -1348,10 +1403,11 @@ accessibility tree (nothing is made inert or hidden).
   Pages), the only third-party request is the form submit to Supabase (EU).
 - Raw hex appears only in tokens.css, plus what cannot read CSS: the two `theme-color` metas, the manifest and
   favicon.svg.
-- Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded): 89.3 kB — HTML 9.2 (was 60.1
-  with the inline drawing), CSS 8.7 (tokens 3.3 with the two LQIPs, site 5.4), JS 9.2 (+0.8: the photo's loading
-  and decoding, the camera's geometry), fonts 62.2 (Cinzel 40.7, Alegreya 12.5, Alegreya Sans 9.0); target 150 kB,
-  ceiling 170 kB (og and icons excluded). The privacy notice is 6.8 kB of HTML.
+- Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded): 72.7 kB — HTML 11.6, CSS
+  11.0 (tokens 5.4 with the two LQIPs and the fallback faces, site 5.6), JS 10.1, fonts 40.0 (Brazileira Wordmark
+  3.0, Cinzel capitals 6.0, EB Garamond 400 15.0 and 500 15.9; the pitch typography replaced 62.2 kB of Cinzel and
+  Alegreya files, 94.2 kB before); target 150 kB, ceiling 170 kB (og and icons excluded). The privacy notice is
+  6.9 kB of HTML (68.0 kB in all).
   The photo is counted on its own (Components › entrance › Budgets: 98 KB by day, 47 KB by night on a 3× phone).
   The HTML lost the inline SVG drawing (it was most of the page) and gained a `<picture>` per layer and theme. CLS 0
   on every page (the photograph's boxes are sized by CSS; the wrapper grows below the fold).
@@ -1364,8 +1420,9 @@ accessibility tree (nothing is made inert or hidden).
 | Tight portrait | `(orientation: portrait) and (max-height: 42.5em)` (≤ 680px tall) | top bar inset 4px, lede 16px above, action 8px under the status, 16px between the action and the photograph, compact cue band |
 | Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 24px minimum, lede 12px above, no cue band, the photograph takes the height that is left (door and steps in the first screen) |
 | Split | `(min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em)` | 5fr text \| 6fr entrance, 64px apart, container 86rem; lede 48px under the lockup; action 48px under the status; top bar inset follows the container |
-| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 24–28px, lede 18px, status 4px under it, action right under it, entrance min 16rem |
-| Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 18px; then 20px |
+| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: wordmark 30–36px (its line on two lines), lede 19px, status 4px under it, action right under it, entrance min 16rem |
+| Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 19px; then 21px |
+| Lockup line | `(min-width: 64em) and (min-height: 43.75em)`, then `@container (min-width: 5.3em) and (min-width: 19.5rem)` on the lockup | home only: BOUTIQUE HOTEL · TORRES VEDRAS on one line, as on the pitch, where it is at most 0.9 of the wordmark's width (0.84 at 1024 × 700, 0.81 from 1280) and fits the column (two lines everywhere else, and with enlarged text) |
 | Footer lines | `(max-width: 29.99em)` | name, place and link on three lines, no separators |
 | Narrow PT lede | `(min-width: 20em) and (max-width: 22.49em)` (and small landscape phones) | the Portuguese lede one phrase a line (a plain wrap at 14.4em) |
 | Sun note | every width; `(min-width: 56.25em) and (min-height: 37.5em)` | its own line under Dia · Noite; the stage clears it by 12px (`--sol-h`) except on screens from 900 × 600, where the crest is far below |
@@ -1378,7 +1435,7 @@ line); the field and the button are 48px. Nothing collapses into a menu: there a
 ## Do's and Don'ts
 
 Do:
-- Use the original logo exactly (emblem.svg + Cinzel lockup files, byte-identical), at 24px or more.
+- Use the pitch's lockup exactly (emblem.svg, the Brazileira Wordmark file, Cinzel capitals for its line), with the wordmark at 30px or more.
 - Read colours through the semantic roles (`--color-*`) and the photograph's roles (`--t-*`, `--photo-lqip`,
   `--color-leaf-shade`); add new values to tokens.css first.
 - Keep one action per screen and give it the only full-ink underline there.
@@ -1397,7 +1454,7 @@ Do:
 
 Don't:
 - Recolour, redraw, outline or animate the logo; set its words in another face or tracking.
-- Add tracked capitals, italics, bold, exclamation marks, emoji or virtue words outside the logo.
+- Add tracked capitals outside the lockup and labels; add italics, bold, exclamation marks, emoji or virtue words.
 - Add shadows, glass, gradients in the interface, cards, panels, dividers or rounded corners (the focus ring's
   2px is the only radius).
 - Add ornament that says nothing, or a second copy of something the visitor has just seen (the list's own lamp
@@ -1416,7 +1473,7 @@ Don't:
 2. New values go into tokens.css first (primitive, then role); components read roles only.
 3. Re-measure the contrast matrix after any colour change (the hall surface too).
 4. Keep the logo untouched; new pages reuse `.lockup`.
-5. Keep tracked capitals inside the logo and sentence case everywhere else.
+5. Keep tracked capitals to the lockup and labels (Cinzel) and sentence case everywhere else.
 6. Change the photograph in the asset pipeline (re-export, then `ship_assets.py`, which rewrites photo.json), never
    by hand in the HTML; keep the layers' rects in facade fractions.
 7. Change the sequence in the table in `src/site.js` (element, p range, curve, values) and the curves in
@@ -1430,13 +1487,14 @@ Don't:
 - Canvas papel #F9F0E9 / noite #1C120B · hall #F2DEC4 / #FCE7BC · text nogueira #5F3819 / linho #F3E6D6 ·
   strongest tinta #2E1E14 · muted castanho #804F1E / linho-escuro #C2AE96 · brass text latao-texto #83602C
   by day, latao #DB9E42 by night · errors barro #9E3B1E on the hall only.
-- "A control in the A Brazileira system: Alegreya Sans 500, 16px, tracking 0.018em, sentence case, colour
+- "A control in the A Brazileira system: EB Garamond 500, 17px, tracking 0.01em, sentence case, colour
   `--color-text-muted`, 44px target, current state = `--color-text-strong` with a short 2px brass tick
   (`--color-accent-text`) centred under the word (never an underline: underlines are links), focus = 2px solid
   `--color-focus`, offset 3px."
-- "A form on the hall: `.surface-hall`, 26rem column, Alegreya Sans 500 16px labels above 48px square fields
-  (Alegreya 400 18px text; papel by day, luz-nucleo by night, 1px nogueira), a full-width 48px tinta button with
-  papel text in Alegreya Sans 16/18px, the consent in Alegreya 16/24px, errors in barro 16px under the field with
+- "A form on the hall: `.surface-hall`, 26rem column, its name in Cinzel capitals 19px tracked 0.2em, EB Garamond
+  500 17px labels above 48px square fields (EB Garamond 400 19px text; papel by day, luz-nucleo by night, 1px
+  nogueira), a full-width 48px tinta button with papel text in EB Garamond 500 17/19/21px, the consent in EB
+  Garamond 400 17/25px, errors in barro 17px under the field with
   aria-invalid/aria-describedby, outcomes in a role=status line."
 
 ## Roadmap and known gaps
@@ -1464,7 +1522,8 @@ Don't:
 - The photograph is a generic Portuguese entrance chosen by the client, not this house: when the house is
   restored, photograph its own door the same way (one frame, the doors closed, plus the layers).
 - Content pages (rooms, ground floor, contacts) reuse these tokens and the hall surface.
-- Cinzel could be subset further to capitals only (about 30 KB saved).
+- EB Garamond with old-style figures (`onum`) would match the pitch's specimen more closely; the Google build
+  used here carries lining figures only.
 - A double opt-in email and an unsubscribe link belong to the sending tool, not this page.
 - Mail: inn@abrazileira.com is the only contact the site publishes (rights, withdrawal, the no-JS sign-up). The
   domain has no MX record yet; Email Routing for inn@ must be set up and tested from an outside mailbox

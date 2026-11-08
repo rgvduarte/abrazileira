@@ -153,11 +153,15 @@ TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 
 
 def lockup_html(level="h1", idp="ab-emblem", extra=""):
+    """the crest, the wordmark (a large A and the ornamental B, RAZILEIR at 72%, a large closing A; drawn, aria-hidden,
+    its name read once from the hidden «A Brazileira») and its line in spaced capitals; the text reads «A Brazileira,
+    Boutique Hotel, Torres Vedras» (the « · » is drawn, not read)"""
     return (f'<{level} class="lockup{extra}">'
             f'<span class="lockup__emblem">{emblem(idp)}</span>'
-            f'<span class="lockup__name">A Brazileira</span><span class="sr">, </span>'
-            f'<span class="lockup__kind">Boutique Hotel</span><span class="sr">, </span>'
-            f'<span class="lockup__place">Torres Vedras</span>'
+            f'<span class="sr">A Brazileira</span><span class="lockup__name" aria-hidden="true">A B<span class="lockup__sc">razileir</span><span class="lockup__end">a</span></span><span class="sr">, </span>'
+            f'<span class="lockup__label"><span class="lockup__kind">Boutique Hotel</span>'
+            f'<span class="lockup__dot" aria-hidden="true"> · </span><span class="sr">, </span>'
+            f'<span class="lockup__place">Torres Vedras</span></span>'
             f'</{level}>')
 
 
@@ -196,9 +200,10 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <link rel="icon" href="{p}favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{p}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="{p}site.webmanifest">
-<link rel="preload" href="{p}assets/fonts/cinzel-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{p}assets/fonts/alegreya-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{p}assets/fonts/alegreya-sans-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/brazileira-wordmark.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/cinzel-caps-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/eb-garamond-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/eb-garamond-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{p}assets/css/tokens.css">
 <link rel="stylesheet" href="{p}assets/css/site.css">
 <script src="{p}assets/js/site.js" defer></script>"""
@@ -530,9 +535,8 @@ def main():
     write(os.path.join(DOCS, "assets/css/tokens.css"), min_css(tokens_css()))
     write(os.path.join(DOCS, "assets/css/site.css"), min_css(read(os.path.join(SRC, "site.css"))))
     write(os.path.join(DOCS, "assets/js/site.js"), min_js(read(os.path.join(SRC, "site.js"))))
-    for f in ["cinzel-latin-400-normal.woff2", "cinzel-latin-600-normal.woff2", "cinzel-latin-700-normal.woff2",
-              "alegreya-latin-400-normal.woff2", "alegreya-sans-latin-500-normal.woff2",
-              "OFL-cinzel.txt", "OFL-alegreya.txt", "OFL-alegreya-sans.txt"]:
+    for f in ["brazileira-wordmark.woff2", "cinzel-caps-400.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
+              "OFL-cinzel-decorative.txt", "OFL-cinzel.txt", "OFL-eb-garamond.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
     for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "og.jpg"]:
         copy("img/" + f, "assets/img/" + f)

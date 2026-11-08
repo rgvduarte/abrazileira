@@ -90,10 +90,10 @@ svg { display: block; }
 .controls { display: flex; align-items: center; }
 .controls[hidden] { display: none; }
 .controls--lang { margin-inline-start: auto; }
-.controls__sep { color: var(--color-text-muted); user-select: none; }
+.controls__sep { font-family: var(--font-dot); color: var(--color-text-muted); user-select: none; }
 /* the sun note: while the sky over Torres Vedras chose the theme (html[data-sol]), one short sentence under the
    control says so, on every screen: «É noite em Torres Vedras.» It is the house speaking, not a control: the
-   serif (Alegreya 400, like every sentence the house says), muted, on its own line, aligned with the control's
+   serif (EB Garamond 400, like every sentence the house says), muted, on its own line, aligned with the control's
    text. It also describes the two buttons for screen readers. The theme shows the matching phrase; it is there
    from the first paint (the head script sets data-sol), so nothing moves and nothing is added later. On the home
    page the stage clears it by --sol-h. */
@@ -117,7 +117,7 @@ svg { display: block; }
 :root[data-sol] { --sol-h: calc(var(--size-ui) * var(--leading-ui) - var(--space-2)); }
 @media (min-width: 56.25em) and (min-height: 37.5em) { :root[data-sol] { --sol-h: 0px; } }   /* room enough above the crest */
 
-/* one control style for every switch: sentence case, the interface tracking (Alegreya Sans 500 at 16px) */
+/* one control style for every switch: sentence case, the interface tracking (EB Garamond 500 at 17px) */
 .ctl {
   position: relative;
   display: inline-flex;
@@ -159,8 +159,8 @@ svg { display: block; }
 /* Dia and Noite: their own fallback, sized so the pair sets to the web font's width (PT and EN), so the sun note
    beside them never moves when the font arrives */
 .ctl[data-theme-set] { font-family: var(--font-theme); }
-/* PT and EN are capitals: the same 16px, spaced so they sit at the weight of Dia and Noite */
-.ctl[hreflang] { letter-spacing: var(--track-caps); }
+/* PT and EN are capitals: the same 17px, spaced so they sit at the weight of Dia and Noite */
+.ctl[hreflang] { font-family: var(--font-lang); letter-spacing: var(--track-caps); }
 
 /* ---- Stage -------------------------------------------------------------------- */
 .stage {
@@ -182,7 +182,15 @@ svg { display: block; }
   text-align: center;
 }
 
-/* ---- Lockup (h1): the original logo ------------------------------------------- */
+/* ---- Lockup (h1): the crest over the wordmark and its line, as on the identity pitch ------------------
+   The crest is the original emblem. «A Brazileira» is the pitch's reading of the façade's 1930s lettering: a heavy
+   flared Roman with a large A, the ornamental B, RAZILEIR in capitals at 72% of their height (the R's kicked out on
+   the baseline) and a large A to close, as drawn. Under it, close, in spaced Roman capitals: BOUTIQUE HOTEL · TORRES
+   VEDRAS on one line where the wordmark is large (the home page in the split layout, from 1024 x 700), on two lines
+   everywhere else. Nothing in the lockup is held on one line by force: with text enlarged (200%), the wordmark
+   breaks after its A, the line falls back to two lines when one does not fit the column (container query, in the
+   wordmark's em), and each label line may break between its words. The name is read once, from the hidden text
+   «A Brazileira»; the drawn letters are aria-hidden (one text run, so no screen reader splits «A B» / «razileir»). */
 .lockup {
   display: flex;
   flex-direction: column;
@@ -198,32 +206,45 @@ svg { display: block; }
 .lockup__emblem {
   inline-size: var(--lockup-emblem);
   aspect-ratio: 200 / 228;
-  margin-block-end: 0.42em;
+  margin-block-end: 0.3em;
   color: var(--color-mark);
 }
 .lockup__emblem svg { inline-size: 100%; block-size: 100%; }
 .lockup__name {
   letter-spacing: var(--track-wordmark);
   margin-inline-end: calc(var(--track-wordmark) * -1);   /* optical centre */
+  margin-block-end: var(--lockup-pull);                  /* the line sits close under the letters, as on the pitch */
 }
-.lockup__kind {
-  margin-block-start: 0.34em;
-  font-size: var(--lockup-kind);
-  font-weight: var(--weight-kind);
-  letter-spacing: var(--track-kind);
-  margin-inline-end: calc(var(--track-kind) * -1);
+.lockup__sc { font-family: var(--font-display-sc); font-size: var(--lockup-sc); }
+.lockup__end { font-family: var(--font-display-end); }   /* the closing A: its own fallback width, so each run keeps its start */
+.lockup__label {
+  display: block;
+  margin-block-start: var(--lockup-label-gap);
+  font-family: var(--font-label-lockup);
+  font-weight: var(--weight-label);
+  font-size: var(--lockup-label);
+  line-height: var(--leading-label);
+  letter-spacing: var(--track-label);
+  text-align: center;
+  color: var(--color-text-strong);
 }
-.lockup__place {
-  margin-block-start: 0.7em;
-  font-size: var(--lockup-place);
-  font-weight: var(--weight-place);
-  letter-spacing: var(--track-place);
-  margin-inline-end: calc(var(--track-place) * -1);
-  color: var(--color-accent-text);
+.lockup__kind, .lockup__place { display: block; margin-inline-end: calc(var(--track-label) * -1); }
+.lockup__place { font-family: var(--font-label-place); }   /* each piece has a fallback matched to its own width */
+.lockup__dot { display: none; font-family: var(--font-label-dot); color: var(--color-mark); }
+/* home, split layout from 1024 x 700: one line with « · », as on the pitch (13.7px at a 72px wordmark, never under
+   11.2px, never wider than 0.9 of the wordmark), only while it fits the text column: the lockup is the container
+   and its em is the wordmark size, so enlarged text (whose 0.7rem floor grows) drops it back to two lines */
+@media (min-width: 64em) and (min-height: 43.75em) {
+  .porta .lockup { align-self: stretch; container-type: inline-size; }
+  @container (min-width: 5.3em) and (min-width: 19.5rem) {
+    .porta .lockup__label { font-size: var(--lockup-label-line); margin-block-start: var(--lockup-label-line-gap); margin-inline-end: calc(var(--track-label) * -1); }
+    .porta .lockup__kind, .porta .lockup__place { display: inline-block; margin-inline-end: 0; }
+    .porta .lockup__dot { display: inline; }
+  }
 }
 
 /* ---- Message ------------------------------------------------------------------ */
-/* the sentence the house says: Alegreya, the largest text after the logo */
+/* the sentence the house says: EB Garamond, the largest text after the logo */
 .lede {
   max-inline-size: var(--measure-lede);
   margin-block-start: var(--space-5);
@@ -237,10 +258,11 @@ svg { display: block; }
   text-wrap: balance;
 }
 /* 320-359px phones, Portuguese: one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada /
-   para receber hóspedes.»). A plain wrap at 14.4em lands on those breaks with 3% to spare either side, so the web
-   font and its fallback break alike (balance would pick a different split for each). From 360px: two balanced lines. */
+   para receber hóspedes.»). In EB Garamond the first phrase is 12.6em and the first phrase with «está» 14.2em: a
+   plain wrap at 13.4em lands on those breaks with 6% to spare either side, so the web font and its fallback break
+   alike (balance would pick a different split for each). From 360px: two balanced lines. */
 @media (min-width: 20em) and (max-width: 22.49em), (orientation: landscape) and (max-height: 31.25em) and (max-width: 42.49em) {
-  .lede:lang(pt) { max-inline-size: 14.4em; text-wrap: wrap; }   /* also the narrow column of small landscape phones */
+  .lede:lang(pt) { max-inline-size: 13.4em; text-wrap: wrap; }   /* also the narrow column of small landscape phones */
 }
 /* the status is a postscript to the sentence: close under it, brass, interface size. The action stands apart
    (more space above, strong ink, underline), so the two never compete; weight never separates them */
@@ -249,7 +271,7 @@ svg { display: block; }
   font-family: var(--font-status);
   color: var(--color-accent-text);
 }
-/* on phones the action is set at the status's size (16px): there the status keeps the quieter ink in Noite, where
+/* on phones the action is set at the status's size (17px): there the status keeps the quieter ink in Noite, where
    brass is the most saturated text on the screen, so «Abre brevemente.» never weighs as much as the action */
 @media (max-width: 56.24em) { .status { color: var(--color-status-small, var(--color-accent-text)); } }
 
@@ -558,7 +580,6 @@ picture.t-noite { display: var(--t-noite); }
   background: var(--color-bg);
 }
 .porta-on [data-reveal] > * { opacity: 0; pointer-events: none; }   /* until the run brings them in (site.js) */
-.lista__title,
 .notice__title {
   font-family: var(--font-title);
   font-weight: var(--weight-text);
@@ -569,7 +590,20 @@ picture.t-noite { display: var(--t-noite); }
   color: var(--color-text-strong);
   text-wrap: balance;
 }
-.lista__title { position: relative; text-align: center; }
+/* the list's name is a label, as the pitch names its sections: Roman capitals, spaced, strong ink; the sentence
+   under it carries the size */
+.lista__title {
+  position: relative;
+  font-family: var(--font-label-list);
+  font-weight: var(--weight-label);
+  font-size: var(--size-read);
+  line-height: var(--leading-label);
+  letter-spacing: var(--track-section);
+  margin-inline-end: calc(var(--track-section) * -1);   /* optical centre */
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--color-text-strong);
+}
 .lista__lede,
 .notice__intro {
   font-family: var(--font-list);
@@ -581,7 +615,7 @@ picture.t-noite { display: var(--t-noite); }
 }
 .lista__lede {
   max-inline-size: var(--measure-lede);     /* two balanced lines at every width, in either font */
-  margin-block-start: var(--space-3);
+  margin-block-start: var(--space-4);
   margin-inline: auto;
   text-align: center;
   text-wrap: balance;
@@ -607,8 +641,8 @@ picture.t-noite { display: var(--t-noite); }
   background: var(--color-field);
   color: var(--color-text-strong);
   font: inherit;
-  /* what the guest writes: Alegreya 400 (the hand of the house's book, never the Medium interface weight),
-     18px so iOS does not zoom on focus, lining figures for addresses */
+  /* what the guest writes: EB Garamond 400 (the house's book face, never the Medium interface weight),
+     19px so iOS does not zoom on focus, lining figures for addresses */
   font-family: var(--font-text);
   font-weight: var(--weight-text);
   font-size: var(--size-read);
@@ -810,14 +844,14 @@ picture.t-noite { display: var(--t-noite); }
 .notice__title { margin-block-start: var(--space-8); max-inline-size: var(--measure-title); }
 .notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); font-size: var(--size-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
 .notice__item { margin-block-start: var(--space-6); }
-/* section names are signposts, not titles: the interface voice, strong ink */
+/* section names are signposts, not titles: labels, as on the pitch (Roman capitals, spaced), strong ink */
 .notice__item h2 {
-  font-family: var(--font-ui);
-  font-weight: var(--weight-ui);
+  font-family: var(--font-label);
+  font-weight: var(--weight-label);
   font-size: var(--size-ui);
   line-height: var(--leading-text);
-  letter-spacing: var(--track-ui);
-  font-variant-numeric: var(--num-ui);
+  letter-spacing: var(--track-section);
+  text-transform: uppercase;
   color: var(--color-text-strong);
 }
 /* a legal text is read word by word: no hyphenation at any width; text-wrap: pretty handles the rag */

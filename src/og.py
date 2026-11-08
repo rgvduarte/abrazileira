@@ -27,7 +27,10 @@ html = f"""<!doctype html>
 html, body {{ width: 1200px; height: 630px; overflow: hidden; }}
 body {{ display: block; position: relative; min-height: 0; }}
 .og-text {{ position: absolute; inset: 0 auto 0 0; width: 600px; display: flex; align-items: center; justify-content: center; padding-block-end: 8px; }}
-.og-text .lockup {{ font-size: 50px; }}
+.og-text .lockup {{ font-size: 64px; }}
+/* the line on two lines at 23px (0.36em): link previews show the card about 500px wide, where one line at the
+   pitch's 0.19em would be 5px; two lines keep BOUTIQUE HOTEL / TORRES VEDRAS readable at about 10px */
+.og-text .lockup__label {{ font-size: 0.36em; }}
 .og-art {{ position: absolute; inset: 14px 40px -8px 560px; }}   /* the photo's faded foot may leave the frame */
 .og-art .entrance {{ position: absolute; inset: 0; min-block-size: 0; max-block-size: none; margin: 0; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }}
 .og-art .scene {{ inset-inline-start: 0; }}

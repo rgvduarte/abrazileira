@@ -38,12 +38,12 @@ def pairs():
     dia = [("Texto forte · wordmark", "tinta", "papel", "texto"),
            ("Texto · lede", "nogueira", "papel", "texto"),
            ("Texto discreto · controlos, rodapé", "castanho", "papel", "texto"),
-           ("Latão-texto · Torres Vedras, estado", "latao-texto", "papel", "texto"),
-           ("Emblema", "latao-marca", "papel", "gráfico mín. 3:1"),
+           ("Latão-texto · estado", "latao-texto", "papel", "texto"),
+           ("Emblema · ponto do rótulo do logótipo", "latao-marca", "papel", "gráfico mín. 3:1"),
            ("Foco · linha do chão", "nogueira", "papel", "não-texto mín. 3:1")]
-    noite = [("Texto · wordmark, lede", "linho", "noite", "texto"),
+    noite = [("Texto · wordmark, rótulos, lede", "linho", "noite", "texto"),
              ("Texto discreto · controlos, rodapé", "linho-escuro", "noite", "texto"),
-             ("Latão · Torres Vedras, estado, emblema, foco", "latao", "noite", "texto")]
+             ("Latão · estado, emblema, ponto do rótulo, foco", "latao", "noite", "texto")]
     hall = []
     for h in ("sala-dia", "sala-noite"):
         hall += [("Título, rótulos, ligações · " + h, "tinta", h, "texto"),
@@ -233,7 +233,7 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg th {{ font-weight: var(--weight-ui); color: var(--color-text-strong); }}
 .sg-num {{ font-variant-numeric: lining-nums; color: var(--color-text-strong); }}
 .sg-scroll {{ overflow-x: auto; }}
-.sg-h2 {{ font-family: var(--font-ui); font-weight: var(--weight-ui); color: var(--color-text-strong); }}
+.sg-h2 {{ font-family: var(--font-label); font-weight: var(--weight-label); letter-spacing: var(--track-section); text-transform: uppercase; color: var(--color-text-strong); }}
 .sg-scroll:focus-visible {{ outline-offset: var(--space-1); }}
 .sg-type li {{ display: grid; gap: var(--space-1); padding-block: var(--space-4); border-block-end: var(--hairline) solid var(--color-surface); }}
 .sg-type small {{ font-size: var(--size-ui); color: var(--color-text-muted); }}
@@ -305,17 +305,17 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
 <h2>Tipografia</h2>
 <div class="sg-type"><ul>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__name">A Brazileira</span></span><small>Cinzel 600 · <code>--size-wordmark</code> 28 a 56px · tracking 0.045em · só no logótipo</small></li>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__kind">Boutique Hotel</span></span><small>Cinzel 700 · 0.5em do wordmark · tracking 0.12em</small></li>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__place">Torres Vedras</span></span><small>Cinzel 400 · 0.4em · tracking 0.3em · latão</small></li>
-<li><span class="lista__title" style="text-align:start">Lista de espera</span><small>Alegreya 400 · <code>--size-title</code> 26 a 34px · altura de linha 1.18 · tracking –0.01em · títulos de secção e de página</small></li>
-<li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Alegreya 400 · <code>--size-lede</code> 18px (320) a 19px (390) a 26px · linha 1em + 7.2px (19/26, 26/33) · tracking –0.005em · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
-<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>Alegreya 400 · <code>--size-read</code> 18/28px · algarismos de texto · medida 26.5em (até 68 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
-<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>Alegreya Sans 500 · <code>--size-cta</code> 16px no telemóvel, 18px a partir de 900px, 20px a partir de 1200px · tracking 0.018em / 0.015em · sublinhado 1.5px · a ação, o botão e a ligação de regresso</small></li>
-<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>Alegreya Sans 500 · <code>--size-ui</code> 16px · tracking 0.018em · frase normal; PT e EN com 0.06em · o estado mais calmo que a ação: latão, mais perto da frase (no telemóvel, de Noite, a tinta calma: a ação tem lá o mesmo tamanho)</small></li>
-<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);color:var(--color-text-muted)">É noite em Torres Vedras.</span><small>Alegreya 400 · <code>--size-ui</code> 16/20px · a nota do sol: uma frase da casa, por baixo de Dia · Noite, só quando o sol escolheu o tema, em todos os ecrãs</small></li>
-<li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>Alegreya 400 · <code>--size-ui</code> 16/24px · o consentimento (o rótulo «Email» e as mensagens em Alegreya Sans 16px)</small></li>
-<li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Alegreya Sans 500 · <code>--size-ui</code> 16/24px · algarismos alinhados</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__name">A B<span class="lockup__sc">razileir</span><span class="lockup__end">a</span></span></span><small>Brazileira Wordmark (Cinzel Decorative Black, modificada: o B ornamental mantém-se, o R ornamental com a cauda redesenhada como um pontapé sobre a linha de base, as outras letras são as capitais romanas simples; só A a Z, 3,0 KB; renomeada como a OFL exige) · <code>--size-wordmark</code> 36 a 72px · o A, o B e o A final grandes, RAZILEIR a 72% · só no logótipo. A leitura do pitch do lettering da fachada (anos 30): romana pesada de serifas abertas, o B ornamental e os dois R de perna lançada</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__label" style="font-size:var(--lockup-label-line);margin:0"><span class="lockup__kind" style="display:inline;margin:0">Boutique Hotel</span><span class="lockup__dot" style="display:inline"> · </span><span class="lockup__place" style="display:inline;margin:0">Torres Vedras</span></span></span><small>Cinzel 400 (só capitais, 5,9 KB) · uma linha com « · » a 0.19em do wordmark (13,7px a 72px, nunca menos de 11,2px, nunca mais larga que 0.9 do wordmark) na página inicial a partir de 1024 × 700, se couber na coluna; duas linhas a 0.32em (nunca menos de 11px) em todo o lado · tracking 0.32em · junto ao wordmark (da linha de base às capitais, 0.2 da altura do B) · tinta forte, o ponto em latão</small></li>
+<li><span class="lista__title" style="text-align:start;margin:0">Lista de espera</span><small>Cinzel 400 · <code>--size-read</code> 19px · tracking 0.2em · capitais · o nome da secção, como o pitch nomeia as suas (nos nomes de secção da nota de privacidade, 17px)</small></li>
+<li><span class="notice__title" style="margin:0">Nota de privacidade</span><small>EB Garamond 400 · <code>--size-title</code> 28 a 38px · altura de linha 1.15 · o título de página</small></li>
+<li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>EB Garamond 400 · <code>--size-lede</code> 19px (320) a 20px (390) a 28px · linha 1em + 7.2px (20/27, 28/35) · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
+<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>EB Garamond 400 · <code>--size-read</code> 19/30px · algarismos alinhados (os únicos desta fonte) · medida 27em (até 70 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
+<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>EB Garamond 500 · <code>--size-cta</code> 17px no telemóvel, 19px a partir de 900px, 21px a partir de 1200px · tracking 0.01em · sublinhado 1.5px · a ação, o botão e a ligação de regresso</small></li>
+<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>EB Garamond 500 · <code>--size-ui</code> 17px · tracking 0.01em · frase normal; PT e EN com 0.08em · o estado mais calmo que a ação: latão, mais perto da frase (no telemóvel, de Noite, a tinta calma: a ação tem lá o mesmo tamanho)</small></li>
+<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);color:var(--color-text-muted)">É noite em Torres Vedras.</span><small>EB Garamond 400 · <code>--size-ui</code> 17/21px · a nota do sol: uma frase da casa, por baixo de Dia · Noite, só quando o sol escolheu o tema, em todos os ecrãs</small></li>
+<li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>EB Garamond 400 · <code>--size-ui</code> 17/25px · o consentimento (o rótulo «Email» e as mensagens em EB Garamond 500, 17px)</small></li>
+<li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>EB Garamond 500 · <code>--size-ui</code> 17/25px</small></li>
 </ul></div>
 
 <h2>Espaço (base 4px)</h2>
@@ -341,7 +341,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
-<li>Maiúsculas espaçadas só dentro do logótipo. Frases em Alegreya 400; interface em Alegreya Sans 500, frase normal, 16 a 18px. Quatro tamanhos de texto fora do logótipo, nada abaixo de 16px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
+<li>Três vozes, como no pitch de identidade: o wordmark (só no logótipo), capitais romanas espaçadas em Cinzel para rótulos (a linha do logótipo e os nomes de secção) e EB Garamond para tudo o que se diz (400 nas frases, 500 na interface, sempre em frase normal). No máximo cinco tamanhos de texto fora do logótipo, nada abaixo de 17px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
 <li>Fundos planos: Papel de dia, Noite (#1C120B, nogueira escura) à noite. A fotografia funde-se neles pela margem; nenhum gradiente na interface.</li>
 <li>O sublinhado é só para ligações. O estado atual de um controlo é tinta forte e um traço curto em latão; o estado nunca é só cor.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>

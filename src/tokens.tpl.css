@@ -8,55 +8,71 @@
    site.css consumes layers 2 and 3 only.
    ========================================================================== */
 
-/* ---- Fonts: self-hosted, OFL (licences in ../fonts/) -------------------- */
-@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
-@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
-/* Sentences and interface: Alegreya (serif) + Alegreya Sans, one weight each. Subset to Latin + Portuguese
-   (U+0020-007E, U+00A0, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €), layout features
-   kern, liga (fi fl Th only) and lnum, unhinted: 12.5 KB + 9.0 KB. */
-@font-face { font-family: "Alegreya"; src: url("../fonts/alegreya-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Alegreya Sans"; src: url("../fonts/alegreya-sans-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
-/* The same Alegreya file under a second name for long reading text (the privacy notice): font-display optional.
+/* ---- Fonts: self-hosted, OFL (licences in ../fonts/) --------------------
+   The client's identity pitch, three voices: the wordmark (the building's 1930s lettering read as a Roman with
+   an ornamental B and kicked R's), spaced Roman capitals for labels, and a classical book serif for everything said. */
+/* «A Brazileira» only: Cinzel Decorative Black, modified (ornamental B kept, ornamental R kept with its tail redrawn
+   as a kick on the baseline, every other letter the plain Roman capital, A-Z only: 3.0 KB) and renamed, as the
+   Reserved Font Name «Cinzel» of Cinzel Decorative (2012) requires */
+@font-face { font-family: "Brazileira Wordmark"; src: url("../fonts/brazileira-wordmark.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+/* labels: Cinzel Regular 2.000, capitals only (labels are always set in capitals), Portuguese accents, figures,
+   . , : ; · - – — ‘ ’ “ ” « » ? ! … ' & ( ) / © º ª: 5.9 KB. Cinzel 2.000 (2020) declares no Reserved Font Name,
+   so the subset keeps its name (OFL-cinzel.txt) */
+@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-caps-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+/* everything said: EB Garamond 400 (sentences) and 500 (the interface). Subset to Latin + Portuguese
+   (U+0020-007E, U+00A0, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €, × ÷ −), layout
+   features kern (GPOS), liga and locl (GSUB), unhinted: 14.6 KB + 15.5 KB. Its figures are lining (the only set in
+   this build). */
+@font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "EB Garamond"; src: url("../fonts/eb-garamond-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+/* The same 400 file under a second name for long reading text (the privacy notice): font-display optional.
    It is preloaded, so it is there on a normal load; on a slow first visit the notice stays in its matched fallback
    for that view instead of re-wrapping paragraphs (and moving the links inside them) when the font lands. */
-@font-face { font-family: "Alegreya Text"; src: url("../fonts/alegreya-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: optional; }
+@font-face { font-family: "EB Garamond Text"; src: url("../fonts/eb-garamond-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: optional; }
 
-/* Metric-matched fallbacks (Cinzel: measured with fontTools against Times metrics on the exact strings used),
-   so the swap does not move the composition. */
-@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); font-weight: 400; size-adjust: 100.19%; ascent-override: 97.41%; descent-override: 37.13%; line-gap-override: 0%; }
-@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 600; size-adjust: 97.12%; ascent-override: 100.49%; descent-override: 38.3%; line-gap-override: 0%; }
-@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 700; size-adjust: 105.16%; ascent-override: 92.81%; descent-override: 35.38%; line-gap-override: 0%; }
-/* Alegreya and Alegreya Sans: one fallback per role (and per language where the sentence differs), each sized so
-   its own strings set to the width of the web font in Chromium (Liberation Serif / Sans carry the metrics of Times
-   New Roman / Arial), then checked against the web font at about 200 widths from 320 to 2560px: a late font never
-   re-wraps a line or moves a text start by 3px or more, so CLS stays 0 with the fonts held back. Ascent and
-   descent are Alegreya's (1.016 / 0.345) and Alegreya Sans' typo metrics (0.8 / 0.2), divided by the size-adjust.
-   Regenerate after a copy change (the values follow the strings, not just the face). */
+/* Metric-matched fallbacks: one per role (and per language where the sentence differs), each sized so its own
+   strings set to the width of the web font in Chromium (Liberation Serif carries the metrics of Times New Roman),
+   then checked against the web font at about 200 widths from 320 to 2560px: a late font never re-wraps a line or
+   moves a text start by 3px or more, so CLS stays 0 with the fonts held back. Ascent and descent are the web
+   font's (EB Garamond 1.007 / 0.298, Cinzel 0.976 / 0.372), divided by the size-adjust. The wordmark's fallback is
+   Times Bold, for its weight. Regenerate after a copy change (the values follow the strings, not just the face). */
 /*FB-START*/
-@font-face { font-family: "Alegreya fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 100.90%; ascent-override: 100.69%; descent-override: 34.19%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 100.71%; ascent-override: 100.88%; descent-override: 34.26%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya consent fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 100.20%; ascent-override: 101.40%; descent-override: 34.43%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya lede fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.80%; ascent-override: 99.80%; descent-override: 33.89%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya lede fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 99.60%; ascent-override: 102.01%; descent-override: 34.64%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya list fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 100.40%; ascent-override: 101.20%; descent-override: 34.36%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya list fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.00%; ascent-override: 104.74%; descent-override: 35.57%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya intro fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.15%; ascent-override: 100.44%; descent-override: 34.11%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya intro fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.00%; ascent-override: 100.59%; descent-override: 34.16%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya title fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.30%; ascent-override: 100.30%; descent-override: 34.06%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 85.25%; ascent-override: 93.84%; descent-override: 23.46%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans cta fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 86.00%; ascent-override: 93.02%; descent-override: 23.26%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans cta fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 90.00%; ascent-override: 88.89%; descent-override: 22.22%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans foot fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 88.05%; ascent-override: 90.86%; descent-override: 22.71%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans foot fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 86.06%; ascent-override: 92.96%; descent-override: 23.24%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans name fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 87.62%; ascent-override: 91.30%; descent-override: 22.83%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans place fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 86.20%; ascent-override: 92.81%; descent-override: 23.20%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans sep fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 63.80%; ascent-override: 125.39%; descent-override: 31.35%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans back fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 88.60%; ascent-override: 90.29%; descent-override: 22.57%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans back fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 86.75%; ascent-override: 92.22%; descent-override: 23.05%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans status fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 88.50%; ascent-override: 90.40%; descent-override: 22.60%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans status fallback en"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 87.05%; ascent-override: 91.90%; descent-override: 22.98%; line-gap-override: 0%; }
-@font-face { font-family: "Alegreya Sans theme fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo"); size-adjust: 93.00%; ascent-override: 86.02%; descent-override: 21.51%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.15%; ascent-override: 108.11%; descent-override: 31.99%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.69%; ascent-override: 107.48%; descent-override: 31.81%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond consent fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 92.45%; ascent-override: 108.92%; descent-override: 32.23%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond consent fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.60%; ascent-override: 107.59%; descent-override: 31.84%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lede fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 92.74%; ascent-override: 108.58%; descent-override: 32.13%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lede fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.51%; ascent-override: 107.69%; descent-override: 31.87%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond list fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.14%; ascent-override: 108.12%; descent-override: 31.99%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond list fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 91.31%; ascent-override: 110.28%; descent-override: 32.64%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond intro fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 92.33%; ascent-override: 109.07%; descent-override: 32.28%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond intro fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.31%; ascent-override: 107.92%; descent-override: 31.94%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond title fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.28%; ascent-override: 106.81%; descent-override: 31.61%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond UI fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.94%; ascent-override: 102.82%; descent-override: 30.43%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond cta fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.33%; ascent-override: 103.46%; descent-override: 30.62%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond cta fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 98.09%; ascent-override: 102.66%; descent-override: 30.38%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond foot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 96.87%; ascent-override: 103.95%; descent-override: 30.76%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond foot fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.75%; ascent-override: 106.28%; descent-override: 31.45%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond name fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 95.62%; ascent-override: 105.31%; descent-override: 31.17%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond place fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.91%; ascent-override: 102.85%; descent-override: 30.44%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond sep fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 77.52%; ascent-override: 129.90%; descent-override: 38.44%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond dot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 65.90%; ascent-override: 152.81%; descent-override: 45.22%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond back fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.58%; ascent-override: 103.20%; descent-override: 30.54%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond back fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.14%; ascent-override: 103.66%; descent-override: 30.68%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond status fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.80%; ascent-override: 102.97%; descent-override: 30.47%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond status fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 99.82%; ascent-override: 100.88%; descent-override: 29.85%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond theme fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.54%; ascent-override: 99.17%; descent-override: 29.35%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond theme fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.04%; ascent-override: 99.66%; descent-override: 29.49%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 102.05%; ascent-override: 95.64%; descent-override: 36.45%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel list fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.37%; ascent-override: 100.24%; descent-override: 38.20%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel list fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.77%; ascent-override: 95.90%; descent-override: 36.55%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel lockup fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 103.15%; ascent-override: 94.62%; descent-override: 36.06%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel place fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 98.60%; ascent-override: 98.99%; descent-override: 37.73%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel dot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 80.49%; ascent-override: 121.26%; descent-override: 46.22%; line-gap-override: 0%; }
+@font-face { font-family: "Wordmark fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 900; size-adjust: 108.90%; ascent-override: 89.62%; descent-override: 34.16%; line-gap-override: 0%; }
+@font-face { font-family: "Wordmark sc fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 900; size-adjust: 103.26%; ascent-override: 94.52%; descent-override: 36.03%; line-gap-override: 0%; }
+@font-face { font-family: "Wordmark end fallback"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold"); font-weight: 900; size-adjust: 99.70%; ascent-override: 97.89%; descent-override: 37.31%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lang fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 104.67%; ascent-override: 96.21%; descent-override: 28.47%; line-gap-override: 0%; }
 /*FB-END*/
 
 :root {
@@ -85,71 +101,87 @@
   --sala-noite: #FCE7BC;     /* lamplight by night (luz-nucleo 72% in luz)           */
 
   /* ---- Type ----------------------------------------------------------------
-     Three voices. Cinzel is the logo and nothing else. Alegreya (400) is what the house says: sentences,
-     titles, the privacy notice, the consent, and the email a guest types. Alegreya Sans (500) is the interface:
-     controls, status, the action, labels, messages, the button, the footer. Same designers, same skeleton: the
-     sans is the serif without its serifs, so the page speaks with one voice. */
-  --font-display: "Cinzel", "Cinzel fallback", "Trajan Pro", "Times New Roman", serif;          /* logo lockup only */
-  --font-text: "Alegreya", "Alegreya fallback", "Times New Roman", serif;                        /* the field, the no-JS note */
-  --font-read: "Alegreya Text", "Alegreya fallback", "Times New Roman", serif;                   /* the privacy notice */
-  --font-lede: "Alegreya", "Alegreya lede fallback", "Times New Roman", serif;                   /* the sentence */
-  --font-title: "Alegreya", "Alegreya title fallback", "Times New Roman", serif;                 /* section and page titles */
-  --font-ui: "Alegreya Sans", "Alegreya Sans fallback", Arial, sans-serif;                       /* the interface */
-  /* the same two faces; these stacks differ only by a fallback matched to their own sentences (see @font-face) */
-  --font-list: "Alegreya", "Alegreya list fallback", "Times New Roman", serif;                   /* the waiting-list sentence */
-  --font-intro: "Alegreya", "Alegreya intro fallback", "Times New Roman", serif;                 /* the privacy intro */
-  --font-consent: "Alegreya", "Alegreya consent fallback", "Times New Roman", serif;             /* the consent line */
-  --font-cta: "Alegreya Sans", "Alegreya Sans cta fallback", Arial, sans-serif;                  /* the action */
-  --font-status: "Alegreya Sans", "Alegreya Sans status fallback", Arial, sans-serif;            /* Abre brevemente. */
-  --font-foot: "Alegreya Sans", "Alegreya Sans foot fallback", Arial, sans-serif;                /* the footer line */
-  --font-foot-name: "Alegreya Sans", "Alegreya Sans name fallback", Arial, sans-serif;           /* © 2026 A Brazileira */
-  --font-foot-place: "Alegreya Sans", "Alegreya Sans place fallback", Arial, sans-serif;         /* Torres Vedras, Portugal */
-  --font-sep: "Alegreya Sans", "Alegreya Sans sep fallback", Arial, sans-serif;                  /* « · » between links */
-  --font-back: "Alegreya Sans", "Alegreya Sans back fallback", Arial, sans-serif;                 /* Voltar ao início */
-  --font-theme: "Alegreya Sans", "Alegreya Sans theme fallback", Arial, sans-serif;               /* Dia · Noite: their width holds the sun note still */
-  --weight-text: 400;        /* the only Alegreya file                   */
-  --weight-ui: 500;          /* the only Alegreya Sans file (Medium)     */
-  /* lockup: one size, the rest are ratios of the original logo */
-  --size-wordmark: clamp(1.75rem, min(1.05rem + 2.75vw, 6.4svh), 3.5rem);   /* 28 -> 56px */
-  --size-lockup-min: 1.5rem;   /* 24px: the smallest the lockup is ever set (privacy home link; short landscape phones) */
-  --size-lockup-short: clamp(var(--size-lockup-min), 5.6svh, 1.75rem);       /* landscape phones: 24 -> 28px */
-  --size-lockup-plain: clamp(var(--size-lockup-min), 1rem + 2vw, 2.25rem);   /* 404: 24 -> 36px */
-  --weight-wordmark: 600;    /* Cinzel files: one per line of the lockup */
-  --weight-kind: 700;
-  --weight-place: 400;
-  --lockup-kind: 0.5em;
-  --lockup-place: 0.4em;
-  --lockup-emblem: 2.9em;
-  --track-wordmark: 0.045em;
-  --track-kind: 0.12em;
-  --track-place: 0.3em;
-  /* text: four sizes outside the logo, nothing under 16px. Squint order: lockup > lede > action > status */
-  --size-title: clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem);                    /* 26 -> 34px: Alegreya, section and page titles */
-  --size-lede: clamp(1.125rem, min(0.84rem + 1.43vw, 3.2svh), 1.625rem);      /* 18 (320) -> 19 (390) -> 26px: Alegreya, the sentence */
-  --size-read: 1.125rem;     /* 18px: Alegreya reading text and the email field; Alegreya Sans action from 900px */
-  --size-ui: 1rem;           /* 16px: Alegreya Sans controls, status, labels, messages, footer, the action on phones; Alegreya consent */
-  --size-cta: var(--size-ui);   /* the action, the button, the back link: 16px on phones, 18px from 900px, 20px from 1200px */
-  --size-intro: max(var(--size-lede), 1.3125rem);   /* the privacy intro: never under 21px, a clear step over the 18px body */
-  /* leading: the lede tightens as it grows (19/26, 26/33); reading 18/28; interface 16/24 */
+     Three voices, as on the identity pitch. The wordmark (Brazileira Wordmark: a heavy flared Roman with the
+     ornamental B and kicked R's) is the logo and nothing else. Cinzel 400, in spaced capitals, is the label voice: the lockup's
+     «Boutique Hotel · Torres Vedras», the waiting list's name and the privacy notice's section names. EB Garamond
+     is everything said: 400 for sentences, titles, the privacy notice, the consent and the email a guest types;
+     500 for the interface (controls, status, the action, labels, messages, the button, the footer). One book face
+     at two weights, so the page reads like the pitch's specimen: Roman capitals over a Garamond. */
+  --font-display: "Brazileira Wordmark", "Wordmark fallback", "Times New Roman", serif;          /* the wordmark only */
+  --font-display-sc: "Brazileira Wordmark", "Wordmark sc fallback", "Times New Roman", serif;    /* its RAZILEIR (own fallback width) */
+  --font-display-end: "Brazileira Wordmark", "Wordmark end fallback", "Times New Roman", serif;  /* its closing A (own fallback width) */
+  --font-label: "Cinzel", "Cinzel fallback", "Times New Roman", serif;                          /* spaced capitals (left-aligned) */
+  --font-label-lockup: "Cinzel", "Cinzel lockup fallback", "Times New Roman", serif;            /* Boutique Hotel (· Torres Vedras) */
+  --font-label-dot: "Cinzel", "Cinzel dot fallback", "Times New Roman", serif;                  /* its « · » */
+  --font-label-place: "Cinzel", "Cinzel place fallback", "Times New Roman", serif;              /* its TORRES VEDRAS */
+  --font-label-list: "Cinzel", "Cinzel list fallback", "Times New Roman", serif;                /* the waiting list's name */
+  --font-text: "EB Garamond", "Garamond fallback", "Times New Roman", serif;                     /* the field, the sun note, the no-JS note */
+  --font-read: "EB Garamond Text", "Garamond fallback", "Times New Roman", serif;                /* the privacy notice */
+  --font-lede: "EB Garamond", "Garamond lede fallback", "Times New Roman", serif;                /* the sentence */
+  --font-title: "EB Garamond", "Garamond title fallback", "Times New Roman", serif;              /* the page title (privacy) */
+  --font-ui: "EB Garamond", "Garamond UI fallback", "Times New Roman", serif;                    /* the interface (500) */
+  /* the same faces; these stacks differ only by a fallback matched to their own sentences (see @font-face) */
+  --font-list: "EB Garamond", "Garamond list fallback", "Times New Roman", serif;                /* the waiting-list sentence */
+  --font-intro: "EB Garamond", "Garamond intro fallback", "Times New Roman", serif;              /* the privacy intro */
+  --font-consent: "EB Garamond", "Garamond consent fallback", "Times New Roman", serif;          /* the consent line */
+  --font-cta: "EB Garamond", "Garamond cta fallback", "Times New Roman", serif;                  /* the action */
+  --font-status: "EB Garamond", "Garamond status fallback", "Times New Roman", serif;            /* Abre brevemente. */
+  --font-foot: "EB Garamond", "Garamond foot fallback", "Times New Roman", serif;                /* the footer line */
+  --font-foot-name: "EB Garamond", "Garamond name fallback", "Times New Roman", serif;           /* © 2026 A Brazileira */
+  --font-foot-place: "EB Garamond", "Garamond place fallback", "Times New Roman", serif;         /* Torres Vedras, Portugal */
+  --font-sep: "EB Garamond", "Garamond sep fallback", "Times New Roman", serif;                  /* « · » between links */
+  --font-dot: "EB Garamond", "Garamond dot fallback", "Times New Roman", serif;                  /* «·» between controls */
+  --font-lang: "EB Garamond", "Garamond lang fallback", "Times New Roman", serif;                /* PT · EN */
+  --font-back: "EB Garamond", "Garamond back fallback", "Times New Roman", serif;                /* Voltar ao início */
+  --font-theme: "EB Garamond", "Garamond theme fallback", "Times New Roman", serif;              /* Dia · Noite: their width holds the sun note still */
+  --weight-text: 400;        /* EB Garamond Regular: what the house says  */
+  --weight-ui: 500;          /* EB Garamond Medium: the interface         */
+  --weight-label: 400;       /* the only Cinzel file (capitals)           */
+  /* lockup: one size, the rest are ratios of the pitch's lockup */
+  --size-wordmark: clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem);   /* 36 -> 72px; with text enlarged on a phone, never wider than the screen (16vw) */
+  --size-lockup-min: min(1.875rem, 13vw);   /* 30px: the smallest the wordmark is ever set (privacy home link; short screens); 13vw only binds with text enlarged */
+  --size-lockup-short: clamp(var(--size-lockup-min), 7.2svh, 2.25rem);      /* landscape phones: 30 -> 36px */
+  --size-lockup-plain: clamp(var(--size-lockup-min), 1.25rem + 2.5vw, 2.875rem);   /* 404: 30 -> 46px */
+  --weight-wordmark: 900;    /* the one wordmark file (Black)            */
+  --lockup-sc: 0.72em;       /* «RAZILEIR»: capitals at 72%, between the large A and ornamental B and the large closing A, as drawn */
+  --lockup-emblem: 2.27em;   /* the crest: 82px at a 36px wordmark, 163px at 72px */
+  --lockup-label: max(0.32em, 0.6875rem);    /* the label in two lines (BOUTIQUE HOTEL / TORRES VEDRAS): 11.5px at 36px, never under 11px */
+  --lockup-label-line: max(0.19em, 0.7rem);   /* in one line with « · » (home, split layout): 13.7px at 72px, as wide as 0.81 of the wordmark (the pitch) */
+  /* the line close under the wordmark, as on the pitch: wordmark baseline to the line's capitals 0.2 of the B */
+  --lockup-pull: -0.2em;     /* of the wordmark */
+  --lockup-label-gap: 0.1em;         /* of the two-line label */
+  --lockup-label-line-gap: 0.42em;   /* of the one-line label */
+  --track-wordmark: 0.01em;
+  --track-label: 0.32em;     /* the lockup's line: Roman capitals, widely spaced, as on the pitch */
+  --track-section: 0.2em;    /* section names in capitals (the list, the privacy notice) */
+  /* text: five sizes outside the logo at most, nothing under 17px. Squint order: lockup > lede > action > status */
+  --size-title: clamp(1.75rem, 1.5rem + 1vw, 2.375rem);                       /* 28 -> 38px: EB Garamond, the page title */
+  --size-lede: clamp(1.1875rem, min(0.9rem + 1.5vw, 3.4svh), 1.75rem);       /* 19 (320) -> 20 (390) -> 28px: the sentence */
+  --size-read: 1.1875rem;    /* 19px: reading text, the email field, the waiting list's name; the action from 900px */
+  --size-ui: 1.0625rem;      /* 17px: controls, status, labels, messages, consent, footer, privacy section names */
+  --size-cta: var(--size-ui);   /* the action, the button, the back link: 17px on phones, 19px from 900px, 21px from 1200px */
+  --size-intro: max(var(--size-lede), 1.375rem);   /* the privacy intro: never under 22px, a clear step over the 19px body */
+  /* leading: the lede tightens as it grows (20/27, 28/35); reading 19/30; interface 17/25 */
   --leading-lockup: 1.05;
-  --leading-title: 1.18;
+  --leading-label: 1.3;
+  --leading-title: 1.15;
   --leading-lede: calc(1em + 0.45rem);
-  --leading-read: 1.5556;
-  --leading-text: 1.5;       /* multi-line interface text, consent, footer */
+  --leading-read: 1.5789;
+  --leading-text: 1.47;      /* multi-line interface text, consent, footer: 25px at 17px */
   --leading-ui: 1.25;        /* one-line controls                        */
-  /* tracking: the serif a touch tight at display sizes, the Medium sans opened so it never reads crowded */
-  --track-title: -0.01em;
-  --track-lede: -0.005em;
+  /* tracking: the book face as drawn; its Medium opened a touch at interface sizes */
+  --track-title: 0em;
+  --track-lede: 0em;
   --track-read: 0em;
-  --track-ui: 0.018em;       /* Alegreya Sans 500 at 16px                */
-  --track-cta: var(--track-ui);   /* the action: 0.015em at 18px from 900px */
-  --track-caps: 0.06em;      /* PT and EN: capitals need air, not a style */
-  /* figures: old-style in the serif (art. 6.º, 24 meses), lining in the interface (© 2026) and in the field */
+  --track-ui: 0.01em;        /* EB Garamond 500 at 17px                  */
+  --track-cta: var(--track-ui);
+  --track-caps: 0.08em;      /* PT and EN: capitals need air, not a style */
+  /* figures: EB Garamond's lining figures everywhere (the only set this build carries) */
   --num-text: normal;
-  --num-ui: lining-nums;
+  --num-ui: normal;
   /* measure: the lede stays at two balanced lines (three on 320-360px phones); reading text near 65 characters */
   --measure-lede: 20em;
-  --measure-read: 26.5em;    /* 477px at 18px, at most 68 characters a line */
+  --measure-read: 27em;      /* 513px at 19px, at most 70 characters a line */
   --measure-title: 18em;
 
   /* ---- Space: 4px base ----------------------------------------------------- */
@@ -222,7 +254,8 @@
      split   min-width 56.25em (900px), or landscape from 37.5em (600px): text | entrance
      short   landscape, max-height 31.25em (500px): compact split, lockup 24-28px
      tight   portrait, max-height 42.5em (680px): tighter rhythm, smaller emblem
-     cta     min-width 56.25em: the action 18px; min-width 75em (1200px): 20px
+     cta     min-width 56.25em: the action 19px; min-width 75em (1200px): 21px
+     label   min-width 56.25em and min-height 37.5em (600px): the lockup's label on one line (home)
      foot    max-width 29.99em (480px): the footer on three lines
      lede    20em-22.49em (320-359px): the Portuguese lede one phrase a line
      note    min-width 37.5em (600px): the sun note is visible (below: screen readers only)
@@ -232,15 +265,18 @@
 
 /* English sentences: the same stacks with fallbacks sized to the English strings. */
 [lang|="en"] {
-  --font-text: "Alegreya", "Alegreya fallback en", "Times New Roman", serif;
-  --font-read: "Alegreya Text", "Alegreya fallback en", "Times New Roman", serif;
-  --font-back: "Alegreya Sans", "Alegreya Sans back fallback en", Arial, sans-serif;
-  --font-lede: "Alegreya", "Alegreya lede fallback en", "Times New Roman", serif;
-  --font-list: "Alegreya", "Alegreya list fallback en", "Times New Roman", serif;
-  --font-intro: "Alegreya", "Alegreya intro fallback en", "Times New Roman", serif;
-  --font-cta: "Alegreya Sans", "Alegreya Sans cta fallback en", Arial, sans-serif;
-  --font-status: "Alegreya Sans", "Alegreya Sans status fallback en", Arial, sans-serif;
-  --font-foot: "Alegreya Sans", "Alegreya Sans foot fallback en", Arial, sans-serif;
+  --font-text: "EB Garamond", "Garamond fallback en", "Times New Roman", serif;
+  --font-read: "EB Garamond Text", "Garamond fallback en", "Times New Roman", serif;
+  --font-back: "EB Garamond", "Garamond back fallback en", "Times New Roman", serif;
+  --font-lede: "EB Garamond", "Garamond lede fallback en", "Times New Roman", serif;
+  --font-list: "EB Garamond", "Garamond list fallback en", "Times New Roman", serif;
+  --font-intro: "EB Garamond", "Garamond intro fallback en", "Times New Roman", serif;
+  --font-cta: "EB Garamond", "Garamond cta fallback en", "Times New Roman", serif;
+  --font-status: "EB Garamond", "Garamond status fallback en", "Times New Roman", serif;
+  --font-foot: "EB Garamond", "Garamond foot fallback en", "Times New Roman", serif;
+  --font-label-list: "Cinzel", "Cinzel list fallback en", "Times New Roman", serif;
+  --font-consent: "EB Garamond", "Garamond consent fallback en", "Times New Roman", serif;
+  --font-theme: "EB Garamond", "Garamond theme fallback en", "Times New Roman", serif;
 }
 
 /* ==== 2 + 3 · Dia (default). [data-theme] also scopes a theme to any element
@@ -293,10 +329,10 @@
   --smoothing-moz: auto;
 }
 
-/* From 900px the action and the button step up to 18px, and to 20px from 1200px: under the 26px lede, clearly
-   above the 16px status, so the one action holds its own beside a large photograph. */
-@media (min-width: 56.25em) { :root { --size-cta: var(--size-read); --track-cta: 0.015em; } }
-@media (min-width: 75em) { :root { --size-cta: 1.25rem; } }
+/* From 900px the action and the button step up to 19px, and to 21px from 1200px: under the 28px lede, clearly
+   above the 17px status, so the one action holds its own beside a large photograph. */
+@media (min-width: 56.25em) { :root { --size-cta: var(--size-read); --track-cta: 0.008em; } }
+@media (min-width: 75em) { :root { --size-cta: 1.3125rem; } }
 
 /* Very wide screens: more air and scale, never more content. */
 @media (min-width: 120em) { :root { font-size: 112.5%; } }   /* >= 1920 */

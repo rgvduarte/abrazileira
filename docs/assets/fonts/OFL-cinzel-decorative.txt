@@ -1,4 +1,10 @@
-Copyright 2011 The Alegreya Project Authors (https://github.com/huertatipografica/Alegreya) Alegreya-Italic[wght].ttf: Copyright 2011 The Alegreya Project Authors (https://github.com/huertatipografica/Alegreya)
+brazileira-wordmark.woff2 is a Modified Version of Cinzel Decorative Black (1.002): the ornamental capital B is
+kept, the ornamental R is kept with its swash tail redrawn as a kick on the baseline, the other capitals map to the
+plain Roman forms, and it is subset to A-Z. Because the original declares the
+Reserved Font Name 'Cinzel', the modified font is named 'Brazileira Wordmark'. It is used only for the words
+A Brazileira on abrazileira.com and is distributed under the same licence, below.
+
+Copyright  2012 Natanael Gama (info@ndiscovered.com), with Reserved Font Name 'Cinzel' CinzelDecorative-Bold.ttf: Copyright  2012 Natanael Gama (info@ndiscovered.com), with Reserved Font Name 'Cinzel' CinzelDecorative-Black.ttf: Copyright  2012 Natanael Gama (info@ndiscovered.com), with Reserved Font Name 'Cinzel'
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

@@ -132,7 +132,7 @@ const [, , dir] = process.argv;
       return { theme: document.documentElement.dataset.theme, sol: document.documentElement.hasAttribute("data-sol"), w: Math.round(nr.width), h: Math.round(nr.height), text: vis && vis.textContent,
         font: getComputedStyle(n).fontFamily.split(",")[0], noteBottom: Math.round(nr.bottom), noteRight: Math.round(nr.right), emblemTop: Math.round(er.top), emblemLeft: Math.round(er.left) }; });
     const clear = r.noteBottom <= r.emblemTop || r.noteRight <= r.emblemLeft;
-    report(r.theme === want && r.sol && r.w > 100 && r.h >= 16 && /Alegreya"?$/.test(r.font.replace(/'/g, '"')) && clear, n, "E sun note", scheme, when.slice(11, 16), JSON.stringify(r));
+    report(r.theme === want && r.sol && r.w > 100 && r.h >= 16 && /EB Garamond"?$/.test(r.font.replace(/'/g, '"')) && clear, n, "E sun note", scheme, when.slice(11, 16), JSON.stringify(r));
     await c.close();
   }
   // F. camera smoothness on portrait screens
