@@ -4,6 +4,10 @@
    1. Dia / Noite   2. The door sequence (scroll-linked)   3. The waiting list   4. The list rises in once */
 (function () {
   "use strict";
+  /* errors are collected for the ?diag panel (and so a failing sequence can step aside, see bail()) */
+  var ERR = (window.__abErr = window.__abErr || []);
+  window.addEventListener("error", function (e) { ERR.push(String(e.message || e.error || e)); });
+  window.addEventListener("unhandledrejection", function (e) { ERR.push("promise: " + String(e.reason)); });
   var root = document.documentElement,
     still = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -234,7 +238,17 @@
         for (var i = 0; i < DRAWN; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
       }, 120);
     }
-    function tick(now) {
+    /* Safety net: if anything in the sequence throws (an engine quirk we could not test), the page
+       steps back to its static, natively scrolling form instead of leaving a pinned, frozen stage. */
+    function bail(where, err) {
+      ERR.push(where + ": " + (err && err.message ? err.message : String(err)));
+      try { off(); } catch (e) {}
+      root.classList.remove("porta-on");
+      root.setAttribute("data-sequence", "static");
+      root.__porta = null;
+    }
+    function tick(now) { try { tickInner(now); } catch (err) { bail("tick", err); } }
+    function tickInner(now) {
       raf = 0;
       if (!on) return;
       var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
@@ -315,7 +329,8 @@
       if (u >= 1) { land(); f.done(); }
       return { y: y, p: clamp((y - pin) / run) };
     }
-    function fly(to, done) {
+    function fly(to, done) { try { return flyInner(to, done); } catch (err) { bail("fly", err); return false; } }
+    function flyInner(to, done) {
       if (!on) return false;
       land();
       var y0 = window.pageYOffset, y1 = to(), full = Math.max(1, y1 - pin), dist = Math.abs(y1 - y0);
@@ -337,7 +352,8 @@
       clearTimeout(idle);
       idle = setTimeout(function () { if (shown <= 0) promote(false); }, 400);
     }
-    function refresh() {            /* new geometry, same progress */
+    function refresh() { try { refreshInner(); } catch (err) { bail("refresh", err); } }
+    function refreshInner() {            /* new geometry, same progress */
       rq = 0;
       if (!on) return;
       measure();
@@ -362,7 +378,7 @@
     }
     function set() {
       off();
-      if (still.matches) {
+      if (still.matches || /[?&]semporta\b/.test(location.search)) {
         root.classList.remove("porta-on");
         root.setAttribute("data-sequence", "static");
         return;
@@ -388,7 +404,7 @@
     intro.addEventListener("focusin", function () {
       if (on && target().p > 0.01) window.scrollTo(0, pin);
     });
-    set();
+    try { set(); } catch (err) { bail("set", err); }
     /* while the sequence is under way, the theme changes without a cross-fade (no snapshot mid-shot) */
     root.__portaBusy = function () { return on && (shown > 0.01 || !!fl); };
     root.__porta = { fly: fly, land: land };
@@ -533,4 +549,22 @@
     /* arriving with #lista: the wrapper grew after the browser's first jump, so land on the list again */
     if (location.hash === "#lista") { now(); window.scrollTo(0, listY()); }
   })();
+
+  /* ?diag: a read-only overlay for testing on real phones (scroll, viewport, sequence state, errors) */
+  if (/[?&]diag\b/.test(location.search)) {
+    var box = document.createElement("pre"), frames = 0;
+    box.setAttribute("aria-hidden", "true");
+    box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;margin:0;padding:8px;font:11px/1.35 ui-monospace,Menlo,monospace;background:rgba(0,0,0,.8);color:#fff;border-radius:6px;pointer-events:none;white-space:pre-wrap;max-height:45vh;overflow:hidden";
+    document.body.appendChild(box);
+    (function f() { frames++; window.requestAnimationFrame(f); })();
+    setInterval(function () {
+      var st = document.querySelector(".porta__stage"), r = st && st.getBoundingClientRect();
+      box.textContent = [navigator.userAgent,
+        "y=" + Math.round(window.pageYOffset) + " ih=" + window.innerHeight + " vv=" + (window.visualViewport ? Math.round(window.visualViewport.height) : "-") + " docH=" + document.documentElement.scrollHeight,
+        "seq=" + root.getAttribute("data-sequence") + " theme=" + root.getAttribute("data-theme") + " cls=" + root.className,
+        "stage top=" + (r ? Math.round(r.top) : "-") + " h=" + (st ? st.offsetHeight : "-") + " pos=" + (st ? getComputedStyle(st).position : "-"),
+        "frames/s=" + frames * 2, "errors: " + (ERR.length ? ERR.join(" | ") : "none")].join("\n");
+      frames = 0;
+    }, 500);
+  }
 })();
