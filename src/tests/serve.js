@@ -3,7 +3,7 @@
 const http = require("http"), fs = require("fs"), path = require("path");
 const TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml",
   ".woff2": "font/woff2", ".png": "image/png", ".json": "application/json", ".webmanifest": "application/manifest+json",
-  ".txt": "text/plain", ".xml": "application/xml" };
+  ".txt": "text/plain", ".xml": "application/xml", ".avif": "image/avif", ".webp": "image/webp", ".jpg": "image/jpeg" };
 module.exports = function serve(dir) {
   return new Promise((resolve) => {
     const srv = http.createServer((q, r) => {

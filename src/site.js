@@ -1,7 +1,7 @@
 /* A Brazileira · site.js
    Progressive enhancement only: without it the page is complete (the theme follows the system,
    no pinned sequence, the waiting list explains how to sign up).
-   1. Dia / Noite   2. The door sequence (scroll-linked)   3. The waiting list   4. The list rises in once */
+   1. Dia / Noite   2a. The photograph   2. The door sequence (scroll-linked)   3. The waiting list   4. The list: arrival */
 (function () {
   "use strict";
   /* errors are collected for the ?diag panel (and so a failing sequence can step aside, see bail()) */
@@ -63,11 +63,25 @@
         if (sky) root.setAttribute("data-sol", ""); else root.removeAttribute("data-sol");
       }
       sync();                             /* reads the computed style: the change lands with transitions held */
+      if (root.__photo) { root.__photo.loaded(); root.__photo.enlarge(t); }   /* the placeholder returns if this theme's photo is not in yet */
       window.requestAnimationFrame(function () { root.classList.remove("is-instant"); });
     }
     /* the cross-fade: 400ms for a choice; slower and gentler (--dur-sky) when the sky changes it on its own.
-       No snapshot while the sequence is moving, and none with reduced motion. */
+       No snapshot while the sequence is moving, and none with reduced motion. The other theme is its own
+       photograph: the change waits until it is fetched and decoded (at most 800ms; warmed when a pointer or the
+       focus arrives on the control), so the cross-fade never lands on a half-loaded entrance. */
+    var want = null;
     function swap(t, keep, sky) {
+      var w = root.__photo && root.__photo.ready(t);
+      if (!w) return swapNow(t, keep, sky);
+      want = t;
+      w.then(function () { if (want === t) { want = null; if (t !== current()) swapNow(t, keep, sky); } });
+    }
+    function warmOther() { if (root.__photo) root.__photo.ready(current() === "dia" ? "noite" : "dia", 1); }
+    group.addEventListener("pointerenter", warmOther);
+    group.addEventListener("focusin", warmOther);
+    group.addEventListener("touchstart", warmOther, { passive: true });
+    function swapNow(t, keep, sky) {
       var slow = !keep && sky !== undefined;
       if (still.matches || (root.__portaBusy && root.__portaBusy())) return apply(t, keep, sky);
       if (slow) root.classList.add("is-sky");
@@ -111,6 +125,78 @@
     sky();
   })();
 
+  /* ---------------------------------------------------------------- 2a. The photograph
+     The entrance is a photograph in layers, each a <picture> per theme (photo.py); CSS shows the theme's own.
+     Its blurred placeholder goes once the shown facade has loaded. ready(t) fetches and decodes a theme's layers
+     (a hidden picture's lazy image is never fetched on its own): the theme control warms the other theme when a
+     pointer or the focus arrives on it, and a theme change waits (at most 800ms) for its photograph, so the
+     cross-fade never shows a half-loaded entrance; the sequence decodes the shown theme before it moves. */
+  (function () {
+    var scene = document.querySelector(".scene[data-geo]");
+    if (!scene) return;
+    function theme() {
+      var t = root.getAttribute("data-theme");
+      return t === "dia" || t === "noite" ? t : window.matchMedia("(prefers-color-scheme: dark)").matches ? "noite" : "dia";
+    }
+    function imgs(t) { return scene.querySelectorAll("picture.t-" + t + " img"); }
+    function ok(im) { return im && im.complete && im.naturalWidth > 0; }
+    function loaded() {
+      var f = scene.querySelector(".ph--facade picture.t-" + theme() + " img");
+      if (ok(f)) { scene.classList.add("is-loaded"); return; }
+      scene.classList.remove("is-loaded");
+      if (f) f.addEventListener("load", loaded, { once: true });
+    }
+    function ready(t, wait) {
+      var list = imgs(t), ps = [], i;
+      for (i = 0; i < list.length; i++) {
+        if (list[i].loading !== "eager") list[i].loading = "eager";
+        if (list[i].decode) ps.push(list[i].decode().catch(function () {}));
+      }
+      if (!window.Promise) return null;
+      return Promise.race([Promise.all(ps), new Promise(function (r) { setTimeout(r, wait || 800); })]);
+    }
+    /* The walk-in magnifies the facade and the leaves 3-6x: the files picked for the rest size (sizes = the scene's
+       width) are then drawn from too few pixels, the stone, the 11 and the walnut go soft (review r1). Once the page
+       has loaded and is idle, the larger files of the shown theme are fetched and decoded in a detached copy of
+       each picture (sizes = 3x the scene: the 2388 master on almost every screen); the first time the sequence
+       moves, the real pictures take the same sizes and swap to those files from the cache while the doors are
+       still near rest. Not on a data saver or a 2G link. */
+    var BIG = ".ph--facade picture, .leaf picture", big = false, warmed = {};
+    function slow() { var c = navigator.connection; return !!(c && (c.saveData || /2g/.test(c.effectiveType || ""))); }
+    function bigSizes() { return Math.round(scene.offsetWidth * 3) + "px"; }
+    function setSizes(pic, v) { var e = pic.querySelectorAll("source, img"), i; for (i = 0; i < e.length; i++) if (e[i].getAttribute("sizes") !== v) e[i].setAttribute("sizes", v); }
+    function pics(t) { return scene.querySelectorAll(BIG.replace(/picture/g, "picture.t-" + t)); }
+    function warmBig(t) {
+      /* only for the sequence: reduced motion, ?semporta and the safety net never zoom */
+      if (warmed[t] || slow() || !scene.offsetWidth || root.getAttribute("data-sequence") !== "scroll") return;
+      warmed[t] = 1;
+      var list = pics(t), v = bigSizes(), i;
+      for (i = 0; i < list.length; i++) {
+        var c = list[i].cloneNode(true), im = c.querySelector("img");
+        im.setAttribute("loading", "eager");
+        setSizes(c, v);
+        if (im.decode) im.decode().catch(function () {});
+      }
+    }
+    function enlarge(t) {
+      if (!big || slow()) return;
+      var list = pics(t || theme()), v = bigSizes(), i;
+      for (i = 0; i < list.length; i++) setSizes(list[i], v);
+    }
+    function upgrade() { if (big) return; big = true; enlarge(); }
+    root.__photo = { ready: ready, loaded: loaded, theme: theme, upgrade: upgrade, enlarge: enlarge };
+    loaded();
+    /* after the page has loaded: the lamplight on the steps (Noite) joins the scene (it is not needed for the first
+       paint: it is invisible until the doors open), and the shown theme is decoded before anything moves */
+    function later() {
+      scene.classList.add("is-ready");
+      ready(theme(), 4000);
+      var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1200); };
+      setTimeout(function () { idle(function () { warmBig(theme()); }, { timeout: 3000 }); }, 600);
+    }
+    if (document.readyState === "complete") later(); else window.addEventListener("load", later, { once: true });
+  })();
+
   /* ---------------------------------------------------------------- 2. The door sequence
      ONE driver for every browser. A passive scroll listener (and the resize, visualViewport and
      orientation listeners) wakes one requestAnimationFrame loop. Each frame reads pageYOffset and
@@ -123,26 +209,26 @@
      Native scrolling is never touched: the stage pins with position: sticky; the smoothing only shapes
      what is drawn inside it. Geometry is cached and measured again on resize, visualViewport resize,
      orientation change, font load and page load, never inside the loop. At p = 0 every inline style is
-     removed, so the hero is exactly its CSS rest state (opacity 1, no transform).
-     (The former ViewTimeline / WAAPI path is gone: in iOS Safari it could leave the title hidden after
-     scrolling back up, and mobile toolbars made it drift.) */
+     removed, so the hero is exactly its CSS rest state (the photograph as it is, doors closed). */
   (function () {
     var wrap = document.querySelector("[data-porta]");
     if (!wrap) return;
     var $ = function (s) { return wrap.querySelector(s); },
       stage = $(".porta__stage"), frame = $(".porta__frame"), intro = $(".intro"), scene = $(".scene"),
-      back = $(".scene__art--back"), backHidden = false,
-      door = (scene.getAttribute("data-door") || "0.5 0.5 0.3 0.5").split(" ").map(Number),
+      plate = $(".ph--plate"), facade = $(".ph--facade"), leafL = $(".leaf--l"), leafR = $(".leaf--r"),
+      shadeL = leafL.querySelector(".leaf__shade"), shadeR = leafR.querySelector(".leaf__shade"),
+      G = JSON.parse(scene.getAttribute("data-geo") || "{}"),
       css = getComputedStyle(root),
       num = function (n, d) { var v = parseFloat(css.getPropertyValue(n)); return isNaN(v) ? d : v; },
-      openL = num("--open-l", 47), openR = num("--open-r", 61),
+      OPEN = num("--open-door", G.open || 84) * Math.PI / 180, COS = 1 - Math.cos(OPEN),
       TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35,
-      cam = { dx: 0, dy: 0, s: 4, k: 0 }, pin = 0, run = 1,
+      cam = { dx: 0, dy: 0, k: 0, s: 8, kp: G.k || 0.8 }, pin = 0, run = 1,
       probe = document.createElement("div"),
       cue = $(".porta__cue"),
       list = document.getElementById("lista"), reveal = list && list.querySelector("[data-reveal]"),
       rv = function (s) { return (reveal && reveal.querySelector(s)) || document.createElement("i"); },
-      shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false;
+      shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false,
+      held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1;
     probe.className = "porta__probe";
     probe.setAttribute("aria-hidden", "true");
     stage.appendChild(probe);
@@ -167,70 +253,86 @@
       copy: curve("--curve-copy", [0.33, 1, 0.68, 1]),
       door: curve("--curve-door", [0.3, 0.55, 0.35, 1]),
       pan: curve("--curve-pan", [0.35, 0.4, 0.3, 1]),
-      fade: curve("--curve-fade", [0.45, 0, 0.55, 1]),
+      light: curve("--curve-light", [0.55, 0, 0.75, 0.55]),
       rise: curve("--ease-out", [0.23, 1, 0.32, 1]),
       flight: curve("--curve-flight", [0.45, 0, 0.3, 1])
     };
-    var FLIGHT = num("--dur-flight", 1200), WEIGHT = num("--flight-weight", 2), RISE = num("--rise-list", 16);
+    var FLIGHT = num("--dur-flight", 1250), WEIGHT = num("--flight-weight", 2), WLIST = num("--flight-weight-list", 1.2),
+      RISE = num("--rise-list", 16);
     function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
     /* The timeline: [element, from p, to p, curve, value(u) -> [opacity, transform], progress].
        One short run (--porta-run, about one screen of scroll) in three overlapping beats:
-         the doors swing from the first pixel and the camera starts with them (0 -> 0.36);
-         the camera walks in through the doorway and keeps going until the opening covers the screen (to 0.76):
-           on the way, from 0.5 to 0.66, the hall dissolves into its light while the room still reads as a room
-           (the camera's keyframes, see measure()), so the last drawn things on screen are the stone jambs and
-           the open leaves passing out of the frame;
-         at 0.76 the screen is one flat colour, --color-hall, and the list (title + sentence, then the form)
-           rises in on that light at once, over the last quarter of the run, and is at rest when the run ends.
+         the doors swing inwards from the first pixel (0 -> 0.36) and the camera starts with them;
+         the camera walks in through the doorway, towards the hall point (the photo's vanishing point): by 0.58
+           the doorway covers the screen and the leaves, edge-on, have passed out of frame; it keeps walking, into
+           the arch of light at the end of the hall (the room beyond, which the photograph clips to the hall
+           colour), while the hall's light, one flat --color-hall, fades in over the whole stage (0.6 -> 0.76);
+         at 0.76 the screen is that one colour, exactly the token, and the list (title + sentence, then the form)
+           rises in on it at once, over the last quarter of the run, and is at rest when the run ends.
        Progress: the rendered (smoothed) r, except
          TEXT  the crest and the cue take min(r, p): they leave with the doors, but come back with the scroll
                itself, so after a fast flick to the top the title is there as the page arrives, not 500ms later;
-         COVER the hand-off layers take max(r, p - LAG): at hand speed (lag under 0.1) exactly r; after a fast
+         COVER the hall's light takes max(r, p - LAG): at hand speed (lag under 0.1) exactly r; after a fast
                flick the stage is flat hall colour before the list panel arrives (p = 1), never a hard edge
-               rising over a drawing the smoothing has not caught up with.
-       The list (LIST) reads r, so it never shows before the flood (which reads max(r, p - LAG)): its words
-       only ever rise over the flat colour. The flood is a step at COVER_AT: hall colour over hall colour (the
-       camera has covered the screen there), so no frame is ever a fractional blend one level off the token. */
-    var DOOR = [0, 0.36], PAN = [0, 0.3], ZOOM = [0.01, 0.76], LIGHT = [0.5, 0.66], COVER_AT = 0.76, COVERED = COVER_AT, LAG = 0.1,
-      TEXT = 1, COVER = 2, LIST = 3, step = function (x) { return x > 0 ? 1 : 0; },
+               rising over a photograph the smoothing has not caught up with.
+       The list (LIST) reads r, so it never shows before the light (which reads max(r, p - LAG)): its words
+       only ever rise over the flat colour. */
+    var DOOR = [0, 0.36], PAN = [0, 0.3], CENTRE = [0.36, 0.56], KX = [0.01, 0.36, 0.58, 0.76], LIGHT = [0.6, 0.76],
+      COVER_AT = 0.76, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
       lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
-    var DISSOLVE = [$(".hall__flat"), LIGHT[0], LIGHT[1], E.fade, function (u) { return [u, null]; }, COVER];
     var T = [
       [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
       [cue, 0, 0.05, E.copy, function (u) { return [1 - u, null]; }, TEXT],
-      [$(".leaf--l"), DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (openL * u).toFixed(3) + "deg)"]; }],
-      [$(".leaf--r"), DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (-openR * u).toFixed(3) + "deg)"]; }],
-      [$(".hall__light"), DOOR[0], DOOR[1], E.door, function (u) { return [u, null]; }],     /* carried by the doors */
-      [$(".spill"), DOOR[0], DOOR[1], E.door, function (u) { return [u, null]; }],
-      DISSOLVE,                                                                               /* the hall becomes light */
-      [$(".porta__flood"), COVER_AT, COVER_AT + 0.01, step, function (u) { return [u, null]; }, COVER],   /* one colour */
+      /* the leaves swing inwards about their outer hinges; a leaf turning away from the street darkens
+         (sin of the angle, the depth is the theme's --color-leaf-shade); the lamplight on the steps (Noite) grows
+         with the opening (1 - cos of the angle) */
+      [leafL, DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (OPEN * u).toFixed(4) + "rad)"]; }],
+      [leafR, DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (-OPEN * u).toFixed(4) + "rad)"]; }],
+      [shadeL, DOOR[0], DOOR[1], E.door, function (u) { return [Math.sin(OPEN * u), null]; }],
+      [shadeR, DOOR[0], DOOR[1], E.door, function (u) { return [Math.sin(OPEN * u), null]; }],
+      [$(".ph--spill"), DOOR[0], DOOR[1], E.door, function (u) { return [(1 - Math.cos(OPEN * u)) / COS, null]; }],
+      [$(".porta__flood"), LIGHT[0], LIGHT[1], E.light, function (u) { return [u, null]; }, COVER],   /* the hall's light */
       /* the list: title, sentence and form all begin as the screen turns one colour (so none of them is ever an
          empty field on it) and settle one after the other: the stagger is in how long each takes */
       [rv(".lista__title"), 0.745, 0.88, E.rise, lift(1), LIST],
       [rv(".lista__lede"), 0.75, 0.9, E.rise, lift(1), LIST],
       [rv(".form"), 0.755, 0.94, E.rise, lift(0.6), LIST]
     ];
-    /* the camera: the doorway travels to the centre of the screen while the text leaves, then the walk-in
-       scales the scene around it until the opening covers the screen. Scale is geometric (constant
-       perceived speed); the doorway centre moves on a straight line. */
-    /* On portrait screens the doorway starts low (the drawing stands at the foot of the screen): if it rose to
-       the centre before growing, the floor line would ride up and leave an empty band under it, a page scrolling
-       rather than a camera approaching. There the rise is tied to the walk-in: the doorway rises only as much as
-       it grows, so the floor line holds at the visitor's feet and then leaves through the bottom edge (as when
-       walking towards a door). It is centred by s = 1 + |dy| / floor distance (about 2.7 at 390 x 844), and in
-       any case by p = 0.66, before the opening covers the screen. */
+    /* The camera: the hall point travels to the centre of the screen while the text leaves, and the walk-in scales
+       the scene around it. Scale is geometric (constant perceived speed); the hall point moves on a straight line.
+       The plate (the hall beyond) grows slower than the doorway, as zoom^kp (kp about 0.8): it is further away,
+       so the hall opens up behind the jambs as the camera nears them. */
+    /* On portrait screens the photo stands at the foot of the screen: if it rose to the centre before growing,
+       its foot would ride up and leave an empty band under it, a page scrolling rather than a camera approaching.
+       There the rise is tied to the walk-in: the hall point rises only as much as the photo grows, so its foot
+       holds at the visitor's feet and then leaves through the bottom edge (as when walking towards a door). It
+       is centred by s = 1 + |dy| / foot distance, and in any case by p = 0.56, before the doorway covers the
+       screen. Both terms ease into the centre with zero slope and combine smoothly (1 - (1 - a)(1 - b)): the rise
+       was clipped at 1 before, so its speed changed in one step mid walk-in (a bob of the threshold, review r1). */
+    var KNEE = 0.25;
+    function knee(a) {                    /* a, eased into 1 over [1 - KNEE, 1 + KNEE]: C1, zero slope at the end */
+      if (a <= 1 - KNEE) return a < 0 ? 0 : a;
+      if (a >= 1 + KNEE) return 1;
+      var d = a - 1 + KNEE;
+      return a - d * d / (4 * KNEE);
+    }
     function camAt(p) {
-      var m = E.pan(clamp((p - PAN[0]) / (PAN[1] - PAN[0]))), s = scaleAt(p),
-        my = cam.k ? Math.max(clamp((s - 1) * cam.k), clamp((p - 0.4) / 0.26)) : m;
+      var m = E.pan(clamp((p - PAN[0]) / (PAN[1] - PAN[0]))), s = scaleAt(p), my = m, a, b;
+      if (cam.k) {
+        a = knee((s - 1) * cam.k);
+        b = clamp((p - CENTRE[0]) / (CENTRE[1] - CENTRE[0]));
+        b = b * b * (3 - 2 * b);
+        my = 1 - (1 - a) * (1 - b);
+      }
       return "translate(" + (cam.dx * m).toFixed(2) + "px," + (cam.dy * my).toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
     }
-    /* The walk-in: log(scale) through four keyframes, made per screen in measure(): 1 at ZOOM[0]; the scale at
-       which the hall starts to dissolve at LIGHT[0] and the one at which it is all light at LIGHT[1]; S (the
-       opening covers the screen) at ZOOM[1]. Between them a monotone cubic (Fritsch-Carlson): it never goes
-       back, never overshoots, starts softly (zero slope) and keeps going into the light (no landing: the screen
-       is one colour by then). Scale is geometric, so equal steps of log(scale) read as equal steps forward. */
-    var KX = [ZOOM[0], LIGHT[0], LIGHT[1], ZOOM[1]], KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
+    /* The walk-in: log(scale) through four keyframes, made per screen in measure(): 1 at p = 0.01; a first step
+       to the threshold as the doors finish opening (0.36); the scale at which the doorway covers the screen
+       (0.58); the end, inside the arch of light (0.76). Between them a monotone cubic (Fritsch-Carlson): it never
+       goes back, never overshoots, starts softly (zero slope) and keeps going into the light (no landing: the
+       screen is one colour by then). Equal steps of log(scale) read as equal steps forward. */
+    var KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
     function keys(sA, sB, S) {
       var i, d = [], a, b, h;
       KY = [0, Math.log(sA), Math.log(sB), Math.log(S)];
@@ -251,8 +353,14 @@
 
     /* geometry: untransformed layout (offset*), read on resize only */
     function measure() {
-      var W = scene.offsetWidth, H = scene.offsetHeight;
-      var cx = scene.offsetLeft + door[0] * W, cy = scene.offsetTop + door[1] * H;
+      /* while a field of the list has the focus and only the height changed (a keyboard that resizes the page, as
+         Android in-app browsers do), the run keeps its length in px: the list, and the field in it, stay where they
+         are (svh would shorten the run under the keyboard and move the list up, review r1) */
+      var fw = stage.clientWidth, focused = !!(list && document.activeElement && document.activeElement !== list && list.contains(document.activeElement));
+      if (focused && held.w === fw && held.run > 0) wrap.style.setProperty("--porta-run", held.run + "px");
+      else if (wrap.style.getPropertyValue("--porta-run")) wrap.style.removeProperty("--porta-run");
+      var W = scene.offsetWidth, H = scene.offsetHeight, hx = G.hp[0] * W, hy = G.hp[1] * H;
+      var cx = scene.offsetLeft + hx, cy = scene.offsetTop + hy;
       for (var el = scene.offsetParent; el && el !== stage; el = el.offsetParent) { cx += el.offsetLeft; cy += el.offsetTop; }
       /* the small viewport (stable while mobile toolbars come and go) and the pin offset for short screens */
       var vw = stage.clientWidth, vh = probe.offsetHeight || window.innerHeight,
@@ -268,25 +376,32 @@
       var sh = Math.max(vh, stage.clientHeight + stick);      /* bottom of the large viewport */
       cam.dx = vw / 2 - cx;
       cam.dy = vh / 2 - stick - cy;
-      /* portrait, doorway below the centre: the rise follows the growth (see camAt) */
-      cam.k = vh > vw * 1.1 && cam.dy < -1 ? (1 - door[1]) * H / -cam.dy : 0;
-      /* the walk-in ends with the opening covering the whole (large) viewport in every orientation and
-         aspect ratio, so the hand-off is hall colour over hall colour, never a fade over the stone */
-      /* across, the open leaves stand edge-on inside the opening: in the drawing's perspective each one
-         still covers about 7% of its width, so the camera passes them too (LEAVES = the clear share) */
-      var ow = door[2] * W, oh = door[3] * H, LEAVES = 0.86;
-      var tall = 2 * Math.max(vh / 2, sh - vh / 2) / oh;          /* scale at which the opening fills the height */
-      cam.s = Math.max(vw / (ow * LEAVES), tall) * 1.04;
-      /* The hall dissolves into its light while the room still reads as a room: from the scale at which the
-         opening is 0.8 of the screen's height to 1.35 of it (and in any case 12% before the opening covers the
-         screen). On a landscape screen the camera must then still grow 2-3x before the opening also covers the
-         width: that stretch is the doorway passing out of frame around a light that is already one colour,
-         never an abstract close-up of the hall's drawing (the inner door's window, oversized hatching). */
-      var sB = Math.min(1.35 * tall, cam.s / 1.12), sA = Math.min(0.8 * tall, sB / 1.25);
-      keys(Math.max(1.05, sA), Math.max(1.1, sB), cam.s);
-      var r = wrap.getBoundingClientRect();
-      pin = r.top + window.pageYOffset - stick;
-      run = Math.max(1, wrap.offsetHeight - stage.offsetHeight);
+      /* portrait, hall point below the centre: the rise follows the growth (see camAt) */
+      cam.k = vh > vw * 1.1 && cam.dy < -1 ? (1 - G.hp[1]) * H / -cam.dy : 0;
+      /* the clear opening between the open leaves: each stands edge-on at OPEN inside the doorway, its free edge
+         seen in the photo's perspective (distance G.persp of the photo's height, centred on the hall point) */
+      var d = G.persp * H, lw = (G.gap[0] - G.door[0]) * W, f = d / (d + lw * Math.sin(OPEN)),
+        xl = hx + (G.door[0] * W + lw * Math.cos(OPEN) - hx) * f, xr = hx + (G.door[2] * W - lw * Math.cos(OPEN) - hx) * f;
+      /* the doorway covers the whole (large) viewport in every orientation and aspect ratio */
+      var inDoor = Math.max(vw / 2 / Math.min(hx - xl, xr - hx), vh / 2 / ((G.hp[1] - G.door[1]) * H),
+        (sh - vh / 2) / ((G.door[3] - G.hp[1]) * H)) * 1.05;
+      /* the end: the arch of light at the end of the hall (G.light: its half width, its reach above and below the
+         hall point, as shares of the photo, where it is within a few levels of the hall colour) fills the screen,
+         seen through the plate's slower zoom; at least 1.5x past the doorway, at most what the plate covers */
+      var L = G.light, zl = Math.max(vw / 2 / (L[0] * W), vh / 2 / (L[1] * H), (sh - vh / 2) / (L[2] * H)),
+        end = Math.max(inDoor * 1.5, Math.min(Math.pow(zl, 1 / G.k), G.cover));
+      /* the plate always covers the doorway: its zoom is end^kp with kp raised on very wide screens if needed */
+      cam.kp = Math.max(G.k, 1 - Math.log(G.grow * 0.97) / Math.log(end));
+      cam.s = end;
+      keys(Math.pow(inDoor, 0.3), inDoor, end);
+      /* the timeline starts at the wrapper's top, not where the stage pins: on screens shorter than the rest
+         composition (stick < 0) the doors open on the first pixel too, while the stage is still scrolling to its pin
+         (review r1); it ends where it did, at the pin plus the run */
+      var r = wrap.getBoundingClientRect(), natural = wrap.offsetHeight - stage.offsetHeight;
+      if (!wrap.style.getPropertyValue("--porta-run")) held = { w: fw, run: natural };
+      pin = r.top + window.pageYOffset;
+      run = Math.max(1, natural - stick);
+      mw = vw; mh = vh;
     }
     function target() {
       var y = window.pageYOffset;
@@ -297,9 +412,6 @@
     function render(r, p) {
       if (p === undefined) p = r;
       var i, t, s, v, q;
-      /* once the lit hall is opaque, the hall in shadow behind it is never seen: stop drawing it (at full
-         zoom its hatching was the most expensive thing to raster) */
-      if ((r >= DOOR[1]) !== backHidden) { backHidden = !backHidden; back.style.visibility = backHidden ? "hidden" : ""; }
       /* once the screen is one colour, the page behind the stage takes that colour too: if a frame ever draws the
          pinned stage a step behind a fast scroll, the strip it uncovers is the same light, never the hero's paper.
          An inline style on body, not a class on html: a class there restyles the whole document (35ms of style
@@ -308,6 +420,7 @@
       if (r <= 0 && p <= 0) {           /* exact rest: the CSS state, nothing inline */
         for (i = 0; i < T.length; i++) { s = T[i][0].style; s.opacity = ""; s.transform = ""; s.pointerEvents = ""; }
         scene.style.transform = "";
+        plate.style.transform = "";
         return;
       }
       for (i = 0; i < T.length; i++) {
@@ -318,58 +431,58 @@
         v = t[4](t[3](clamp((q - t[1]) / (t[2] - t[1]))));
         if (v[0] !== null) s.opacity = v[0] <= 0 ? "0" : v[0] >= 1 ? "1" : v[0].toFixed(4);
         if (v[1] !== null) s.transform = v[1];
-        /* a faded action or cue is not a live target over the drawing, and the list is not one before it shows
-           (focus still reaches both: see the focusin handlers) */
+        /* a faded action or cue is not a live target over the photograph, and the list is not one before it
+           shows (focus still reaches both: see the focusin handlers) */
         if (t[5] === TEXT) s.pointerEvents = v[0] < 0.5 ? "none" : "";
         else if (t[5] === LIST) s.pointerEvents = v[0] < 0.5 ? "none" : "auto";
       }
       scene.style.transform = camAt(r);
+      /* the hall beyond: zoom^kp in all, so it gets zoom^(kp - 1) inside the camera */
+      plate.style.transform = "scale(" + Math.pow(scaleAt(r), cam.kp - 1).toFixed(5) + ")";
     }
 
-    /* Promote the moving layers only while they move; at rest the drawing re-rasters crisp at its size.
-       Every layer whose opacity changes per frame gets its own compositor layer too: otherwise each change
-       repaints the doorway inside the zooming camera layer and the browser re-rasters it at the new
-       scale every frame (measured: 2.7s of raster per pass at 1440 x 900, frames up to 200ms).
-       The transform hint also freezes their raster scale while the camera zooms. */
-    var LAYERS = [[scene, "transform"], [$(".hall__light"), "transform, opacity"], [intro, "transform, opacity"],
-      [$(".porta__cue"), "opacity"], [$(".spill"), "transform, opacity"], [$(".hall__flat"), "opacity"], [$(".porta__flood"), "opacity"]],
-      DRAWN = 2,           /* the first two carry line work: they are re-rastered when the scroll rests */
+    /* Promote the moving layers only while they move; at rest the photograph is drawn as it is. Every layer whose
+       opacity changes per frame gets its own compositor layer too (the leaves' shade, the lamplight, the hall's
+       light, the text): otherwise each change repaints the doorway inside the zooming camera layer. The facade
+       has a layer of its own (so a browser can composite the image as it is, without a backing store sized to
+       the zoom); its transform hint freezes its raster scale while the camera zooms. */
+    var LAYERS = [[facade, "transform"], [scene, "transform"], [plate, "transform"], [leafL, "transform"], [leafR, "transform"],
+      [shadeL, "opacity"], [shadeR, "opacity"], [$(".ph--spill"), "opacity"], [intro, "transform, opacity"],
+      [$(".porta__cue"), "opacity"], [$(".porta__flood"), "opacity"]],
+      DRAWN = 1,           /* the facade carries the photograph's detail: it is re-rastered when the scroll rests */
+      WARM = 8,            /* readied before the first frame (see warm()): every layer but the text and the cue */
       sharp = 0, sharpT, rasterS = 1, lift = 0, STEP = 2.2, ready = false;
     function promote(yes) {
       clearTimeout(sharpT);
       sharp = 0;
-      if (!yes && ready && !promoted) { ready = false; for (var j = 0; j < DRAWN; j++) LAYERS[j][0].style.willChange = ""; }
       if (yes === promoted) return;
       promoted = yes;
       ready = false;
+      if (yes && root.__photo) root.__photo.upgrade();
       lift = 0;
       rasterS = scaleAt(Math.max(0, shown));
       for (var i = 0; i < LAYERS.length; i++) LAYERS[i][0].style.willChange = yes ? LAYERS[i][1] : "";
     }
-    /* The walk-in on request would show the promoted drawing from the raster made when it was promoted, soft at
-       3-8x. So during a flight, while the zoom grows past 2.2x the scale of the last raster (and the hall has not
-       yet turned to light, r < LIGHT[1]), the two drawn layers are handed back for one frame each (one after the
-       other) and promoted again: a fresh raster at the current zoom, about twice per walk-in. Not after: by then
-       only the jambs are left, passing out of the frame fast, and a raster at 4-8x of their stone and the
-       lamplight cost frames of 50-67ms at 1440 x 900 under 4x CPU throttle. Under 4x CPU throttle the flight stays
-       inside its frame budget (DESIGN.md › Measured). A hand scroll keeps the raster it has while it moves (it
-       may be faster than any raster) and is made crisp when it rests (rest()). */
+    /* The walk-in on request would show the promoted facade from the raster made when it was promoted, soft at
+       3-9x. So during a flight, while the zoom grows past 2.2x the scale of the last raster (and the jambs are
+       still on screen, r < KX[2]), the facade is handed back for one frame and promoted again: a fresh raster at
+       the current zoom. A hand scroll keeps the raster it has while it moves and is made crisp when it rests. */
     function crisp(r) {
       if (!promoted || sharp) return;
-      if (lift) {                       /* one drawn layer per frame: the raster work is spread over two frames */
-        LAYERS[lift - 1][0].style.willChange = LAYERS[lift - 1][1];
-        if (lift < DRAWN) { LAYERS[lift][0].style.willChange = ""; lift++; } else lift = 0;
+      if (lift) {
+        LAYERS[0][0].style.willChange = LAYERS[0][1];
+        lift = 0;
         return;
       }
       var sNow = scaleAt(r);
-      if (fl && r < LIGHT[1] && sNow > rasterS * STEP) {
+      if (fl && r < KX[2] && sNow > rasterS * STEP) {
         LAYERS[0][0].style.willChange = "";
         rasterS = sNow;
         lift = 1;
       }
     }
-    /* At rest mid-sequence: hand the drawn layers back for one frame (they re-raster crisp at the current
-       zoom), then promote them again at that scale, so the next scroll starts without any raster work. */
+    /* At rest mid-sequence: hand the facade back for one frame (it re-rasters crisp at the current zoom), then
+       promote it again at that scale, so the next scroll starts without any raster work. */
     function rest() {
       if (!promoted || sharp) return;
       sharp = 1;
@@ -396,6 +509,9 @@
       if (!on) return;
       var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
       last = now;
+      /* the list at rest (the run is over): how far past its end the page is, kept for refresh() (not while new
+         geometry is waiting to be measured: this frame may read the new layout against the old run) */
+      if (!rq && !fl) endOff = g.p >= 1 ? g.y - pin - run : -1;
       if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;           /* first frame, or a jump: no replay */
       else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
       if (Math.abs(g.p - r) < EPS) r = g.p;
@@ -416,14 +532,14 @@
       else {
         last = 0;
         clearTimeout(idle);
-        /* at the top: no hints at all (the exact rest state). Mid-sequence: crisp re-raster (see rest()).
-           Once the flood covers the drawing there is nothing to re-raster. */
-        if (shown <= 0) idle = setTimeout(function () { promote(false); }, 400);
-        else if (shown < COVERED) idle = setTimeout(rest, 250);
+        /* at the top: no hints at all (the exact rest state), 300ms after the loop settles (about 0.8s after a fast
+           scroll reaches the top). Mid-sequence, while the jambs are on screen: crisp re-raster (see rest()). Inside
+           the hall there is nothing to re-raster. */
+        if (shown <= 0) idle = setTimeout(settle, 300);
+        else if (shown < KX[2]) idle = setTimeout(rest, 250);
       }
     }
     function kick() { if (on && !raf) raf = window.requestAnimationFrame(tick); }
-
     /* The walk-in on request (the hero action and the scroll cue). Still ONE driver: this loop writes the
        scroll position itself, eased over time, and the scene follows it through the same smoothing as a
        hand scroll, so the doors swing and the camera walks in exactly as they do under the finger.
@@ -460,15 +576,25 @@
       listen(false);
     }
     function zoomAt(y) { return Math.log(scaleAt(clamp((y - pin) / run))) / KY[3]; }
-    /* journey share (0..1) -> scroll position, from a table of the weighted way (96 steps, built once) */
+    /* the list's arrival at y: the mean opacity of its title, sentence and form (the T rows) */
+    function listAt(y) {
+      var q = clamp((y - pin) / run), a = 0, i, t;
+      for (i = 8; i < 11; i++) { t = T[i]; a += t[3](clamp((q - t[1]) / (t[2] - t[1]))); }
+      return a / 3;
+    }
+    /* journey share (0..1) -> scroll position, from a table of the weighted way (96 steps, built once). The list's
+       arrival weighs too (--flight-weight-list x its change of opacity): the flight slows across it, so the words
+       rise in over about 300ms instead of 100ms at the flight's top speed (review r1) */
     function journey(y0, y1) {
-      var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0);
+      var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0), l, pl = listAt(y0);
       for (i = 1; i <= N; i++) {
         y = y0 + (y1 - y0) * i / N;
         z = zoomAt(y);
+        l = listAt(y);
         ys.push(y);
-        J.push(J[i - 1] + Math.abs(y - ys[i - 1]) / run + WEIGHT * Math.abs(z - pz));
+        J.push(J[i - 1] + Math.abs(y - ys[i - 1]) / run + WEIGHT * Math.abs(z - pz) + WLIST * Math.abs(l - pl));
         pz = z;
+        pl = l;
       }
       return function (j) {
         j *= J[N];
@@ -504,29 +630,35 @@
       kick();
       return true;
     }
-    /* a wheel turn or a touch at the top is about to scroll: promote now, so the first frame of the
-       sequence does not also pay for creating its layers (dropped again if nothing moves) */
+    /* a wheel turn or a touch at the top is about to scroll, and a press on the action or the cue is about to start
+       the walk-in (a press lasts about 100ms before its click): promote now, so the first frame of the sequence does
+       not also pay for creating its layers (dropped again if nothing moves) */
     function prime() {
       if (!on || promoted || shown > 0) return;
       promote(true);
       clearTimeout(idle);
-      idle = setTimeout(function () { if (shown <= 0) promote(false); }, 400);
+      idle = setTimeout(function () { if (shown <= 0) settle(); }, 400);
     }
-    /* A mouse arriving over the first screen readies the two drawn layers (the camera and the lit hall: the costly
-       raster) at rest, at their rest scale, so the first frame of a wheel scroll only creates the light, cheap
-       ones. Drawing only, never the text (a promoted text layer can lose subpixel antialiasing). It measured
-       67-83ms for that first frame at 1440 x 900 under 4x CPU throttle in half the runs; kept until the sequence
-       takes over, dropped with the other hints back at the top. */
+    /* A mouse arriving over the first screen readies the image layers at rest, at their rest scale (the facade,
+       the camera, the plate, the leaves, their shade, the lamplight), so the first frame of a wheel scroll or of the
+       walk-in creates no layer and rasters nothing. Images only, never the text (a promoted text layer can lose
+       subpixel antialiasing); kept until the sequence takes over; back at the top all hints are dropped (settle()). */
     function warm(e) {
       if (!on || promoted || ready || shown > 0 || (e && e.pointerType && e.pointerType !== "mouse")) return;
       ready = true;
-      for (var i = 0; i < DRAWN; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
+      for (var i = 0; i < WARM; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
     }
     function refresh() { try { refreshInner(); } catch (err) { bail("refresh", err); } }
     function refreshInner() {            /* new geometry, same progress */
       rq = 0;
       if (!on) return;
+      var was = endOff, w0 = mw, h0 = mh;
       measure();
+      /* the list was at rest and the screen changed size (a rotation, a keyboard closing in a browser that resizes
+         the page): the run is measured again in svh but the scroll position is kept, so the page would land back
+         in the door sequence with the list hidden, a focused field invisible (review r1). Keep the list at rest,
+         at the same distance into it. */
+      if (was >= 0 && !fl && (mw !== w0 || mh !== h0) && target().p < 1) window.scrollTo(0, pin + run + was);
       if (fl) { fl.y1 = fl.to(); fl.at = journey(fl.y0, fl.y1); }
       if (shown >= 0) render(shown, seen < 0 ? shown : seen);
       calm = 0;
@@ -543,6 +675,7 @@
       window.removeEventListener("scroll", kick);
       render(0);
       promote(false);
+      if (ready) { ready = false; for (var j = 0; j < WARM; j++) LAYERS[j][0].style.willChange = ""; }   /* the readied layers too */
       stage.style.removeProperty("--stick");
       if (cue) cue.style.visibility = "";
       shown = -1;
@@ -563,10 +696,19 @@
       kick();
     }
     window.addEventListener("wheel", prime, { passive: true });
+    wrap.addEventListener("pointerdown", function (e) { if (e.target.closest && e.target.closest('a[href="#lista"]')) prime(); }, { passive: true });
     window.addEventListener("pointermove", warm, { passive: true });
+    /* back at the top (or a wheel at the top that did not scroll): every hint of the run goes; a mouse readies the
+       image layers again when it next moves. (Readying them at idle on every device was tried: a layer is placed on
+       whole device pixels, so the photograph moved by a fraction of a pixel a second after the load, up to 194
+       levels on its sharpest edges at 390 x 844. On a phone the layers are made on the touch that starts the
+       scroll, or in the walk-in's first frame, which moves nothing.) */
+    function settle() { if (promoted) promote(false); }
     window.addEventListener("touchstart", prime, { passive: true });
     window.addEventListener("resize", queue);
     window.addEventListener("orientationchange", queue);
+    /* the run held for a focused field (measure()) is let go when the focus leaves the list */
+    if (list) list.addEventListener("focusout", function () { if (wrap.style.getPropertyValue("--porta-run")) queue(); });
     if (window.visualViewport) window.visualViewport.addEventListener("resize", queue);
     window.addEventListener("load", queue);
     window.addEventListener("pageshow", function () { shown = -1; seen = -1; queue(); });
@@ -584,10 +726,9 @@
     root.__portaBusy = function () { return on && (!!fl || !!raf); };
     /* geometry for the tests and the ?diag panel (read-only) */
     root.__porta = { fly: fly, land: land, geo: function () {
-      return { pin: pin, run: run, S: cam.s, light: LIGHT, sLight: [Math.exp(KY[1]), Math.exp(KY[2])], flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen };
+      return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen };
     } };
   })();
-
   /* ---------------------------------------------------------------- 3. The waiting list
      POST to the join_waitlist() function (Supabase, EU). The publishable key is public by design:
      the table is not readable, only this function is callable. Nothing is sent before submit. */
@@ -736,9 +877,14 @@
        where it is at rest). A tap or a click into the form never moves the page (see keyed), wherever it rests. */
     list.addEventListener("focusin", function (e) {
       if (!keyed || (e.relatedTarget && list.contains(e.relatedTarget))) return;
-      var y = listY(), d = y - window.pageYOffset;
+      var y = listY(), d = y - window.pageYOffset,
+        fits = e.target.getBoundingClientRect().bottom - list.getBoundingClientRect().top <= window.innerHeight - 8;
       if (list.offsetHeight <= window.innerHeight + 2) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
-      else if (d > 2) {                   /* a list taller than the screen: its start, then whatever took the focus */
+      /* a list taller than the screen: its rest position whenever what took the focus is in view there (from either
+         side: the browser's own focus scroll may have gone past it and clipped the title, review r1); otherwise its
+         start, then whatever took the focus */
+      else if (fits) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
+      else if (d > 2) {
         window.scrollTo(0, y);
         if (e.target.scrollIntoView) e.target.scrollIntoView({ block: "nearest" });
       }

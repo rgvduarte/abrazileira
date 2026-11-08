@@ -302,7 +302,9 @@ svg { display: block; }
 /* narrow screens: the link takes its own line instead of wrapping after a dangling separator */
 @media (max-width: 29.99em) {
   .foot__sep { display: none; }
-  .foot__link { display: flex; justify-content: center; inline-size: fit-content; margin-inline: auto; margin-block-end: calc(var(--space-3) * -1); }
+  /* its tap box takes back most of the footer's bottom padding, not all of it: a focus ring (2px at a 3px offset)
+     still fits inside the page at its foot (review r1) */
+  .foot__link { display: flex; justify-content: center; inline-size: fit-content; margin-inline: auto; margin-block-end: calc(var(--space-2) - var(--space-3)); }
 }
 /* each piece of the footer line has a fallback matched to its own width, so a late font moves nothing */
 .foot__name { font-family: var(--font-foot-name); }
@@ -314,7 +316,12 @@ svg { display: block; }
   .foot__place { display: block; }
 }
 
-/* ==== The entrance ================================================================ */
+/* ==== The entrance: a photograph in layers ============================================
+   The doorway is a photograph cut into layers (photo.py, assets/photo/photo.json), each placed by its rect as a
+   fraction of the facade image inside one box (.scene) with the facade's aspect ratio:
+     plate (the hall beyond) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent) < spill
+   The facade's outer margin converges to the page colour (Papel by day, Noite by night), so the photo has no edge
+   on the page. Each layer holds a picture per theme; the theme's tokens show one (--t-dia, --t-noite). */
 .entrance {
   flex: 1 1 0;
   align-self: stretch;
@@ -322,203 +329,100 @@ svg { display: block; }
   align-items: flex-end;
   justify-content: center;
   min-block-size: clamp(15rem, 40svh, 34rem);
-  /* stacked: never taller than the drawing at full width, so spare height
-     goes above the lockup and between text and drawing, not into a hole */
-  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio) * (1 + var(--scene-lift)) + var(--scene-clear));
+  /* stacked: never taller than the photo at its widest, so spare height goes above the lockup and between the
+     text and the photo, not into a hole */
+  max-block-size: calc((100vw - 2 * var(--gutter) + 2 * var(--space-3)) * var(--scene-reach) / var(--scene-ratio) * (1 - var(--scene-lift)) + var(--scene-clear));
   margin-block-start: auto;
   margin-inline: calc(var(--space-3) * -1);
   container-type: size;
   pointer-events: none;
   user-select: none;
-  /* stacked layout: the door's axis sits on the page axis (same axis as the lockup).
-     The drawing is asymmetric (lantern left, olive tree right), so it is scaled to fit
-     symmetrically around the door: --scene-axis (generated) = door axis as a fraction of the
-     drawing width; --scene-reach = drawing width / (2 x widest half around the axis), measured
-     so the outermost olive leaves may reach into the gutter.
-     The loose plaster wash above the arch paints above the drawing's box (--scene-over, generated: 7% of its
-     height). Stacked, that overshoot and 8px more stay inside the entrance, so the wash never rises into the
-     action above it (painted top at least 32px under the action's box). */
-  --scene-reach: 0.8543;
-  --scene-lift: var(--scene-over, 0);
+  -webkit-user-select: none;
+  /* stacked layout: the door's axis sits on the page axis (the lockup's axis). The photo is asymmetric (lantern
+     left, olive right): --scene-axis (generated) = the door axis as a share of the photo's width; --scene-reach
+     lets the photo be wider than the column by its faded margin (the right side, the wider half around the axis,
+     may reach into the gutter: it is the page colour there); --scene-lift: the top of the photo (plain wall,
+     faded into the page) may rise that share of its height above the box, into the space under the action */
+  --scene-reach: 1.06;
+  --scene-lift: 0.05;
   --scene-clear: var(--space-2);
 }
 .scene {
-  --scene-w: min(calc(100cqw * var(--scene-reach)), calc((100cqh - var(--scene-clear)) * var(--scene-ratio) / (1 + var(--scene-lift))));
+  --scene-w: min(calc(100cqw * var(--scene-reach)), calc((100cqh - var(--scene-clear)) * var(--scene-ratio) / (1 - var(--scene-lift))));
   position: relative;
   z-index: var(--z-scene);
+  flex: none;
   inline-size: var(--scene-w);
   aspect-ratio: var(--scene-ratio);
   inset-inline-start: calc(var(--scene-w) * (0.5 - var(--scene-axis)));
-  transform-origin: var(--door-cx) var(--door-cy);   /* the camera zooms around the doorway */
+  transform-origin: var(--hp-x) var(--hp-y);       /* the camera walks in towards the hall point */
+  /* the placeholder until the photo has loaded (a 24px image, drawn blurred); site.js drops it after the load */
+  background: var(--photo-lqip) center / 100% 100% no-repeat;
 }
-/* the floor line: the street the steps stand on, full width, part of the drawing so it travels with the camera */
-.scene::after {
-  content: "";
-  position: absolute;
-  inset-inline: -100vw;
-  inset-block-end: calc(var(--hairline) * -1);
-  block-size: var(--hairline);
-  background: var(--color-ground);
-}
+.scene.is-loaded { background: none; }
+/* until the facade is in, the placeholder alone stands for the whole scene: the small doorway files (leaves, the
+   hall) would otherwise paint sharp over the blur, doors floating without their arch (review r1). With JavaScript
+   only (data-theme on the root is set by the head script): without it nothing marks the load, and nothing is
+   hidden; the home page only (the style guide shows its scenes without site.js). */
+:root[data-theme] .porta .scene:not(.is-loaded) :is(.door, .ph--hall) { visibility: hidden; }
 @supports not (container-type: size) {
   .scene { --scene-w: min(100%, calc(44svh * var(--scene-ratio))); }
 }
-.scene__art { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
-
-/* the hall behind the door plane, lit once the doors open (between the back and the front svg) */
-.hall {
+.ph {
   position: absolute;
-  inset-inline-start: var(--leaf-left);
-  inset-block-start: var(--leaf-top);
-  inline-size: calc(var(--leaf-w) * 2);
-  block-size: var(--leaf-h);
+  inset-inline-start: var(--x);
+  inset-block-start: var(--y);
+  inline-size: var(--w);
+  block-size: var(--h);
 }
-.hall__light,
-.hall__flat { position: absolute; inset: 0; opacity: 0; }
-.hall__light { background: var(--i-hall-light); }   /* the lit hall and its drawing (Noite: lamplight gradient) */
-.hall__flat { background: var(--color-hall); }      /* the hand-off: the hall becomes the list colour, inside the doorway only */
-/* lamplight on the threshold and the steps (Noite only; clipped to the stone in the markup) */
-.spill {
-  position: absolute;
-  inset-inline-start: var(--spill-x);
-  inset-block-start: var(--spill-y);
-  inline-size: var(--spill-w);
-  block-size: var(--spill-h);
-  background: var(--i-spill);
-  opacity: 0;
-}
+.ph--facade { --x: 0%; --y: 0%; --w: 100%; --h: 100%; }
+.ph--hall { --x: var(--door-x); --y: var(--door-y); --w: var(--door-w); --h: var(--door-h); overflow: clip; }   /* the doorway */
+/* a ring of the frame's own walnut just outside the doorway, under the facade (which covers it: its hole is 4 master px
+   smaller than the doorway): where the compositor leaves a sub-pixel gap at the leaves' outer edges (promoted layers
+   at fractional positions), it shows the frame, never the page colour as a pale pinstripe (review r1). overflow: clip
+   does not clip the box's own shadow. */
+.ph--hall { box-shadow: 0 0 0 3px var(--color-door-ring); }
+.ph--plate { --x: var(--plate-x); --y: var(--plate-y); --w: var(--plate-w); --h: var(--plate-h); transform-origin: var(--plate-ox) var(--plate-oy); }
+.ph--reveal { --x: 0%; --y: 0%; --w: 100%; --h: 100%; }
+.ph--spill { --x: var(--spill-x); --y: var(--spill-y); --w: var(--spill-w); --h: var(--spill-h); opacity: 0; }
+.scene img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; max-inline-size: none; }
+/* the theme's own photograph: a hidden picture has no box, so its lazy image is never fetched */
+picture.t-dia { display: var(--t-dia); }
+picture.t-noite { display: var(--t-noite); }
+.ph--spill { display: none; }
+/* the lamplight on the steps (Noite, an RGBA overlay of one warm light: no blend mode, so no backdrop read-back in
+   any frame) joins the scene once the page has loaded (site.js): it is invisible until the doors open, so it is not
+   part of the first paint */
+.scene.is-ready .ph--spill { display: var(--t-spill); }
 
-/* ---- The drawing (caderno): ink and washes -------------------------------------------
-   Ink: stroked paths whose width scales with the drawing (a pen line seen closer is wider), so the
-   camera's walk-in reads like leaning into the sketchbook. --ink-k thins the pen on large drawings.
-   Washes: filled paths at a glaze opacity; the same colour on a thin rim darkens the edge as
-   pigment pools at the edge of a wet wash. Colours and opacities: tokens.css (Dia / Noite). */
-.scene { --ink-k: 1; --ink-u: 1; }
-@container (min-width: 30rem) { .scene { --ink-k: 0.86; } }
-@container (min-width: 44rem) { .scene { --ink-k: 0.74; } }
-.leaf svg { --ink-u: 1.174; }          /* leaf units are 0.852 scene units */
-.k {
-  fill: none;
-  stroke: var(--i-ink);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: calc(var(--pen-contour) * var(--ink-k) * var(--ink-u));
-  stroke-opacity: var(--ink-o);
-}
-.k-2 { stroke-width: calc(var(--pen-detail) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-o2); }
-.k-h { stroke-width: calc(var(--pen-hatch) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-oh); }
-.k-x { stroke-width: calc(var(--pen-cross) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-ox); }
-.k-f { stroke-width: calc(var(--pen-fine) * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-of); }
-.k-leaf { stroke: var(--i-ink-leaf); stroke-width: calc(var(--pen-leaf) * var(--ink-k)); stroke-opacity: var(--ink-of); }
-.k-iron { stroke: var(--i-ink-bar); stroke-width: calc(var(--pen-iron) * var(--ink-k)); stroke-opacity: 1; }
-.k-bar { stroke: var(--i-ink-bar); }
-.k-wood { stroke: var(--i-ink-wood); }
-.k-grain { stroke-opacity: var(--ink-ograin); }
-.k-hall { stroke: var(--i-ink-hall); stroke-width: calc(var(--pen-hall) * var(--ink-k)); stroke-opacity: var(--ink-ohall); }
-.k-hf { stroke-width: calc(var(--pen-hall-fine) * var(--ink-k)); stroke-opacity: var(--ink-ohall-f); }
-.k-hh { stroke-width: calc(var(--pen-hall-hatch) * var(--ink-k)); stroke-opacity: var(--ink-ohall-h); }
-.k-hm { stroke-width: calc(var(--pen-hall-motif) * var(--ink-k)); stroke-opacity: var(--ink-ohall-m); }
-.k-fill { fill: var(--i-iron); }
-.w {
-  fill: var(--wc);
-  fill-opacity: var(--wo);
-  stroke: var(--wc);
-  stroke-opacity: calc(var(--wo) * var(--wo-rim));
-  stroke-width: calc(var(--pen-rim) * var(--ink-u));
-  stroke-linejoin: round;
-}
-.w-wall { --wc: var(--w-wall); --wo: var(--wo-wall); }
-.w-stone { --wc: var(--w-stone); --wo: var(--wo-stone); }
-.w-stone2 { --wc: var(--w-stone2); --wo: var(--wo-stone2); }
-.w-shade { --wc: var(--w-shade); --wo: var(--wo-shade); }
-.w-wood { --wc: var(--w-wood); --wo: var(--wo-wood); }
-.w-wood2 { --wc: var(--w-wood2); --wo: var(--wo-wood2); }
-.w-wood-dk { --wc: var(--w-wood-dk); --wo: var(--wo-wood-dk); }
-.w-glass { --wc: var(--w-glass); --wo: var(--wo-glass); }
-.w-step { --wc: var(--w-step); --wo: var(--wo-step); }
-.w-riser { --wc: var(--w-riser); --wo: var(--wo-riser); }
-.w-pot { --wc: var(--w-pot); --wo: var(--wo-pot); }
-.w-potdk { --wc: var(--w-potdk); --wo: var(--wo-potdk); }
-.w-paper { --wc: var(--color-bg); --wo: 0.8; stroke: none; }
-.w-soil { --wc: var(--w-soil); --wo: var(--wo-soil); }
-.w-leaf { stroke: none; }
-.w-leaf1 { --wc: var(--w-leaf1); --wo: var(--wo-leaf); }
-.w-leaf2 { --wc: var(--w-leaf2); --wo: var(--wo-leaf); }
-.w-leaf3 { --wc: var(--w-leaf3); --wo: var(--wo-leaf); }
-.w-mass1 { --wc: var(--w-leaf1); --wo: var(--wo-mass); stroke: none; }
-.w-mass2 { --wc: var(--w-leaf2); --wo: var(--wo-mass); stroke: none; }
-.w-mass3 { --wc: var(--w-leaf3); --wo: var(--wo-mass); }
-.w-trunk { --wc: var(--w-trunk); --wo: var(--wo-trunk); }
-.w-brass { --wc: var(--i-brass); --wo: 0.85; }
-.w-lglass { --wc: var(--w-lglass); --wo: 0.92; }
-.w-lglass2 { --wc: var(--w-lglass2); --wo: 0.92; }
-.w-lamp { --wc: var(--w-lamp); --wo: 0.85; }
-.w-room { --wc: var(--w-room); --wo: var(--wo-room); }
-.w-room-base { fill: var(--i-room-base); }
-.w-hfloor { --wc: var(--w-hfloor); --wo: var(--wo-hfloor); }
-.w-htile { --wc: var(--w-htile); --wo: var(--wo-htile); stroke: none; }
-.w-hdado { --wc: var(--w-hdado); --wo: var(--wo-hdado); }
-.w-hdeep { --wc: var(--w-hdeep); --wo: var(--wo-hdeep); }
-.w-hwin { --wc: var(--light-core); --wo: var(--wo-hwin); }
-.w-hpool { --wc: var(--light-core); --wo: var(--wo-hpool); }
-.w-l0 { --wc: var(--light-mid); --wo: 0.12; }
-.w-l1 { --wc: var(--light-mid); --wo: 0.2; }
-.w-l2 { --wc: var(--light-mid); --wo: 0.32; }
-.w-l3 { --wc: var(--light-core); --wo: 0.62; }
-.lf-base { fill: var(--color-bg); }
-.lg { stroke: var(--light-mid); stroke-opacity: 0.07; stroke-width: 1px; }
-.lg-flat { stroke: none; }
-.s-core { stop-color: var(--light-core); }
-.s-mid { stop-color: var(--light-mid); }
-.s-edge { stop-color: var(--light-edge); }
-.hall__art, .spill__art { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: hidden; }
-.spill__art { overflow: visible; }
-.i-leaf-turn { fill: var(--i-wood-shade); opacity: var(--o-turn); }
-.i-leaf-edge { fill: var(--light-mid); opacity: var(--o-night); }
-
-/* lamplight: content of the drawing, present only at night; sun shadows only by day */
-.i-night { opacity: var(--o-night); }
-.i-day { opacity: var(--o-day); }
-
-/* the double door: two leaves hinged on the frame, in the drawing's own perspective */
+/* the double door: two leaves hinged on the outer jambs, swinging inwards in the photo's own perspective (the
+   hall point is the vanishing point; the distance is 0.987 of the photo's height) */
 .door {
   position: absolute;
   inset: 0;
-  perspective: calc(var(--scene-w) * var(--persp));
-  perspective-origin: var(--vp-x) var(--vp-y);
+  perspective: calc(var(--scene-w) / var(--scene-ratio) * var(--persp));
+  perspective-origin: var(--hp-x) var(--hp-y);
 }
 .leaf {
   position: absolute;
-  inset-block-start: var(--leaf-top);
-  block-size: var(--leaf-h);
-  inline-size: var(--leaf-w);
-  transform-style: preserve-3d;   /* the scroll swing (outer) adds to the ajar angle (inner face) */
+  inset-block-start: var(--leaf-l-y);
+  block-size: var(--leaf-l-h);
+  inline-size: var(--leaf-l-w);
+  backface-visibility: hidden;
+  outline: 1px solid transparent;            /* smooth edges when turned */
 }
-.leaf__face { position: absolute; inset: 0; backface-visibility: hidden; }
-.leaf svg { inline-size: 100%; block-size: 100%; overflow: visible; }
-.leaf--l { inset-inline-start: var(--leaf-left); transform-origin: 0 50%; }
-.leaf--r { inset-inline-start: var(--leaf-mid); transform-origin: 100% 50%; }
-.leaf--l .leaf__face { transform-origin: 0 50%; transform: rotateY(var(--ajar-l)); }
-.leaf--r .leaf__face { transform-origin: 100% 50%; transform: rotateY(calc(var(--ajar-r) * -1)); }
+.leaf--l { inset-inline-start: var(--leaf-l-x); transform-origin: 0 50%; }
+.leaf--r { inset-inline-start: var(--leaf-r-x); transform-origin: 100% 50%; }
+/* a leaf turning away from the street darkens (site.js: opacity = sin of the angle; the depth is the theme's) */
+.leaf__shade { position: absolute; inset: 0; background: var(--color-leaf-shade); opacity: 0; }
 
-/* ---- Motion: the doors ease ajar once, the lamplight follows ------------------ */
+/* Dia <-> Noite without the View Transitions API */
 @media (prefers-reduced-motion: no-preference) {
-  .leaf--l .leaf__face { animation: ajar-l var(--dur-door) var(--ease-door) var(--delay-door) backwards; }
-  .leaf--r .leaf__face { animation: ajar-r var(--dur-door) var(--ease-door) var(--delay-door) backwards; }
-  .i-leaf-turn,
-  .i-leaf-edge,
-  .i-door-light { animation: light-in var(--dur-door) var(--ease-out) var(--delay-door) backwards; }
-  /* Dia <-> Noite without the View Transitions API */
   .is-theming,
   .is-theming *:not([data-motion]) {
     transition:
       background-color var(--dur-theme) var(--ease-out),
       color var(--dur-theme) var(--ease-out),
-      fill var(--dur-theme) var(--ease-out),
-      stroke var(--dur-theme) var(--ease-out),
-      stop-color var(--dur-theme) var(--ease-out),
-      fill-opacity var(--dur-theme) var(--ease-out),
-      stroke-opacity var(--dur-theme) var(--ease-out),
       opacity var(--dur-theme) var(--ease-out) !important;
   }
   ::view-transition-old(root),
@@ -540,18 +444,14 @@ svg { display: block; }
 }
 /* a theme change lands at once on the controls and links (no colour transition catching up behind it) */
 .is-instant :is(.ctl, .cta, .link, .foot__link, .link-inline, .porta__cue, .button, .field__input, .check__box) { transition: none !important; }
-@keyframes ajar-l { from { transform: rotateY(0deg); } }
-@keyframes ajar-r { from { transform: rotateY(0deg); } }
-@keyframes light-in { from { opacity: 0; } }
-
 
 /* ==== The door sequence (home page) ==================================================
-   Rest state = the composition above, one screen (100svh): top bar, crest and sentence, the entrance
-   standing on the floor line, and a band below it. With JS and motion allowed, site.js adds
-   .porta-on to <html>: the wrapper grows by --porta-run and the stage pins (sticky, 100lvh so the
-   collapsing mobile toolbar never uncovers anything). Scroll progress drives the doors, the hall
-   light, the camera and the flood (site.js; transform and opacity only). The waiting list rises in over
-   the last quarter of the run, on the same colour, and is at rest when the run ends. */
+   Rest state = the composition above, one screen (100svh): top bar, crest and sentence, the photograph of the
+   entrance with its doors closed, and a band below it. With JS and motion allowed, site.js adds .porta-on to
+   <html>: the wrapper grows by --porta-run and the stage pins (sticky, 100lvh so the collapsing mobile toolbar
+   never uncovers anything). Scroll progress drives the doors, their shade, the lamplight on the steps (Noite),
+   the camera and the hall's light (site.js; transform and opacity only). The waiting list rises in over the last
+   quarter of the run, on the hall colour, and is at rest when the run ends. */
 .porta { position: relative; }
 .porta__stage { position: relative; overflow: clip; }
 .porta__frame {
@@ -561,7 +461,7 @@ svg { display: block; }
   min-block-size: 100svh;
   padding-block-start: calc(var(--topbar-pad) + var(--target) + var(--sol-h, 0px));   /* the top bar overlays this */
 }
-.porta__frame > .stage { flex: 1 1 auto; padding-block-end: var(--hairline); }   /* room for the floor line, as before */
+.porta__frame > .stage { flex: 1 1 auto; padding-block-end: var(--hairline); }
 .porta__band {
   flex: none;
   display: flex;
@@ -570,7 +470,7 @@ svg { display: block; }
   line-height: var(--leading-text);
   font-size: var(--size-ui);
 }
-/* a quiet scroll cue under the floor line: static, no loop; fades out as soon as the sequence starts */
+/* a quiet scroll cue under the photograph: static, no loop; fades out as soon as the sequence starts */
 .porta__cue {
   display: grid;
   place-items: center;
@@ -586,13 +486,15 @@ svg { display: block; }
   overflow: visible;
   fill: none;
   stroke: currentColor;
-  stroke-width: var(--pen-contour);          /* the drawing's contour pen, not an icon's stroke */
+  stroke-width: var(--stroke-cue);          /* a hand-drawn chevron at a pen's weight, not an icon's stroke */
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
-/* once the doorway covers the screen, the flood hides the edge-on leaves: it only ever fades the hall
-   colour over the hall colour, never over the stone (the camera reaches cover first) */
+/* the hall's light: one flat --color-hall over the whole stage. The camera walks into the far arch of the hall
+   (the bright room beyond, which the photograph clips to the hall colour); once the doorway covers the screen
+   this layer fades in over the last stretch of the walk-in (site.js), so the end is the token itself, ΔRGB 0 on
+   every pixel: a lossy photograph cannot hold one exact colour, CSS can. */
 .porta__flood {
   position: absolute;
   inset: 0;
@@ -994,43 +896,32 @@ svg { display: block; }
   .intro { margin-block-end: var(--space-3); }
   .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
   .cta-row { margin-block-start: var(--space-2); }   /* the action still stands apart from the status */
-  .entrance { --scene-clear: var(--space-4); }       /* the wash stays clear of the action: 28px under its box */
+  .entrance { --scene-clear: var(--space-4); }       /* the photo's faded top stays clear of the action */
   .porta__band { padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom)); }
 }
 /* Very short portrait screens (320 x 568; iPhone SE in Safari, 375 x 553): the logo at its 24px minimum, a
-   tighter rhythm, no scroll cue, and a drawing that takes the height that is left, so the door still stands on
-   the floor line inside the first screen (tested: the floor line is never below the small viewport). */
+   tighter rhythm, no scroll cue, and a photograph that takes the height that is left, so the whole door and its
+   steps are inside the first screen (tested: the photo's foot is never below the small viewport). */
 @media (orientation: portrait) and (max-height: 37.5em) {
   .lockup { font-size: var(--size-lockup-min); }
   .lede { margin-block-start: var(--space-3); }
   .entrance { min-block-size: clamp(9rem, 28svh, 18rem); }
-  .porta__band { display: none; }   /* no room for the cue: the drawing keeps the height (the action invites on) */
+  .porta__band { display: none; }   /* no room for the cue: the photo keeps the height (the action invites on) */
 }
 
 /* ==== Preferences ======================================================================= */
-@media (prefers-reduced-motion: reduce) {
-  /* no sequence: the doors stand open and the hall is lit (the final state, without the travel);
-     nothing moves, colour and opacity changes stay (each component lists its own reduced rule) */
-  .leaf--l { transform: rotateY(var(--open-l)); }
-  .leaf--r { transform: rotateY(calc(var(--open-r) * -1)); }
-  .hall__light, .spill { opacity: 1; }
-}
-/* more contrast: muted text takes the strong ink (on the hall too), and the drawing's fine lines, hatching and
-   cross-hatching are drawn at (nearly) full ink */
+/* prefers-reduced-motion: no sequence (site.js does not start it): the photograph stands as it is, doors closed,
+   and the list follows below. Each component lists its own reduced rule (press scale, message rise, tick). */
+/* more contrast: muted text takes the strong ink (on the hall too) */
 @media (prefers-contrast: more) {
   :root { --color-text-muted: var(--color-text-strong); }
   .surface-hall { --color-text-muted: var(--tinta); }
-  .scene { --ink-of: 1; --ink-oh: 0.9; --ink-ox: 0.8; --ink-ograin: 0.7; }
 }
 @media (forced-colors: active) {
   .lockup__emblem, .lockup__place, .status { color: CanvasText; }
   .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
-  /* forced colours: the line drawing alone, washes and light removed */
-  .w, .i-leaf-turn, .i-leaf-edge, .i-night, .hall, .spill, .porta__flood { display: none; }
-  .lf-base, .w-room-base { fill: Canvas; }
-  .k { stroke: CanvasText; }
-  .k-fill { fill: CanvasText; }
-  .scene::after { background: CanvasText; }
+  /* forced colours: the photograph stays (images keep their colours); the light layers go */
+  .ph--spill, .leaf__shade, .porta__flood { display: none; }
   .check__box { border-color: CanvasText; }
   .check__input:checked + .check__label .check__box { background: Highlight; }
   .button { border: var(--hairline) solid ButtonText; }
@@ -1046,7 +937,7 @@ svg { display: block; }
   [data-reveal] > * { opacity: 1 !important; transform: none !important; }
 }
 
-/* ==== 404 (same tokens and top bar, no drawing) ========================================== */
+/* ==== 404 (same tokens and top bar, no photograph) ========================================== */
 .home { display: block; }
 .stage.stage--plain {
   display: flex;

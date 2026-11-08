@@ -7,20 +7,21 @@ description: >-
   black. The voice is the hotel's original logo: a crowned B in a laurel wreath over A BRAZILEIRA /
   BOUTIQUE HOTEL / TORRES VEDRAS in Cinzel roman capitals; what the house says is set in Alegreya and the
   interface in Alegreya Sans, both in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
-  switch the whole page, including the drawing. The signature is a line drawing of a generic Portuguese stone
-  doorway: its walnut doors ease ajar once on load, and scrolling opens them, walks in through the doorway
-  and arrives in the lit hall, where the waiting list is. Shapes are square-cut; depth comes only from the
-  drawing and its light. The rule is restraint: one message, one action, no ornament.
+  switch the whole page, including the photograph. The signature is a photograph of an arched limestone doorway
+  (walnut double door, fanlight, wall lantern, an olive in a clay pot), cut into layers: scrolling swings the doors
+  inwards, walks in through the doorway into a warm, out-of-focus hall and on into its light, one flat colour,
+  where the waiting list is. Shapes are square-cut; depth comes only from the photograph and its light. The rule
+  is restraint: one message, one action, no ornament.
 
 colors:
   # primitives (tokens.css, layer 1)
   papel: "#F9F0E9"          # canvas by day; lime plaster; form fields
   areia: "#F0DFCF"          # lit stone, glass by day, skip-link surface
   pedra: "#DECDBD"          # limestone face
-  oliva: "#72692E"          # olive leaves (illustration only)
-  azulejo: "#6F7A4A"        # silvery leaf mix (illustration only)
+  oliva: "#72692E"          # olive (reserved: was the drawing's leaves; no use on the page now)
+  azulejo: "#6F7A4A"        # glazed tile (reserved; no use on the page now)
   castanho: "#804F1E"       # walnut doors by day; muted text 6.11:1 on papel
-  nogueira: "#5F3819"       # text, focus, floor line, drawing ink, field borders; 9.03:1 on papel
+  nogueira: "#5F3819"       # text, focus, hairlines, field borders; 9.03:1 on papel
   tinta: "#2E1E14"          # strongest text (wordmark), the button; 14.23:1 on papel
   latao: "#DB9E42"          # brass; 2.08:1 on papel = ornament only by day; 7.87:1 on noite
   latao-marca: "#A57638"    # emblem by day (graphic, 3.56:1), close to the original logo gold
@@ -28,9 +29,8 @@ colors:
   noite: "#1C120B"          # canvas by night
   linho: "#F3E6D6"          # text by night, 14.99:1 on noite
   linho-escuro: "#C2AE96"   # muted text by night, 8.58:1 on noite
-  luz-nucleo: "#FFF2D6"     # lamplight core (illustration, night)
-  luz: "#F4C978"            # lamplight body
-  luz-borda: "#B9782C"      # lamplight falloff
+  luz-nucleo: "#FFF2D6"     # lamplight core: form fields by night
+  luz: "#F4C978"            # lamplight body (sala-noite is derived from it)
   barro: "#9E3B1E"          # terracotta (handmade ceramics): form errors only; 5.17:1 / 5.58:1 on the hall
   sala-dia: "#F2DEC4"       # the lit hall by day (= latao 22% in papel, stored as exact sRGB hex)
   sala-noite: "#FCE7BC"     # the lit hall by night (= luz-nucleo 72% in luz, stored as exact sRGB hex)
@@ -48,7 +48,7 @@ colors:
   color-accent-text-on-night: "#DB9E42"   # latao
   color-mark: "#A57638"                # latao-marca: the emblem (graphic)
   color-mark-on-night: "#DB9E42"       # latao
-  color-ground: "#5F3819"              # nogueira: the floor line
+  color-ground: "#5F3819"              # nogueira: hairline rules (styleguide)
   color-ground-on-night: "#75685D"     # pedra 46% in noite (3.41:1)
   color-focus: "#5F3819"               # nogueira
   color-focus-on-night: "#DB9E42"      # latao
@@ -204,10 +204,10 @@ components:
     textColor: "{colors.color-text-strong}"
     decoration: "underline 1px, offset 0.3em"
     shownOn: "focus-visible"
-  scroll-cue:                 # the pen-drawn chevron under the floor line (aria-hidden, out of the Tab order)
+  scroll-cue:                 # the pen-drawn chevron under the photograph (aria-hidden, out of the Tab order)
     color: "{colors.color-text-muted}"
     hoverColor: "{colors.color-text-strong}"
-    size: "14px chevron in a 44px target: two bowed strokes that cross where they meet, at --pen-contour (1.15px)"
+    size: "14px chevron in a 44px target: two bowed strokes that cross where they meet, at --stroke-cue (1.15px)"
     hiddenWhen: "sliced by the small viewport's edge; absent on portrait screens up to 600px tall"
   lede:
     textColor: "{colors.color-text}"
@@ -219,12 +219,13 @@ components:
   footer:
     textColor: "{colors.color-text-muted}"
     typography: "{typography.ui}"
-  floor-line:
-    borderColor: "{colors.color-ground}"
-    height: 1px
-  entrance:                   # the caderno drawing (src/scene.py + src/hand.py)
-    pen: "--pen-contour 1.15px, --pen-detail 0.82px, --pen-hatch 0.52px, --pen-cross 0.48px, --pen-fine 0.55px (x --ink-k: 1 / 0.86 / 0.74 by container width); scales with the camera, re-rastered crisp as it zooms"
-    washes: "filled paths at glaze opacity (--wo-*), the same colour on a 1.1px rim at 55% (pigment pooling at the edge)"
+  entrance:                   # the photograph in layers (src/photo.py, src/assets/photo/photo.json)
+    layers: "plate (the hall) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent) < spill (Noite)"
+    files: "AVIF + WebP per theme; facade and leaves 720/1080/1600/2388 facade px, plate 720/1080/1600, reveal 1080/2388, spill 1080/1600"
+    firstPaint: "<= 180 KB on phones (measured 112 KB Dia, 48 KB Noite at 390 x 844, DPR 3; 174 KB Dia at 430 x 932, DPR 3)"
+    walkIn: "after the load, at idle: the larger facade and leaves (2388) for the walk-in, swapped in on the first move"
+    edges: "the facade's margin converges to the page colour (Papel / Noite): no rectangle on the page; the olive's crown is kept out of the feather; the hole overlaps the leaves by 4 master px"
+    rest: "doors closed, the hall's light in the gap; also the reduced-motion and no-JS state"
   surface-hall:
     backgroundColor: "{colors.color-bg-hall}"
     textColor: "{colors.color-text-hall}"
@@ -285,27 +286,30 @@ components:
 ## Overview
 
 A Brazileira reads like the hotel's own card left on a stone step: warm paper, the gold crest of the original
-logo in roman capitals, one sentence, one action, and a doorway drawn in ink that opens a little. The doorway
-is a page of an architect's travel sketchbook (the "caderno" style): a quick, sure pen line,
-economical hatching for shade and loose watercolour washes, all baked into vector geometry.
+logo in roman capitals, one sentence, one action, and the house's door. The door is a photograph: an arched
+limestone doorway with a walnut double door and a fanlight, a wall lantern on the left and an olive in a clay
+pot on the right, the house number 11 on the keystone. It is graded to the brand (lime plaster between Papel and
+Areia, limestone in the Pedra family, walnut rich but not orange) and its margin fades into the page, so it sits
+on the paper like the drawing it replaced, without a frame.
 
-**Dia** is paper and limestone in sunlight: flat papel ground, walnut doors, brass knobs, a faint cast
-shadow on the plaster. **Noite** is the same drawing after dark: walnut-black ground, the doors and stone
-gone dark, and lamplight coming through the gap, the fanlight and the wall lantern. Until the visitor chooses,
-the page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
+**Dia** is that doorway in daylight on the papel ground. **Noite** is the same photograph relit for the night
+(its own files, not a filter): a deep dusk wall that falls away into the night ground, the lantern lit with a warm
+pool on the stone, lamplight in the door gap and on the step tops, the fanlight a blue-hour sky. Until the visitor
+chooses, the page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
 lantern is lit when it really is, and one short line under the control says so, on every screen («É noite em
 Torres Vedras.»). The system's dark mode does not override the sky (it is not a choice made on this site);
 without JavaScript the system theme decides. The Dia · Noite control overrides it and remembers the choice.
 
 Scrolling is the one journey on the page, and it is short: about one screen from the top to a readable form
-(one decisive swipe on a phone). The doors swing open from the first pixel, the hall lights up, the view walks
-in through the doorway and keeps going until the screen is one flat colour, the hall's light; the waiting list
-rises in on that light at once. The hall surface is light in both themes (daylight by day, lamplight by
+(one decisive swipe on a phone). The doors swing inwards from the first pixel, the camera walks in through the
+doorway into a calm, out-of-focus vestibule and on into the arch of light at its end, until the screen is one flat
+colour, the hall's light; the waiting list rises in on that light at once. The hall surface is light in both themes (daylight by day, lamplight by
 night), so the form always reads dark ink on a light ground.
 
-Colour discipline: nogueira is the workhorse (text, focus ring, the drawing's ink, the floor line, field
-borders). Latão is ceremonial: the emblem and TORRES VEDRAS, and the light at night. Oliva and azulejo exist
-only inside the drawing. Barro (terracotta) exists only for form errors. The interface itself is 95% neutral.
+Colour discipline: nogueira is the workhorse (text, focus ring, field borders). Latão is ceremonial: the emblem
+and TORRES VEDRAS by day, the accent text by night. The photograph carries its own colour (graded to the
+palette); no interface colour is sampled from it. Barro (terracotta) exists only for form errors. The interface
+itself is 95% neutral.
 
 **Key characteristics**
 - Canvas `{colors.papel}` by day, `{colors.noite}` by night; the hall `{colors.color-hall}`; all flat.
@@ -315,12 +319,13 @@ only inside the drawing. Barro (terracotta) exists only for form errors. The int
 - One accent: brass, `{colors.latao-texto}` by day (5.08:1), `{colors.latao}` by night (7.87:1).
 - One action on the first screen: «Entrar na lista de espera» / «Join the waiting list».
 - Square corners everywhere; the only radius is the 2px corner of the focus ring.
-- Depth comes from the drawing alone (perspective, light), never from interface shadows.
-- Motion: the doors ease ajar once on load (1.1s); one scroll-linked sequence (115svh, one plain-JS driver)
-  walks in through them into one flat colour and the waiting list; the hero action plays the same walk-in on its
-  own (1.2s, any input stops it) and lands in the email field; Dia ↔ Noite cross-fades in 400ms when chosen,
+- Depth comes from the photograph alone (its perspective, its light), never from interface shadows.
+- Motion: nothing moves on load; one scroll-linked sequence (115svh, one plain-JS driver) swings the doors in,
+  walks through them into one flat colour and the waiting list; the hero action plays the same walk-in on its
+  own (1.25s, any input stops it) and lands in the email field; Dia ↔ Noite cross-fades in 400ms when chosen,
   1.4s when the sun changes it.
-- One lamp: the hall's pendant, which dissolves with the hall into the light it gives. The list has none.
+- One light at the end of the hall: the arch into the bright room beyond, which the photograph clips to the hall
+  colour; the walk-in ends in it. No lamp bokeh, no glow shapes.
 
 ## Logo usage
 
@@ -340,20 +345,22 @@ only inside the drawing. Barro (terracotta) exists only for form errors. The int
   TORRES VEDRAS is then 9.6px, the logo's own ratio). Below that, use the emblem alone (favicon.svg, app icons),
   which holds at 16px.
 - **Don't**: redraw, outline, recolour outside the two schemes, add a background plate, set the words in
-  another face, change the tracking, put the lockup on the drawing, animate the emblem.
+  another face, change the tracking, put the lockup on the photograph, animate the emblem.
 
 ## Colors
 
 ### Brand & accent
 - **Papel** (`--papel` #F9F0E9): day canvas; the fill of form fields on the hall by day. Never pure white.
-- **Areia** (`--areia` #F0DFCF): lit stone and glass in the drawing; skip-link surface. Not a text colour.
-- **Pedra** (`--pedra` #DECDBD): limestone face in the drawing; base of the night line colours.
-- **Castanho** (`--castanho` #804F1E): walnut door face by day; muted text (6.11:1 on papel).
-- **Nogueira** (`--nogueira` #5F3819): text, focus ring, floor line, drawing ink and field borders (9.03:1).
+- **Areia** (`--areia` #F0DFCF): skip-link surface, selection; the photograph's plaster is graded between
+  Papel and Areia (about #F4EBE1). Not a text colour.
+- **Pedra** (`--pedra` #DECDBD): the limestone family the photograph is graded to; base of the night hairline.
+- **Castanho** (`--castanho` #804F1E): muted text (6.11:1 on papel).
+- **Nogueira** (`--nogueira` #5F3819): text, focus ring, hairlines and field borders (9.03:1); also the depth of
+  the walnut the photograph is graded to (about #8E4F2A on its lit faces).
 - **Tinta** (`--tinta` #2E1E14): the wordmark, the strongest text and the button (14.23:1).
-- **Latão** (`--latao` #DB9E42): brass hardware by day (ornament only, 2.08:1 on papel); text, emblem and focus
-  by night (7.87:1).
-- **Oliva / Azulejo**: olive leaves only. Never text, never interface.
+- **Latão** (`--latao` #DB9E42): ornament by day (2.08:1 on papel: never text there); text, emblem and focus by
+  night (7.87:1).
+- **Oliva / Azulejo**: reserved (they coloured the drawing's olive). Never text, never interface.
 - **Barro** (`--barro` #9E3B1E): form errors on the hall surface only (text and the invalid field edge).
 - **Sala** (`--sala-dia` #F2DEC4, `--sala-noite` #FCE7BC): the lit hall. Stored as exact sRGB hex (not a
   `color-mix`), so every layer that paints it resolves to the same pixel.
@@ -361,23 +368,26 @@ only inside the drawing. Barro (terracotta) exists only for form errors. The int
 ### Surface
 Three surfaces: `--color-bg` (papel / noite), `--color-hall` (the lit hall: `--sala-dia` #F2DEC4 by day,
 `--sala-noite` #FCE7BC by night) and `--color-surface` (areia / dark stone), which appears only under the
-focused skip link. `--color-hall` is ONE token per theme and the only colour of the hand-off: the flat layer
-that dissolves the hall inside the doorway (`.hall__flat`), the stage flood and the waiting list (and the
-home footer) all paint it, so the colour never changes between the door and the form. Measured by pixel
+focused skip link. `--color-hall` is ONE token per theme and the only colour of the hand-off: the
+photograph's far arch is graded to clip to it (within 2 levels after AVIF / WebP decoding), and the flat layer
+that completes the walk-in (`.porta__flood`), the waiting list and the home footer paint it exactly, so the
+colour never changes between the door and the form. Measured by pixel
 sampling: ΔRGB = 0 over every pixel of the frame (list words and footer text excepted) from the moment the
 screen is one colour (p = 0.76), at the middle of the list's rise, at p = 1 and with the seam where the stage
 releases on screen, on 390 × 844, 430 × 932, 375 × 667, 320 × 568, 844 × 390, 768 × 1024, 1440 × 900,
 1920 × 1080 and 2560 × 1080, both themes (`src/tests/cta.test.js`). Once the screen is one colour the page behind the stage takes it too
 (an inline background on body), so a frame that draws the pinned stage a step behind a fast scroll uncovers
 the same light, never the hero's paper.
-No gradient ends on another stop: the Noite lamplight gradient in the hall is covered by the flat token
-before the hand-off. `.surface-hall` re-points the semantic roles for its subtree so components inside it
+A lossy photograph cannot hold one exact colour (decoded, the arch's centre is 1–3 levels off the token), so the
+walk-in never ends on the image: the flat CSS layer fades in over the last stretch (p 0.60 → 0.76), after the
+doorway covers the screen, and is the whole frame from p = 0.76. `.surface-hall` re-points the semantic roles for its subtree so components inside it
 need no special colours. No cards, no panels, no glass.
 
 ### Hairlines
-The floor line (`--color-ground`), 1px, full width, where the steps stand. It is the ground of the drawing,
-not a divider, and it belongs to the drawing (it travels with the camera in the sequence): nogueira by day
-(9.03:1), pedra 46% in noite by night (3.41:1). Field and checkbox borders: nogueira 1px on the hall (7.75:1).
+`--color-ground` (nogueira by day, 9.03:1; pedra 46% in noite by night, 3.41:1): the styleguide's rules. The
+page itself has none on the first screen: the drawing's floor line went with the drawing (the photograph has its
+own ground, the steps and the calçada, fading into the page). Field and checkbox borders: nogueira 1px on the
+hall (7.75:1).
 
 ### Text
 `--color-text-strong`, `--color-text`, `--color-text-muted`, `--color-accent-text` (see the matrix).
@@ -396,11 +406,10 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 | Dia | Inactive control, separators, footer, scroll cue | castanho #804F1E | papel | 6.11:1 | text / graphic |
 | Dia | TORRES VEDRAS (9.6–22.4px; 25.2px at 1920), status | latao-texto #83602C | papel | 5.08:1 | text (part of the logo below 14px) |
 | Dia | Emblem | latao-marca #A57638 | papel | 3.56:1 | graphic ≥ 3:1 (logo) |
-| Dia | Focus ring, floor line | nogueira | papel | 9.03:1 | non-text ≥ 3:1 |
+| Dia | Focus ring | nogueira | papel | 9.03:1 | non-text ≥ 3:1 |
 | Noite | Wordmark, kind, lede, active control, CTA | linho #F3E6D6 | noite #1C120B | 14.99:1 | text |
 | Noite | Inactive control, separators, footer, scroll cue | linho-escuro #C2AE96 | noite | 8.58:1 | text / graphic |
 | Noite | TORRES VEDRAS, status, emblem, focus ring, active-control tick, sun note | latao #DB9E42 | noite | 7.87:1 | text |
-| Noite | Floor line | #75685D (pedra 46%) | noite | 3.41:1 | non-text ≥ 3:1 |
 | Hall (Dia / Noite) | List title, labels, consent link | tinta | hall #F2DEC4 / #FCE7BC | 12.21 / 13.18:1 | text |
 | Hall | List sentence, consent text | nogueira | hall | 7.75 / 8.37:1 | text |
 | Hall | Footer (home), muted | castanho | hall | 5.24 / 5.66:1 | text |
@@ -409,7 +418,6 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 | Hall | Typed text | tinta | papel / luz-nucleo #FFF2D6 (field) | 14.23 / 14.42:1 | text |
 | Hall (Noite) | Field border on the field | nogueira | luz-nucleo | 9.16:1 | non-text ≥ 3:1 |
 | Hall | Button label | papel | tinta (button) | 14.23:1 | text |
-| either | Brass hardware in the drawing | latao | papel | 2.08:1 | ornament only, never meaning |
 
 `latao-texto` on the hall would be 4.36:1, so `--color-accent-text` points to castanho inside `.surface-hall`.
 
@@ -496,15 +504,16 @@ layout matches the web font (no line-count change, no text start moving 3px or m
 field and button 48px, form column 26rem.
 
 ### Grid and container
-- **Stacked** (portrait below 900px): lockup · lede · status · action, then the entrance standing on the floor
-  line, then a band with the scroll cue. The door's axis sits on the page axis (the drawing is scaled
-  symmetrically around it: `--scene-axis` is generated from the model, `--scene-reach` 0.8543 lets the
-  outermost olive leaves reach into the gutter). The loose plaster wash above the arch paints 7% of the
-  drawing's height above its box (`--scene-over`, generated by build.py from the painted paths); stacked, that
-  overshoot and 8px more stay inside the entrance (16px on portrait screens up to 680px tall), so the wash is at
-  least 28–32px under the action's box at every width (measured 360–899px).
+- **Stacked** (portrait below 900px): lockup · lede · status · action, then the photograph at the foot of the
+  first screen, then a band with the scroll cue. The door's axis sits on the page axis: the photograph is
+  asymmetric (lantern left, olive right), so it is offset by `--scene-axis` (0.48241, the door axis as a share of
+  its width, from photo.json); `--scene-reach` 1.06 lets its faded right margin reach into the gutter, and
+  `--scene-lift` 0.05 lets its top (plain wall, faded into the page) rise 5% of its height above the entrance's box,
+  into the space under the action. Measured widths: 322px at 390 × 844 (the door 102px wide, like the drawing's
+  105), 402px at 430 × 932, 227px at 375 × 667, 148px at 320 × 568.
 - **Split** (from 900px wide, or any landscape screen from 600px): 5fr text | 6fr entrance, 64px apart,
-  container 86rem; the text column is a centred crest; the entrance stands on the floor line.
+  container 86rem; the text column is a centred crest; the photograph fills the right column (681 × 751px at
+  1440 × 900), standing at its foot.
 - **Waiting list**: a full-height hall section (`min-height: 100svh`), one centred column of 26rem whose title
   starts 22svh from the top of the section (a little above the optical centre, and where the hero action
   lands). With the sequence on, the section is pulled up by one large viewport (`margin-top: -100lvh`), so it
@@ -516,8 +525,8 @@ field and button 48px, form column 26rem.
   844 × 390 (3.53), 2.38 at 320 × 568 (3.19).
 - **Privacy notice**: top bar, the lockup at 24px as a home link, a 40rem reading column, footer.
 - **Very short portrait screens** (up to 600px tall: 320 × 568, iPhone SE in Safari 375 × 553): the lockup at its
-  24px minimum, 12px above the lede, no scroll cue, and the drawing takes the height that is left, so the door
-  still stands on the floor line inside the first screen (tested in `src/tests/cta.test.js`).
+  24px minimum, 12px above the lede, no scroll cue, and the photograph takes the height that is left, so the whole
+  door and its steps are inside the first screen (tested in `src/tests/cta.test.js`).
 
 ### Whitespace philosophy
 Empty paper is structure. The first screen has four things (crest, sentence, action, doorway) and space
@@ -537,8 +546,7 @@ Nothing else: no address, date, rooms, people, prices or social links.
 | Level | Treatment | Use |
 |---|---|---|
 | 0 | flat ground | everything in the interface |
-| line | 1px floor line | ground of the drawing |
-| drawing | one-point perspective, ink hatching and watercolour washes, lamplight gradients at night | the entrance only |
+| photograph | a real doorway in layers: its own perspective, its light, a hall out of focus behind it | the entrance only |
 | hall | flat light colour | the waiting list (the end of the walk-in) |
 
 Interface shadows: none. The invalid field's second pixel of edge is an inset line, not a shadow.
@@ -595,8 +603,8 @@ other language's notice.
 first screen, a text link-button under the status. Alegreya Sans 500, 16px on phones, 18px from 900px and 20px
 from 1200px, tinta / linho, a 1.5px underline 0.3em below in full ink at rest (`--underline-cta`), 44px tall,
 48px under the status from 900px (squint test: after a blur it still reads as the next step beside a large
-drawing). Hover (fine pointer): the underline firms to 2px, 150ms. Pressed: `scale(0.97)`, 160ms `--ease-out`. Click, tap, Enter or Space (it
-is drawn as a button, so it answers Space too): the walk-in through the door, 1.2s, then the focus moves to
+photograph). Hover (fine pointer): the underline firms to 2px, 150ms. Pressed: `scale(0.97)`, 160ms `--ease-out`. Click, tap, Enter or Space (it
+is drawn as a button, so it answers Space too): the walk-in through the door, 1.25s, then the focus moves to
 the email field (`preventScroll`); the scroll cue does the same (see Motion › The walk-in on request). Any
 wheel, touch, key or pointer input during the flight stops it where it is. Reduced motion: the same landing
 at once. There is no `scroll-behavior: smooth` anywhere. Tab from the action lands on the email field with
@@ -612,64 +620,172 @@ the consent sentence, which toggles the box); its focus ring sits 1px out (`--fo
 covers the letters beside it.
 (Before: hover lightened the text, which read as dimming by day and did nothing by night, where text and
 strong text are both linho.) The scroll cue darkens to strong ink on hover the same way. The cue itself is drawn
-with the drawing's pen, not set as an icon: two strokes at the contour weight (1.15px, `vector-effect:
-non-scaling-stroke`), one a little longer and bowed, that cross where they meet (the pen's overshoot). The even,
-template chevron it replaced was the one stock glyph on a pen-drawn page.
+with a pen, not set as an icon: two strokes at `--stroke-cue` (1.15px, `vector-effect: non-scaling-stroke`), one
+a little longer and bowed, that cross where they meet (the pen's overshoot).
 
 **`porta`** (the door sequence): `.porta` > `.porta__stage` (sticky) > `.porta__frame` (the first screen,
 100svh) + `.porta__flood`. Without JS or with reduced motion it is just the first screen. Every moving layer
-carries a `data-motion` hook (wrapper, stage, copy, cue, camera, opening, light, handoff, spill, leaf-l,
-leaf-r, flood, list), attributes only, for tests. See Motion.
+carries a `data-motion` hook (wrapper, stage, copy, cue, camera, plate, leaf-l, leaf-r, shade-l, shade-r,
+spill, flood, list), attributes only, for tests. See Motion.
 
-**`entrance`** (the drawing, "caderno"): an original generic Portuguese doorway drawn as a page of an
-architect's travel sketchbook. The construction is a true one-point perspective in metres (eye 1.55m high,
-6m away): two limestone steps, a moulded jamb surround with plinths and impost blocks, voussoirs and a
-keystone, the wall thickness as a reveal and soffit, a walnut double door (two raised-and-fielded panels per
-leaf, brass knobs, hinge knuckles) under a transom and a radial fanlight, a square iron wall lantern on a
-scrolled arm, a young olive tree in a terracotta pot, and through the doorway a quiet hall (chequered floor,
-a tiled dado, a pendant lamp, an arched passage to a window). Generated by `src/scene.py`; colours only
-through `--i-*` / `--w-*` tokens, so Dia and Noite are the same drawing.
+**`entrance`** (the photograph, «A Porta»; client decision of 8 November, PHOTO_BRIEF: it replaces the
+caderno drawing): one photograph of a generic Portuguese entrance (`photo/src/door.webp`, 1194 × 1317), an
+arched limestone doorway with a walnut double door under a radial fanlight, a wall lantern on the left, an olive
+in a terracotta pot on the right, three steps and calçada. The house number 11 on the keystone is kept exactly as
+photographed (client: «o 11 tem de ficar»). The asset pipeline (`photo/py/` in the working notes, not part of the
+site build) made from it:
+- a 2× master (2388 × 2634, EDSR super-resolution, chroma de-blocking, light luma sharpening; no generative fill);
+- a grade per material, in the brand's palette: lime plaster about #F4EBE1 (between Papel and Areia), limestone in
+  the Pedra family, walnut about #8E4F2A (rich, not orange), brass warm, terracotta natural, nothing saturated;
+- **Noite**, a relight of the same photograph (not a filter): the wall in deep warm-blue dusk, the lantern lit
+  (glass, bulb, a pool of light that falls off with distance), lamplight in the door gap and on the step tops
+  (never the risers), the fanlight a blue-hour sky with a faint warm glow from below, the olive and pot in a
+  thin rim light;
+- the layers (each a fraction of the facade frame, so they line up at any size; `src/assets/photo/photo.json`):
 
-*The hand* (`src/hand.py`): every edge goes through a seeded `Pen`, so the irregularity is baked into the
-path coordinates (identical on every build and device; no SVG filters, no rasters, crisp at any zoom):
-- `line()`: a straight line ruled by eye: a slight bow or S, ends that overshoot at corners or stop short,
-  a pen lift on long runs, an optional second pass on the main silhouettes;
-- `curve()`: a freehand stroke through a dense polyline (arcs, profiles) with the same habits;
-- `hatch()`: economical parallel hatching clipped loosely to a polygon, uneven spacing, a drifting angle and
-  a tone function that lets strokes die out towards the light (58° for shade, -28° to -32° for cross-hatching);
-- `tick()`, `qc()`: short fast marks (tile motifs, leaf ribs);
-- `wash()` / `blob()`: watercolour washes with a wet irregular edge (fractal displacement along the normal,
-  smooth spline), allowed to spill over the line a little.
-*Line system* (tokens `--pen-*`, read by the `.k*` rules in site.css): ink 1.15px contour (`--pen-contour`),
-0.82px detail (`--pen-detail`), 0.52px hatching (`--pen-hatch`), 0.48px cross-hatching (`--pen-cross`), 0.55px fine
-(`--pen-fine`), 0.5px leaves, 0.7px iron; the hall seen through the door 0.62 / 0.45 / 0.4 / 0.35px at 0.9 / 0.7 /
-0.6 / 0.55 ink (`--pen-hall*`, `--ink-ohall*`); a wash's rim 1.1px at 55% of its glaze (`--pen-rim`, `--wo-rim`);
-round caps and joins, multiplied by `--ink-k` (1 / 0.86 / 0.74 as the drawing's container
-grows past 30rem / 44rem) so a large drawing keeps a fine pen. Strokes scale with the camera: walking in
-reads like leaning into the sketchbook. Washes (`.w-*`) are filled paths at a glaze opacity with the same
-colour on a 1.1px rim at 55% (pigment pooling at the edge). Night: the same drawing in light ink on the
-walnut paper with glazes of lamplight (radial gradients, content of the drawing, not decoration).
+| Layer | What | Rect (x0–x1, y0–y1 of the facade) | Files (AVIF / WebP) |
+|---|---|---|---|
+| plate | the hall beyond: a calm vestibule, sharp at the threshold and soft beyond | 0.191–0.774, 0.108–1.020 (clipped by the doorway) | 720, 1080, 1600 px wide |
+| reveal | the doorway's soft shade, the stone sill and the open leaves' contact shade; moves with the facade | the doorway, 0.324–0.641, 0.348–0.844 | 1080, 2388 (facade px) |
+| leaf-l, leaf-r | the two leaves, opaque, hinged on the outer jambs | 0.324–0.458 / 0.507–0.641 | 720, 1080, 1600, 2388 (facade px) |
+| facade | everything else, the doorway transparent; its margin converges to the page colour | 0–1 | 720, 1080, 1600, 2388 |
+| spill | Noite: lamplight on the steps as the doors open (one warm colour, alpha) | 0.020–0.980, 0.408–0.996 | 1080, 1600 (facade px) |
 
-Lamplight at night is laid as edgeless glazes: each radial glaze is fully transparent from 0.8 of its radius, so
-the patch's loose outline always falls on clear paint, and it carries no rim stroke (`lg-flat`). The wall
-lantern's glaze has a second, fainter one (`ab-halo-jamb`, its own seeded pen, so nothing else in the drawing
-moved) that warms the stone of the left jamb beside it.
+*The hall* (`photo/py/plate2.py`; the asset report's weak point, redone for this integration): the old plate was
+a corridor with two wall lamps and a pendant whose bokeh read as hard discs and a lumpy glow. The new one is a short
+vestibule (about 3.8m) rendered physically and then defocused: lime-plaster walls and ceiling, a limestone floor,
+an arched opening at the far end into a bright room. Its light (an area light) is what lights the hall; by night the
+hall is amber and darker near the door. The highlights roll off into the hall colour: the far arch clips to
+`--color-hall`, as a bright room does in a photograph taken from a dim hall. No lamp, no bokeh, nothing specific.
+The plate is the doorway grown 1.84× about the hall point, so with its slower zoom (zoom^0.8) it covers the
+doorway to a camera zoom of 21; the driver keeps the exponent so it always does.
 
-Layers, back to front (the choreography needs them separate):
-1. back svg: the hall in shadow behind the door plane (seen in the gap while the doors are ajar; hidden from
-   p = 0.36, when the lit hall covers it);
-2. `.hall` (the opening): `.hall__light` (the lit hall and its drawing: flat `--color-hall` by day, a
-   lamplight gradient at night; by day it also carries the pendant, which therefore appears with the light:
-   an unlit shade in the dark gap of the ajar doors read as a stray blot), `.hall__lamp` (the pendant lit at
-   night, above the lit hall, so it shows in the gap), `.hall__flat` (the hand-off: flat `--color-hall`, inside
-   the doorway only). The inner door's window is lit at night too (`--wo-hwin` 0.7 in Noite, 0.9 by day): it
-   used to be a flat, dull taupe slab inside the golden hall;
-3. front svg: wall, stone arch, reveal, frame, fanlight, steps, lantern, olive tree;
-4. `.spill`: lamplight on the threshold and steps (Noite), clipped to the steps' silhouette;
-5. `.door`: the two leaves, HTML layers rotated with CSS 3D in the drawing's own perspective (`perspective`
-   and `perspective-origin` generated from the model). Each leaf is a hinge (`.leaf`, the scroll swing)
-   holding a face (`.leaf__face`, the ajar angle and the load animation); the two rotations add up.
-Only HTML layers move (transform / opacity); the drawing is never repainted while the page scrolls.
+*Dia, third pass* (review r1: with the doors open the doorway read as a frosted beige panel 30cm behind the
+leaves, a muddy grey-taupe darker than both the sunlit wall and the cream at the end, two grey-brown smudges at
+the arch's shoulders, noise-free CG beside a photograph, and no floor or threshold). Now: a high-key hall. The
+walls and ceiling are lime plaster, a warm white less saturated than the room's light (about (240, 221, 195) mid
+wall), so walking in brightens the screen towards the cream instead of dimming it; the far wall is lit by the day
+and the room (no dark spandrels: nothing in the arch zone darker than about (213, 198, 174), the light zone
+itself at least (227, 208, 182)); the ceiling near the door is the darkest plane (about (210, 193, 168)), which
+gives the box its shape. The floor is honed limestone, cooler and greyer than the walls, in slabs three across and
+0.72m deep whose joints run to the hall point, with a soft, streaked reflection of the bright arch. The depth of
+field is photographic: crisp just inside the threshold (the floor's first joints), soft further in (blur grows
+with distance from the door plane; the far arch keeps a readable outline). Film grain covers it (σ 6 before a 1.2px
+blur, at every export width: finer grain does not survive AVIF q68 / WebP q84), everywhere but the far arch's
+flat light.
+The far arch's light is exactly the hall colour wherever the render is within 1.5 of it, so the decoded centre is
+within ΔRGB 1 in all six Dia files (AVIF and WebP, 720/1080/1600). The gap at rest now shows the hall's own
+structure: the darker ceiling at the top, the bright arch at the hall point, the floor below; no dark band.
+
+*The threshold* (reveal layer, both themes): a stone sill inside the doorway (the top step's own tread carried in,
+1.7% of the photo's height, a soft joint at its back edge, then the hall floor), and each open leaf's contact
+shade on the floor: a soft wedge from the hinge along the leaf's foot towards the hall point (where the leaf
+stands at 84° in the page's perspective), spreading towards the middle. The leaves cover both while they are
+closed or turning, so they appear with the opening. The step, a dark joint, the sill, the floor: the doorway now
+reads as a way in, not a line.
+
+*The doorway's edge*: the facade's hole is 4 master px (0.17%) smaller than the doorway on every side, so the
+opaque frame overlaps the leaves and the hall's clip box. Before, three antialiased edges sat on one fractional
+coordinate with nothing behind them, and the page colour showed through as a hairline along the hinges (and at
+some sizes the head) at rest on most phones (review r1: 393 × 852 @3, 412 × 915, 414 × 896, 1440 × 900 @2,
+768 × 1024, 320 × 568, 740 × 360). The ring keeps the photo's own pixels (the leaves' outer edges, which the leaves
+show there at rest anyway; open, they read as the door stop), the transom's shadow over the gap and the dark
+threshold joint along the foot; inside the hole the file's colour is the ring's own walnut (a bleed of the bright
+jamb there gave the half-covered edge pixel a pale colour). With the moving layers promoted (during the sequence,
+and with a mouse at rest), the compositor could still leave a sub-pixel gap at the leaves' outer edges, so a ring of
+the frame's walnut (`--color-door-ring`, #47210B by day, #090200 by night; a 3px `box-shadow` on `.ph--hall`, under
+the facade) is what shows there, never the page. Measured: a pale pixel 40 levels above the walnut either side of
+the edge, at 18 viewports × 2 themes, as loaded and promoted: none (before: whole hinge edges at 393 × 852 @3,
+844 × 390 @3, 1440 × 900 @2 and 768 × 1024 @2; `src/tests/list.test.js` I).
+
+*The keystone* (Dia): the grade's protect mask for the keystone was its bounding box, so a hard-cornered rectangle
+of the old, warmer wall colour sat behind its chamfered top (review r1: ΔRGB 10–24 with a straight edge). It is
+now the keystone's own outline (the top edge, the chamfers and the side joints measured on the source, feathered
+about 2.5px), and the plaster above and beside it takes the wall's grade: ΔRGB ≤ 1 between the wall just outside
+the outline and 40px away (the keystone's own cast shadow on its right is the photograph's). The numerals are not
+touched. *By night* the 11 was 1.07:1 against its stone: a soft warm wash from below (as from the lit fanlight, a
+hidden uplight) now lights the keystone's face while the cut numerals keep their shade: 1.5:1, the wall still
+night.
+
+*The leaves by night*: the gap's light blooms onto the two inner arrises (a few CSS px at hero size), so the strip
+is lamplight between two doors, not a pasted light box; the leaves' shade covers it as they turn.
+
+*The edges*: the facade's outer margin converges to exactly the page colour (rectangular fade, 7.5% / 7% / 5% by
+day, 14% / 12% / 5% by night) and, on top, an elliptical falloff (`photo/py/facade2.py`): by night the dusk wall
+falls away into the night ground as if only the lantern and the door lit it; by day a lighter touch at the
+corners. The photograph never reads as a rectangle on the page, at 390 or at 1440 (the asset report noted a
+faint rectangle by night on desktop: gone). The source crops the olive's crown at its right edge, and the 7.5%
+feather drew a vertical ghosted band through the tree (review r1). By day the crown is protected from the
+feather: its foliage keeps full strength until the last 60 master px (2.5%), where only the sprigs the frame cuts
+fade out; the plaster around it fades as before (plaster and Papel are within a few levels). Widening the canvas
+with synthesised wall was weighed and not done: it changes the photo's aspect and every layout that depends on
+it, and the cut sprigs would still need the same short fade.
+
+*Markup* (`src/photo.py`): `.entrance` (`role="img"`, the alt text from photo.json: «Entrada em arco de pedra
+calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro.» /
+«Limestone arched entrance with double wooden doors, a fanlight, a wall lantern and an olive tree in a clay pot.»;
+generic, no street) holds `.scene` (the facade's aspect ratio, 0.90661), and in it, back to front: `.ph--hall`
+(the doorway's box, `overflow: clip`) with `.ph--plate` and `.ph--reveal`; `.door` (`perspective` 0.987 of the
+photo's height, `perspective-origin` the hall point) with `.leaf--l` and `.leaf--r`, each with its `.leaf__shade`;
+`.ph--facade`; `.ph--spill`. Each layer holds a `<picture>` per theme (`t-dia`, `t-noite`: `<source
+type="image/avif">` + a WebP `<img>` with `srcset`, `sizes`, `width` / `height`, `alt=""`, `loading="lazy"`,
+`decoding="async"`); the theme tokens show one (`--t-dia` / `--t-noite`: `display: contents` or `none`). A hidden
+picture has no box, so its lazy image is never fetched. The srcset widths are in facade pixels (the file's width
+over the share of the facade it spans), so every layer shares one `sizes`: the scene's width, modelled on the
+layout (`src/photo.py` SIZES). The earlier fit ignored the stacked layout's minimum height (the entrance is at
+least 40svh), so between 681 and 760px of height it asked for a slot 11–25% too small (facade-720 on a 3× phone at
+430 × 740) and over-fetched on portrait tablets and at 3840 × 2160 (review r1). Now, in order: landscape phones
+(as tall as the text column beside them); side by side from 900px (the right column, 51vw − 3rem, or the height
+under the top bar, at most 939px); other landscape; portrait tablets from 600px (the room under the text, which
+grows with the width); short phones (two steps, their own minimum heights and tighter text); phones (the room under
+the text, never less than the entrance's minimum, never wider than the screen). Measured against the rendered
+scene at 145 viewports from 320 × 560 to 3840 × 2160: every slot within 0.95–1.10 of the scene
+(`shots/photoint-fix-r1/js/sizes.js`, `sizes.txt` in the review notes).
+The head script, which already picks the theme, preloads the four first-paint files of that theme (facade,
+both leaves, plate; AVIF with `type="image/avif"`; `fetchpriority="high"` on the facade, `low` on the others, so
+they never compete with it). Until the facade has loaded, the scene shows the theme's LQIP (24 × 26px, drawn
+blurred through an SVG filter, a theme token `--photo-lqip`; its outer ring is the page colour and the next half
+way, so it has no rectangular edge either), and the doorway's layers (leaves, hall) are hidden
+(`visibility`, with JavaScript only): the placeholder alone stands for the scene, never sharp doors floating in
+a blur. site.js drops both after the facade's load (`.is-loaded`). The layers sit in boxes sized by CSS, so
+loading never moves anything (CLS 0).
+
+*The walk-in at full resolution*: the files are picked for the rest size, and the walk-in magnifies the facade
+and the leaves 3–6× (review r1: 0.27–0.18 source px per device px at p 0.52; the stone, the 11 and the walnut
+smeared). After the load, at idle, site.js fetches and decodes the shown theme's larger facade and leaves (a
+detached copy of each picture with `sizes` = 3× the scene: the 2388 master on almost every screen; not on a data
+saver or a 2G link, nor without the sequence: reduced motion, `?semporta`); the first time the sequence moves (or is primed by a wheel, a touch or a press on the
+action), the real pictures take the same `sizes` and swap to those files from the cache while the doors are
+still near rest. Measured (source px per device px at p 0 / 0.36 / 0.44 / 0.52 / 0.58): 390 × 844 @3
+1.08 / 1.41 / 0.97 / 0.60 / 0.42 (was 1.08 / 0.64 / 0.44 / 0.27); 1440 × 900 @1 1.06 / 1.83 / 1.13 / 0.61 / 0.41
+(was 1.06 / 0.55 / 0.34 / 0.18). Past p ≈ 0.48 the 2388 master itself runs out: it is a 2× super-resolution of a
+1194px source, and the jambs are leaving the frame. The plate is blurred and keeps its rest file.
+
+*Budgets* (measured in Chromium, transferred bytes of `assets/photo/`):
+
+| Case | Files picked | First paint |
+|---|---|---|
+| 390 × 844, DPR 3, Dia | facade-1080, leaf-l/r-1080, plate-720, reveal-1080 (AVIF) | 112 KB |
+| 390 × 844, DPR 3, Noite | the same set | 48 KB (+ spill 22 KB after the load) |
+| 1440 × 900, DPR 1, Dia / Noite | facade-720 set | 66 / 27 KB |
+| 430 × 932, DPR 3, Dia | facade-1600, leaf-l/r-1600, plate-720, reveal-2388 | 174 KB (Noite 80 KB) |
+| 1440 × 900, DPR 2, Dia | facade-1600, leaf-l/r-1600, plate-1080, reveal-2388 | 192 KB (Noite 83 KB) |
+| any, the other theme | nothing (until the theme control is hovered, focused or pressed) | 0 |
+| after the load, at idle, with the sequence on (the walk-in's larger files, shown theme) | facade-2388, leaf-l/r-2388 | 242 KB Dia / 124 KB Noite |
+
+Budget: ≤ 180 KB for the hero images on a phone; the largest phone case is 174 KB by day (the Dia plate grew from
+4–11 KB to 17–75 KB with its grain and floor; a desktop at DPR 2 fetches 192 KB by day). Each image is fetched
+once (the head's preload is the file the picture picks). With the photo files held back 1.2s: CLS 0 at 390, 430
+and 1440, both themes; the largest contentful paint is the facade image. The spill (Noite, invisible until the doors open) joins the scene after the page's load
+(`.is-ready`); everything is decoded (`img.decode()`) after the load, before anything moves. Shipped in all:
+2.15 MB in `assets/photo/` (both themes, every width, AVIF and WebP), of which a visitor fetches one theme's
+first-paint set. Without JavaScript a browser ignores `loading="lazy"` (the HTML standard turns it off when
+scripting is off), so a no-JS visit fetches both themes' first sets (about 85 KB at 390 × 844, DPR 2): the price
+of keeping one static page for both themes.
+
+*Theme change*: the other theme is a different photograph. A pointer or the focus arriving on the Dia · Noite
+control fetches and decodes it (`loading` switched to eager); a theme change waits for it (at most 800ms) before
+the cross-fade, so the fade never lands on a half-loaded entrance.
 
 **`waiting list`** (`#lista`, `.lista.surface-hall`): the room you walked into. h2 «Lista de espera» /
 «Waiting list» (title), one sentence (lede), the form, and a `<noscript>` line. With the sequence on, its words
@@ -724,7 +840,9 @@ unlit at night.
 
 **`footer`**: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (EN «Privacy»), Alegreya Sans
 16/24px muted, lining figures; the link is 44px tall. Its 4px tap padding is taken back by a −4px margin, so both
-« · » separators are spaced alike. Below 480px name, place and link take a line each (no dangling separator).
+« · » separators are spaced alike. Below 480px name, place and link take a line each (no dangling separator), and
+the link's box takes back only 4px of the footer's 12px bottom padding, so its focus ring (2px at a 3px offset)
+fits inside the page at its foot (review r1: at 320 × 568 the ring's bottom edge was cut off by the document's end).
 
 **`privacy notice`** (`privacidade/`, `en/privacy/`): same top bar and tokens; the lockup (24px) as home
 link; h1 title (Alegreya 26–34px); a short intro at `--size-intro` (the lede, never under 21px, so on phones it
@@ -752,13 +870,22 @@ short space. Measured on that iPhone before: the form at y = 1678 with innerHeig
 
 The first screen sits in a tall wrapper: the stage is `position: sticky` and stays pinned for `--porta-run`
 (115svh) of scroll. The waiting list starts exactly where the stage releases and lies over the stage during the
-run, so the run ends with the list at rest. Scroll progress p (0 → 1 across the pinned stretch) drives every
-layer, each over its own sub-range and curve; scrolling back reverses everything (walk back out).
+run, so the run ends with the list at rest. Scroll progress p (0 → 1 from the wrapper's top to the end of the
+pinned stretch) drives every layer, each over its own sub-range and curve; scrolling back reverses everything
+(walk back out). On screens shorter than the rest composition the stage first scrolls until its foot meets the
+screen's bottom, then pins; the timeline starts at the wrapper's top all the same, so the doors move on the first
+pixel there too (review r1: at 390 × 664, the iPhone's visible area with its toolbars, the first 26px moved
+nothing; `src/tests/list.test.js` H).
 
-**The run in three overlapping beats.** The doors swing from the first pixel and the camera starts with them;
-the camera walks in through the doorway and keeps going: on the way the hall dissolves into its light while the
-room still reads as a room, then only the stone jambs and the open leaves are left, passing out of the frame;
-at p = 0.76 the screen is one flat colour (`--color-hall`), and the list rises in on that light at once.
+**The run in three overlapping beats** (retuned to the photograph's geometry: the door axis, the hall point,
+the doorway). The doors swing inwards from the first pixel and the camera starts with them; the camera walks in
+towards the hall point (the photo's vanishing point, 0.48241 × 0.63326 of the facade, on the door axis): at
+p = 0.36 the doors are open (84°) and the camera is at the threshold, by p = 0.58 the doorway covers the screen and
+the jambs, the edge-on leaves and the steps have passed out of the frame, and it keeps walking down the soft hall
+into the arch of light at its end while the hall's light, one flat `--color-hall` over the whole stage, fades in
+(p 0.60 → 0.76); at p = 0.76 the screen is that one colour, exactly the token, and the list rises in on it at once.
+On a phone the photograph's foot holds at the visitor's feet while it grows (the hall point rises with the zoom)
+and the steps leave through the bottom edge as the threshold is crossed.
 
 **Measured scroll from the top until the list title and the email field are fully in view and readable**
 (opacity ≥ 0.99, settled; `rework-tools/reach.js` in the review notes, and `src/tests/list.test.js` C):
@@ -767,12 +894,20 @@ at p = 0.76 the screen is one flat colour (`--color-hall`), and the list rises i
 |---|---|---|---|
 | 390 × 844 | 849px = 1.01 screens | 0.87 | 1.15 |
 | 430 × 932 | 936px = 1.00 | 0.87 | 1.15 |
-| 375 × 667 (stage pins after 24px) | 694px = 1.04 | 0.91 | 1.19 |
+| 375 × 667 (stage pins after 24px; the doors move from the first) | 692px = 1.04 | 0.91 | 1.19 |
 | 844 × 390 | 397px = 1.02 | 0.89 | 1.16 |
 | 1440 × 900 | 904px = 1.00 | 0.87 | 1.15 |
 | 1920 × 1080 | 1085px = 1.00 | 0.87 | 1.15 |
 
-Before: about 2.0 screens (1.99 at 390 × 844). Whole home page: 2.27 screens at 390 × 844 (was 3.08). Real touch
+Before: about 2.0 screens (1.99 at 390 × 844). Whole home page: 2.27 screens at 390 × 844 (was 3.08).
+
+*Wheel notches* (the rework brief also said «2–3 wheel notches on desktop»): with native scrolling at about 100px
+a notch (Chrome on Windows; macOS varies with acceleration), the form needs about 9 notches at 1440 × 900 (890px),
+7 at 1280 × 720 (724px), 9 at 1536 × 864 (857px) and 11 at 1920 × 1080 (1069px). A one-screen run cannot also be
+2–3 notches without taking over the wheel, which the native-scroll rule forbids (a hijacked wheel breaks
+trackpads, keyboard scrolling, find-in-page and assistive tech). The screen target (about one screen) was chosen
+over the notch count; on desktop the hero action is the one-press route (it walks in to the form in 1.25s), and
+the scroll cue under the photograph does the same. Real touch
 drags (iPhone 13 profile, the `tools/touch2.js` pattern: 350px finger drags, no momentum): the first drag reaches
 p ≈ 0.44 (doors open, walking in), the second the list title and field in view (the form at 97% opacity, 100%
 a few pixels on); one swipe with momentum on a real phone covers both.
@@ -781,51 +916,51 @@ a few pixels on); one swipe with momentum on a real phone covers both.
 |---|---|---|---|---|
 | Text column: lockup, lede, status, action (`copy`) | Support, exits | 0 → 0.14 of min(r, p) | opacity 1 → 0, rises 16px; no pointer target below 50% | `--curve-copy` (0.33, 1, 0.68, 1) |
 | Scroll cue (`cue`) | Decoration | 0 → 0.05 of min(r, p) | opacity 1 → 0; no pointer target below 50% | `--curve-copy` |
-| Left / right leaf (`leaf-l`, `leaf-r`) | Lead, from the first pixel | 0 → 0.36 | +47° (41° → 88°) / +61° (27° → 88°) | `--curve-door` (0.3, 0.55, 0.35, 1) |
-| Lit hall, light on the steps (`light`, `spill`) | Support, carried by the leaves | 0 → 0.36 | opacity 0 → 1 = the leaves' eased value | `--curve-door` |
-| Hall in shadow (back svg) | — | from 0.36 | hidden (covered by the lit hall) | — |
-| Camera: pan (`camera`) | Lead | 0 → 0.30 | the doorway's centre travels on a straight line to the screen's centre. Portrait screens (doorway below the centre): the rise follows the growth, (s − 1) × floor distance / rise, so the floor line holds at the visitor's feet and then leaves through the bottom edge; centred by s ≈ 2.7 at 390 × 844, and by p = 0.66 at the latest | `--curve-pan` (0.35, 0.4, 0.3, 1); portrait: tied to the zoom |
-| Camera: walk-in (`camera`) | Lead | 0.01 → 0.76 | scale 1 → S around the doorway, geometric, through four keyframes per screen (below) | monotone cubic on log(scale) |
-| The hall dissolves into its light (`handoff`, `.hall__flat`) | Support | 0.50 → 0.66 of max(r, p − 0.1) | flat `--color-hall` inside the doorway, opacity 0 → 1, while the camera keeps walking | `--curve-fade` (0.45, 0, 0.55, 1) |
-| One colour (`flood`) | Support | from 0.76 of max(r, p − 0.1) | `--color-hall` over the whole stage, opacity 0 or 1 (a step: colour over the same colour, so no frame is ever a fractional blend one level off the token); the page behind the stage takes the colour too | step |
+| Left / right leaf (`leaf-l`, `leaf-r`) | Lead, from the first pixel | 0 → 0.36 | `rotateY` 0 → +84° / −84° (`--open-door`) about the outer hinge, inwards, in the photo's perspective (0.987 of its height, from the hall point) | `--curve-door` (0.3, 0.55, 0.35, 1) |
+| Leaf shade (`shade-l`, `shade-r`) | Support | 0 → 0.36 | opacity = sin(angle) of `--color-leaf-shade` (noite at 28% by day, 40% by night): brightness 1 − 0.28 / 0.40 · sin(angle) | `--curve-door` |
+| Lamplight on the steps, Noite (`spill`) | Support, carried by the leaves | 0 → 0.36 | opacity (1 − cos angle) / (1 − cos 84°): it grows with the opening | `--curve-door` |
+| Camera: pan (`camera`) | Lead | 0 → 0.30 | the hall point travels on a straight line to the screen's centre. Portrait screens (hall point below the centre): the rise follows the growth, a = (s − 1) × foot distance / rise, so the photo's foot holds at the visitor's feet and then leaves through the bottom edge; a eases into 1 with zero slope over [0.75, 1.25] (it was clipped at 1, a bob of the threshold mid walk-in: its speed changed by about 6px per 0.004 of progress, review r1; now under 1.2px at 390 × 844, 390 × 664, 430 × 932 and 768 × 1024, `src/tests/list.test.js` F), and combines with a smoothstep that centres it by p = 0.56 at the latest as 1 − (1 − a)(1 − b) | `--curve-pan` (0.35, 0.4, 0.3, 1); portrait: tied to the zoom |
+| Camera: walk-in (`camera`) | Lead | 0.01 → 0.76 | scale 1 → S around the hall point, geometric, through four keyframes per screen (below) | monotone cubic on log(scale) |
+| The hall (`plate`) | Depth | with the camera | its own `scale(s^(kp − 1))` inside the camera, so it grows as zoom^kp (kp 0.8): further away, it opens up behind the jambs | — |
+| The hall's light (`flood`) | Arrival | 0.60 → 0.76 of max(r, p − 0.1) | `--color-hall` over the whole stage, opacity 0 → 1, only once the doorway covers the screen (never a veil over the stone); 1 from 0.76 on; the page behind the stage takes the colour too | `--curve-light` (0.55, 0, 0.75, 0.55): slow, then all at once |
 | Waiting list: title, sentence, form (`list`) | Arrival | 0.745 → 0.88 / 0.75 → 0.90 / 0.755 → 0.94 of r | opacity 0 → 1 and 16px (the form 10px) of rise, on top of the scroll's own; no pointer target below 50% | `--ease-out` (0.23, 1, 0.32, 1) on p |
 
-**The walk-in's keyframes** (`measure()`, per screen): log(scale) passes through 0 at p = 0.01; the scale at
-which the opening is 0.8 of the screen's height at p = 0.50 (the hall starts to dissolve); 1.35 of it at
-p = 0.66 (all light; never later than S / 1.12); and S at p = 0.76, with a monotone cubic (Fritsch–Carlson)
-between them: it never goes back, never overshoots, starts softly (zero slope) and does not land (the screen is
-one colour by then, so the camera keeps going into the light). On a phone in portrait S is about 5.0 and the
-last stretch is short (the opening covers the width and the height almost together); on landscape screens the
-opening covers the height long before the width (S ≈ 8.3 at 1440 × 900, 11.4 at 844 × 390), and that stretch,
-3.2 → 8.3 at 1440, is the doorway passing out of frame around a light that is already one colour. The former
-single curve spent it on an abstract close-up of the hall's drawing (the inner door's window, oversized hatching
-and wide blank wall planes) that a wheel user could rest on (round 2 review), and then faded the drawing out
-while the camera had almost stopped, which read as the background being removed.
+**The walk-in's keyframes** (`measure()`, per screen): log(scale) passes through 0 at p = 0.01; inDoor^0.3 at
+p = 0.36 (the threshold, as the doors finish opening); inDoor at p = 0.58, the scale at which the doorway covers
+the whole large viewport with the open leaves pushed out of frame; and S at p = 0.76, with a monotone cubic
+(Fritsch–Carlson) between them: it never goes back, never overshoots, starts softly (zero slope) and does not land
+(the screen is one colour by then, so the camera keeps going into the light).
+inDoor = 1.05 × max(vw / 2 / clear half-width, svh / 2 / (doorway top above the hall point), (lvh − svh / 2) /
+(doorway foot below it)), where the clear half-width is between the hall point and an open leaf's free edge in
+the photo's perspective (each leaf at 84° still covers about 10% of the doorway's width). S = max(1.5 × inDoor,
+min(zl^(1/0.8), 20)), zl being the plate zoom at which the far arch's light (within ΔRGB 4 of the token: 0.0724 of
+the photo's width either side, 0.126 above and 0.116 below the hall point) fills the screen; 20 is what the plate
+covers (1.84^5 = 21, less a margin), and kp is raised above 0.8 if S had to go past it. Measured: 390 × 844
+inDoor 5.7, S 17.6; 1440 × 900 inDoor 8.6, S 20; 1920 × 1080 inDoor 9.7, S 20; 768 × 1024 inDoor 7.2, S 20.
 
 **The list rises in with the scroll.** Its section starts where the stage releases, so during the run its words
 come up with the scroll itself (native, compositor-smooth), hidden; as the screen turns one colour all three
 begin together (none is ever an empty field on that light) and settle one after the other, the stagger being in
 how long each takes. In scroll terms: from one colour to a readable form about 0.13 of a screen; in the walk-in
-on request about 120ms to readable and 280ms to rest. It is never driven by an IntersectionObserver: wherever
+on request about 250ms (title) and 300ms (form) from first showing to rest. It is never driven by an IntersectionObserver: wherever
 the page rests past the end of the run (a reload or a restored position at the bottom, a jump, the end of a
 short landscape page) the words are at rest and opaque (`src/tests/list.test.js` B: every rest position from
 the flat moment to the end of the page, and a reload at the bottom, on 844 × 390, 932 × 430, 667 × 375, 720 × 450
 (1440 × 900 at 200%), 390 × 844 and 1440 × 900).
 
-S (the final zoom) is computed from the layout so that the door opening covers the whole large viewport on
-every aspect ratio, with the open leaves (edge-on, about 7% of the opening each in the drawing's perspective)
-pushed out of frame: S = max(vw / (0.86 · opening width), 2 · max(svh / 2, lvh − svh / 2) / opening height)
-× 1.04 (≈ 5.0 at 390 × 844, ≈ 8.3 at 1440 × 900). The camera reaches cover before the flood, so the flood only
-ever switches the hall colour on over the hall colour, never over the stone (ΔRGB 0 on every pixel, nine aspect
-ratios, both themes: Colors › Surface).
+The camera covers the screen with the doorway (p = 0.58) before the hall's light starts to fade in (0.60), so the
+light only ever comes up over the soft hall and its arch of light, never over the stone; from 0.76 the frame is
+the token (ΔRGB 0 on every pixel, nine aspect ratios, both themes: Colors › Surface). Before the photograph the
+last part was a step of the flood over a flat drawn hall; a lossy photograph cannot hold the token, so it is now a
+fade.
 
 Which progress each layer reads: r, the rendered (smoothed) progress, except two groups. The text column and the
 cue read min(r, p): they leave with the doors, but come back with the scroll itself, so after a fast flick to
 the top the title is there as the page arrives (measured: within one frame of scrollY reaching 0 at 3000px/s).
 The hand-off layers read max(r, p − 0.1): at hand speed (lag under 0.1) exactly r; after a fast fling the stage
-is already one colour when the list panel arrives at p = 1, never a hard panel edge rising over a drawing the
+is already one colour when the list panel arrives at p = 1, never a hard panel edge rising over a photograph the
 smoothing has not caught up with (0 such frames at 3500px/s). The list reads r, so its words never show before
-the flood.
+the hall's light.
 
 ### Driver (why one plain-JS driver)
 - One driver for every browser: a passive `scroll` listener (and `resize`, `visualViewport` resize,
@@ -846,10 +981,21 @@ the flood.
   max, viewport height −84px / +60px mid-sequence, fast flicks) asserts `.intro` opacity 1, transform none and
   no inline style after every scenario; a mutated driver without the clamp fails it.
 - Geometry is cached: the doorway centre and size (untransformed `offset*`), the small-viewport height (a
-  100svh probe), the pin offset for short screens, the pin start and the run (`wrapper − stage`, stable while
-  mobile toolbars come and go). It is re-measured on the events above, keeping the same progress.
+  100svh probe), the pin offset for short screens, the timeline's start (the wrapper's top) and the run
+  (`wrapper − stage`, plus the pre-pin stretch on short screens; stable while mobile toolbars come and go). It is
+  re-measured on the events above, keeping the same progress.
+- **The list stays at rest when the screen changes size under it** (review r1). The run is in svh, the scroll
+  position is kept, so a resize used to land the page back in the door sequence with the list hidden: after a
+  keyboard closed in a browser that resizes the page (Android in-app browsers), or a rotation round trip, the
+  focused email field was at opacity 0 (375 × 667: p 0.60). Now (a) while a field of the list has the focus and
+  only the height changed, the run keeps its length in px (`--porta-run` inline), so the list and the field do not
+  move under a keyboard; it is let go when the focus leaves the list; (b) when the list was at rest and the screen's
+  width or small-viewport height changed, the page is put back at the same distance into the list. Measured with
+  the reviewer's scenarios: 390 × 844, 375 × 667 and 430 × 932, the field focused at the end of the run and at the
+  page's end, the page 300–350px shorter and back: the field stays opaque and in view, and the page returns to
+  the same y; a 375 × 667 ↔ 667 × 375 round trip likewise (`src/tests/list.test.js` G).
 - Writes are `transform` and `opacity` on the moving elements only (and `pointer-events: none` on the faded text
-  and cue, so a tap on the empty drawing mid-sequence never launches the walk-in, and on the list's words until
+  and cue, so a tap on the photograph mid-sequence never launches the walk-in, and on the list's words until
   they are half in), never a custom property on a parent; once the screen is one colour, an inline background on
   body (a class on html restyled the whole document: 35ms of style recalculation at the hand-off under 4× CPU
   throttle). Nothing is made inert, so keyboard focus reaches everything.
@@ -862,6 +1008,10 @@ the flood.
   of 10). Measured after: 0px at the page's end, at the end of the run and part-way through the rise, at
   390 × 844 and 375 × 667 (touch) and 1440 × 900 and 1280 × 720 (mouse), and the first press on the button runs
   the validation (`src/tests/list.test.js` A; before: 104px at 390, 68px at 1440, validation never ran).
+  On short landscape screens the list is taller than the screen: Tab from the action into the field used to keep
+  the browser's own focus scroll, which went past the list's start and clipped «Lista de espera» (844 × 390: the
+  title 6–7px above the screen). The handler now puts the list at its rest position whenever what took the focus is
+  in view there, from either side; only what would not fit is brought in with `scrollIntoView({ block: "nearest" })`.
 
 ### The walk-in on request (the hero action and the scroll cue)
 Requirement: the walk-in on request must be fluid and read as entering through the door, neither slow nor rushed.
@@ -872,26 +1022,31 @@ This replaces the former instant jump.
   swing, the hall lights and the camera walks in exactly as under the finger. The first frame moves nothing
   (the layers are promoted in it), the travel starts on the next.
 - **It eases the visual journey, not the distance.** Each pixel of the way weighs 1 + `--flight-weight` (2) ×
-  the walk-in's change of (log) scale over it; the time curve `--curve-flight` (0.45, 0, 0.3, 1: soft start,
+  the walk-in's change of (log) scale over it, + `--flight-weight-list` (1.2) × the list's change of opacity (the
+  mean of its title, sentence and form: without it the words came in at the flight's top speed, in 90–130ms,
+  review r1); the time curve `--curve-flight` (0.45, 0, 0.3, 1: soft start,
   long gentle settle) runs over that weighted way (a 96-step table built once per flight). Easing the plain
   distance was tried first and failed by eye: the peak speed fell in the doorway, the walk-in took 250ms and
   the list's plain rise took half the flight. Weighted, it reads as one gesture (measured per frame, from the
   click; `rework-tools/flight.js`; the travel starts about 90ms after the click, the press frame):
 
-  | Beat (from the click) | 390 × 844 | 1440 × 900 |
+  | Beat (from the first moving frame; rendered progress r) | 390 × 844 | 1440 × 900 |
   |---|---|---|
-  | Text leaves (intro opacity → 0.1) | 0–340ms | 0–310ms |
-  | Doors open (p = 0.36) | 0–660ms | 0–525ms |
-  | The hall dissolves into its light | 790–910ms | 590–745ms |
-  | Jambs and leaves pass out; one colour (the flood) | 910–1010ms | 745–975ms |
-  | The list rises in: title in (50%), form readable (99%), at rest | 1025 / 1125 / 1290ms | 990 / 1110 / 1275ms |
-  | Focus in the email field (`preventScroll`) | 1290ms | 1300ms |
+  | Doors open (84°, r = 0.36) | 0–400ms | 0–400ms |
+  | The doorway covers the screen (r = 0.58) | 550ms | 567ms |
+  | The screen is one colour (r = 0.76) | 783ms | 800ms |
+  | The list's title: first showing → at rest | 750 → 1000ms (250ms) | 750 → 1000ms (250ms) |
+  | The form: first showing → at rest | 767 → 1067ms (300ms) | 783 → 1067ms (283ms) |
+  | The scroll lands; focus in the email field (`preventScroll`) | 1233ms; 1250ms | 1233ms; 1250ms |
 
-- **Duration** `--dur-flight` 1200ms for the whole way from the rest state (it was 1500ms over a way twice as
-  long); a shorter way is shorter (× √share, never under 35%). Measured travel 1.18–1.20s at 390 × 844 and
-  1440 × 900, Dia and Noite (`src/tests/cta.test.js` holds it to 1.1–1.3s); tuned by eye on recorded video at
-  both sizes in both themes (evidence: `shots/rework/video/` in the review notes). The list's part is about
-  280ms from one colour to rest, inside the 250–350ms the brief asks for.
+  (`rv1m/flight.js` in the review notes, `shots/photoint-fix-r1/flight/`; the same in Dia and Noite and under
+  4× CPU throttle; no frame over 50ms.)
+
+- **Duration** `--dur-flight` 1250ms for the whole way from the rest state (it was 1500ms over a way twice as
+  long, then 1200ms before the list was weighted: the 50ms keep the doors and the walk-in at their former pace);
+  a shorter way is shorter (× √share, never under 35%). Measured travel 1.20–1.23s at 390 × 844 and 1440 × 900,
+  Dia and Noite (`src/tests/cta.test.js` holds it to 1.1–1.3s). The list's part is 250ms (title) to 300ms (form)
+  from first showing to rest, inside the 250–350ms the brief asks for.
 - **Interruptible.** `wheel`, `touchstart`, `pointerdown` or `keydown` (capture, passive), or a scroll that is
   not the flight's own (more than 4px from what it wrote), ends it at once: the page stays where it is, in the
   visitor's hands, the focus is not moved. Not interruptions: a held key repeating (the press that started it;
@@ -911,55 +1066,57 @@ This replaces the former instant jump.
 - Budget: under 4× CPU throttle, at 390 × 844 (DPR 3) and 1440 × 900 (DPR 1), Dia and Noite: no frame over
   50ms and p95 ≤ 17ms while the page moves (the walk-in on request included).
 - Promotion: nothing has `will-change` in CSS. When the sequence starts (or on a `wheel` / `touchstart` at the
-  top, just before it starts) site.js sets `will-change` on the camera (`transform`), the lit hall and the
-  spill (`transform, opacity`: their raster scale is frozen while the camera zooms), the text column, and the
-  layers whose opacity changes per frame (cue, hand-off, flood). Without the opacity layers every change
-  repainted the doorway inside the zooming camera layer and the browser re-rastered it at the new scale every
-  frame: 2.7s of raster per pass and frames up to 230ms at 1440 × 900. Hiding the hall in shadow once it is
-  covered (p ≥ 0.36) removed the other big raster cost (its dense hatching at full zoom). A mouse arriving over
-  the first screen readies the two drawn layers (camera, lit hall) at their rest scale, never the text: the
-  first frame of a wheel scroll then only creates the light layers (it measured 67–83ms at 1440 × 900 under 4×
-  throttle in half the runs; 33ms after). The price: when the mouse first moves, the drawing is re-rastered in
-  its own layer and 2.5% of its pixels shift by antialiasing (90% of them by 1–3 levels of 255; measured at
-  1440 × 900 by day), a change the eye does not see and the same image the first scroll frame shows anyway.
-  The list's words are not promoted: their opacity repaints them (cheap), and a promoted text layer can lose
-  subpixel antialiasing at rest.
-- Crisp at rest: 250ms after the scroll rests mid-sequence, the two drawn layers (camera, lit hall) are handed
-  back for one frame (they re-raster crisp at the current zoom) and promoted again at that scale, so the next
-  scroll starts without raster work. Back at the top (p = 0) all hints are dropped after 400ms. Once the flood
-  covers the drawing (p ≥ 0.76) the hints are kept: there is nothing to re-raster.
-- Crisp during the walk-in on request: a promoted layer keeps the raster made when it was promoted, which at
-  3–8× zoom was a visibly soft, upscaled bitmap for most of the flight. So during a flight, while the zoom grows
-  past 2.2× the scale of the last raster (and the hall has not yet turned to light, p < 0.66), the two drawn
-  layers are handed back for one frame each, one after the other, and promoted again: a fresh raster at the
-  current zoom, about twice per walk-in. Not after the light: then only the jambs are left, passing out of the
-  frame fast, and a raster of their stone and lamplight at 4–8× cost frames of 50–67ms at 1440 × 900. Edge contrast of the hall mid-flight at 1440 × 900, DPR 1 (frame-by-frame screencast,
-  same scale): 1.4–5.4× higher than before (e.g. 1192 against 356 at s = 5.5 by day), close to a rest capture.
-  A hand scroll keeps the raster it has while it moves (re-rastering under a fast wheel cost frames of 33–50ms at
-  1440 in the trace) and turns crisp when it rests (below); that soft-then-crisp step at rest remains.
+  top, just before it starts) site.js sets `will-change` on the facade (`transform`: its own layer, raster scale
+  frozen while the camera zooms), the camera and the plate (`transform`), the two leaves (`transform`, 3D), their
+  shades, the lamplight and the hall's light (`opacity`), and the text column and the cue. Every layer whose
+  opacity changes per frame is its own layer, so no change repaints the doorway inside the zooming camera. The
+  layers are made before the first moving frame: on the `wheel` or `touchstart` that starts a scroll, on the
+  `pointerdown` of the action or the cue (a press lasts about 100ms before its click), and, with a mouse, when it
+  first arrives over the page (the image layers only, never the text, whose subpixel antialiasing a layer can
+  lose). All hints are dropped 300ms after the loop settles back at the top. Readying the layers at idle after the load
+  on every device was tried and dropped: a layer sits on whole device pixels, so the photograph moved by a fraction
+  of a pixel a second after the load (up to 194 levels on its sharpest edges at 390 × 844).
+- Layer sizes: every promoted layer is the size of the photograph's box or smaller (the facade and the camera
+  322 × 356px at 390 × 844 and 681 × 751px at 1440 × 900, the plate 0.58 × 0.91 of it and clipped by the doorway,
+  the leaves 0.13 × 0.5, the lamplight 0.96 × 0.59), whatever the zoom: the zoom is a transform, not a bigger
+  layer, so a phone never holds a texture many screens wide. The facade is a layer of its own so an engine that
+  composites images directly (WebKit) can use the decoded image as the layer's contents instead of a backing
+  store re-rendered at every zoom; the camera layer then paints almost nothing (the LQIP is gone after the load).
+  Only Chromium was measured here.
+- No blend modes: the lamplight on the steps was first a layer with `mix-blend-mode: screen`; a blended layer reads
+  its backdrop back in every composited frame (1440 × 900 Noite, 4× throttle: p95 33ms, frames of 83ms). It is now an
+  RGBA overlay of one warm colour whose alpha was solved against the night facade itself (`photo/py/spill2.py`),
+  so it looks the same (mean error 0.7 level, 99th percentile 10) and costs an opacity change.
+- Images are decoded before they move: after the load, `img.decode()` on every layer of the shown theme (the
+  lamplight included); a theme change decodes the other theme before it shows it.
+- Crisp at rest: 250ms after the scroll rests mid-sequence (while the jambs are on screen, p < 0.58), the facade is
+  handed back for one frame (it re-rasters crisp at the current zoom) and promoted again at that scale, so the
+  next scroll starts without raster work. Inside the hall there is nothing to re-raster (the hall is out of focus).
+- Crisp during the walk-in on request: during a flight, while the zoom grows past 2.2× the scale of the last raster
+  and the jambs are still on screen (p < 0.58), the facade is handed back for one frame and promoted again: a fresh
+  raster at the current zoom. A hand scroll keeps the raster it has while it moves and turns crisp when it rests.
 
 ### Other motion
 | Token | Duration | Easing | Use |
 |---|---|---|---|
-| `--dur-door` | 1100ms (+200ms delay) | `--ease-door` cubic-bezier(.3,.1,.2,1) | leaves rotate 0 → 41° / 27° once on load |
-| (light) | 1100ms | `--ease-out` | hall glow, light pool, lit leaf edges fade in with the doors (Noite) |
 | `--dur-theme` | 400ms | `--ease-out` (0.23, 1, 0.32, 1) | Dia ↔ Noite chosen by the visitor: View Transitions cross-fade; colour transitions as fallback (never on `[data-motion]` layers; no snapshot while the sequence is moving) |
 | `--dur-sky` | 1400ms | `--ease-sky` (0.45, 0, 0.55, 1) | Dia ↔ Noite changed by the sun on its own (nobody pressed anything): slower and symmetric, the lamps come on rather than flash. While the sequence is moving it waits until the page rests; parked anywhere (the list included) it cross-fades |
 | `--dur-state` | 200ms | `--ease-out` | form messages, checkbox tick (opacity + scale 0.8 → 1) |
 | `--dur-out` / `--dur-success` | 160ms / 240ms | `--ease-out` | success: the controls give way, the sentence takes their place |
-| `--dur-flight` | 1200ms (whole way) | `--curve-flight` (0.45, 0, 0.3, 1) over the weighted way (`--flight-weight` 2) | the hero action and the scroll cue walk in through the door to the list |
+| `--dur-flight` | 1250ms (whole way) | `--curve-flight` (0.45, 0, 0.3, 1) over the weighted way (`--flight-weight` 2, `--flight-weight-list` 1.2) | the hero action and the scroll cue walk in through the door to the list |
 | `--rise-list` | 16px of rise (the form 10px), on p 0.745 → 0.94 | `--ease-out` on p | the waiting list rises in on the light, with the scroll (no time-based entrance any more) |
 | `--dur-press` | 160ms | `--ease-out` | action and button: `scale(0.97)` while pressed |
 | `--dur-ui` | 150ms | `ease` | control and link colour on hover; a link's underline 45% → full ink; field and checkbox line darkens |
 
 ### Fallbacks
-- `prefers-reduced-motion: reduce`: no pinning and no scroll-linked motion, no load animation, no list
-  rise; the doors stand open and the hall is lit (the final state, without the travel); the action jumps to
-  the list and focuses the email. No global kill switch: each component drops its movement (press scale,
+- `prefers-reduced-motion: reduce`: no pinning and no scroll-linked motion, no list rise; the photograph stands as
+  it is, doors closed (the hall's light in the gap), and the list follows below; the action jumps to the list and
+  focuses the email. No global kill switch: each component drops its movement (press scale,
   message rise, tick scale) and keeps short opacity / colour changes. A live change of the preference tears
   the sequence down (inline styles and hints removed).
-- No JS: no pinning (the tall wrapper exists only with `.porta-on`, which site.js adds), doors ajar, theme
-  follows the system, the list is visible with a disabled form and the `<noscript>` line.
+- No JS: no pinning (the tall wrapper exists only with `.porta-on`, which site.js adds), the photograph with its
+  doors closed (the theme's picture follows the system theme through the same tokens; its placeholder stays
+  under it), the list is visible with a disabled form and the `<noscript>` line.
 - Reduced motion and the theme: the change is instant, and the controls and links change with it (their colour
   transitions are held for that frame), so the control just pressed never flickers through a low-contrast mix.
 - Keyboard: Enter or Space on the action plays the walk-in and lands in the email field; Tab from the action
@@ -972,7 +1129,31 @@ Playwright (headless Chromium, software raster), 4× CPU throttle via CDP, trace
 (devtools.timeline); frame intervals are `requestAnimationFrame` intervals counted while the page moves.
 390 × 844 at DPR 3, 1440 × 900 at DPR 1, Dia and Noite.
 
-**Round 3 (the short run; this build)**, harness `tools/integ/perf.js` (wheel gesture down into the list and back
+**Photo round (the photograph in layers; this build)**: `photoint-tools/perfwheel.js` (a wheel gesture down into the
+list and back up; finger drags, touch events, 18px a frame) and `photoint-tools/perfflight.js` (the walk-in on
+request from a raw CDP click or tap, so no Playwright actionability scripts run on the page's main thread; rAF
+intervals from the press to the frame after the landing), 4× CPU throttle, traced, load average under 1:
+
+| Scenario | Viewport | Runs | p95 frame | Worst frame | Frames > 50ms | Longest main-thread task |
+|---|---|---|---|---|---|---|
+| Wheel down + up, Dia / Noite | 390, DPR 3 | 6 | 16.7–16.8ms | 16.8–33.4ms | 0 | 22ms |
+| Wheel down + up, Dia / Noite | 1440, DPR 1 | 6 | 16.7–16.8ms | 33.3–33.4ms | 0 | 25ms |
+| Wheel down + up, the mouse arriving first, Dia / Noite | 1440, DPR 1 | 6 | 16.7–16.8ms | 33.3–33.5ms | 0 | 24ms |
+| Finger drags, Dia / Noite | 390, DPR 3 | 4 | 16.7–16.8ms | 16.8–33.4ms | 0 | 17ms |
+| The walk-in on request (instant press / 90ms press), Dia / Noite | 390, DPR 3 | 16 | 16.7–16.8ms | 16.8ms; 33.3ms once | 0 | 18ms |
+| The walk-in on request (instant press / 90ms press), Dia / Noite | 1440, DPR 1 | 16 | 16.7–16.8ms | 16.8–33.4ms | 0 | 30ms |
+
+Earlier sets of the same build, before the layers were made on the press: 49.9–50.1ms once in each of a few dozen
+runs at 1440 (the frame in which the walk-in's layers were created, before anything moved; once a 17.7ms style
+recalculation during a wheel scroll).
+
+Found and removed on the way: the lamplight's `mix-blend-mode: screen` (p95 33.4ms and frames of 83ms at 1440 Noite;
+now an RGBA overlay, 16.7ms) and the cost of creating the layers in the first frame (33–50ms; now readied at idle
+after the load). A walk-in triggered through Playwright's own `tap()` / `click()` shows one 50–67ms frame at the
+press: that is the harness's actionability scripts running on the page's main thread ("Receive mojo message",
+64ms, nothing of the page's inside it); with raw input the press frame is 16.8ms.
+
+**Round 3 (the short run, with the drawing)**, harness `tools/integ/perf.js` (wheel gesture down into the list and back
 up, and finger drags) and `rework-tools/perfflight.js` (the walk-in on request, from the click to the frame after
 the landing), all under 4× CPU throttle. The machine was shared with other jobs (load average about 2 on 4
 cores), so single long frames vary between runs:
@@ -1044,11 +1225,10 @@ house at night, not a low-light mode: the waiting list is lamplight (#FCE7BC) in
 you walk into is lit).
 `[data-theme]` on any element scopes a theme to that subtree (the styleguide shows both side by side); the
 semantic block for Noite is written once in `src/noite.css` and emitted twice by the build (system preference
-unless Dia was chosen, and the manual choice). Illustration roles that change: ink colours and opacities (`--i-ink*`,
-`--ink-o*`), every wash (`--w-*` colour, `--wo-*` glaze opacity), `--i-hall-light` (flat hall by day,
-lamplight gradient at night), `--i-room-base`, `--o-night` (lamplight layers), `--o-day` (sun shadows),
-`--o-turn` (a turned leaf darkens by day). `--color-hall` changes too (`--sala-dia` / `--sala-noite`), and
-`--color-field-hall` (papel / luz-nucleo).
+unless Dia was chosen, and the manual choice). Photograph roles that change: `--t-dia` / `--t-noite` (which
+theme's picture is shown: `display: contents` or `none`), `--t-spill` (the lamplight on the steps, Noite only),
+`--photo-lqip` (the theme's placeholder) and `--color-leaf-shade` (noite at 28% by day, 40% by night).
+`--color-hall` changes too (`--sala-dia` / `--sala-noite`), and `--color-field-hall` (papel / luz-nucleo).
 
 ## A distinctive touch (extension)
 The brief asked whether one distinctive touch should be added for atmosphere, beyond a premium interface. Four
@@ -1060,9 +1240,9 @@ something only this house can say, or is it decoration). One is kept.
 | Candidate | Prototype and measurement | Verdict |
 |---|---|---|
 | **Torres Vedras time**: the default Dia / Noite follows sunrise and sunset over the house | the sun's altitude at 39.09 N, 9.26 W from a low-precision solar ephemeris in the head script (about 600 bytes): sunrise/sunset within 1–2 minutes of published times for 2026 (8 Nov 07:13 / 17:29 UTC, 21 Jun 05:12 / 20:07, 21 Dec 07:53 / 17:18); 18 checks (both system schemes, stored choice, manual toggle, every page, a sunset while the page is open) | **Kept**, and made perceptible on every screen (round 3): one short sentence under the control, «É noite em Torres Vedras.», in the house's serif, only while the sky decides (also the buttons' description for screen readers). A visitor in São Paulo at 19:00 sees the lantern lit and reads why: it is night in Torres Vedras. It says something only this house can say. Before round 3 it was screen-reader-only on phones and, on desktop, sat in the menu row in the control's voice, where it read as a third menu item. |
-| **Ink draws itself** on first visit (contours, then washes bloom) | stroke-dash draw of the ink paths (top to bottom, 0.5s stagger, 0.9s each), washes fade in at 1.0s; holds 60fps under 4× throttle but rasters 133ms (390, DPR 3) / 316ms (1440) during the load window | **Removed.** It spends the page's one load gesture twice (the doors already ease ajar), withholds the approved drawing for 1.5s on the visit that matters most (the first), shows a grey wireframe on the way, and the line-draw reveal is a common template trope. |
+| **Ink draws itself** on first visit (contours, then washes bloom) | stroke-dash draw of the ink paths (top to bottom, 0.5s stagger, 0.9s each), washes fade in at 1.0s; holds 60fps under 4× throttle but rasters 133ms (390, DPR 3) / 316ms (1440) during the load window | **Removed** (and moot since the photograph replaced the drawing). It spent a second load gesture, withheld the approved drawing for 1.5s on the first visit, and the line-draw reveal is a common template trope. |
 | **Living lantern** at night (irregular warm flicker of the lantern and the doorway light, opacity 0.86–1) | WAAPI opacity on the six lamplight layers, 4.2s irregular loop; cheap here, invisible in stills and only noticed as "something moves" beside the text | **Removed.** An endless ambient loop has no purpose a visitor can name (no feedback, no state, no space), pulls the eye from the sentence beside it, keeps the compositor busy on phones, and a flickering electric lantern reads as a failing bulb. The lamp is already alive where it counts: it is lit only at night, and the light swings open with the doors. |
-| **Sketchbook signature** «Torres Vedras, 2026» in the drawing's corner | single-stroke script lettering (Hershey script cuts) with a hand wobble, in the drawing's ink | **Removed.** It reads as a script font, not a hand (the brief's own condition), it sits on the steps and crowds the drawing, and it repeats what the lockup already says. |
+| **Sketchbook signature** «Torres Vedras, 2026» in the drawing's corner | single-stroke script lettering (Hershey script cuts) with a hand wobble, in the drawing's ink | **Removed** (moot with the photograph). It read as a script font, not a hand, crowded the drawing and repeated the lockup. |
 
 Evidence: frame strips, videos and the prototype measurements are kept with the review notes, not in the
 repository.
@@ -1086,7 +1266,7 @@ pt-PT first, EN second. Facts only.
 | consent missing | Confirme que aceita receber emails. | Please confirm you agree to receive emails. |
 | send error | Não foi possível enviar. Tente de novo dentro de momentos ou escreva para inn@abrazileira.com. (a mailto link) | We could not send it. Please try again in a moment or write to inn@abrazileira.com. |
 | no JS | Para se inscrever, ative o JavaScript ou escreva para inn@abrazileira.com. | To sign up, please enable JavaScript or write to inn@abrazileira.com. |
-| drawing | Desenho de uma entrada em arco de pedra, com portas duplas de madeira. | Drawing of an arched stone entrance with double wooden doors. |
+| photograph (alt) | Entrada em arco de pedra calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro. | Limestone arched entrance with double wooden doors, a fanlight, a wall lantern and an olive tree in a clay pot. |
 | footer | © 2026 A Brazileira · Torres Vedras, Portugal · Privacidade | … · Privacy |
 | sun note | É dia em Torres Vedras. · É noite em Torres Vedras. | It is daytime in Torres Vedras. · It is night in Torres Vedras. |
 | 404 | Esta página não existe. · Voltar ao início | This page does not exist. · Back to home |
@@ -1094,22 +1274,25 @@ pt-PT first, EN second. Facts only.
 The only contact on the site is inn@abrazileira.com (privacy notice, the no-JS line and the send error).
 The round 3 copy changes (sun note, success, send error, button label) are new pt-PT lines: they need the client's
 sign-off.
-Open Graph: `assets/img/og.png`, 1200 × 630, Noite (lockup + lit entrance, doors ajar); kept as shipped,
-`src/og.py` can redraw it from the real components.
+Open Graph: `assets/img/og.jpg`, 1200 × 630, 57 KB, Noite: the lockup and the photograph of the entrance (doors
+closed, the lantern lit, the hall's light in the gap), rendered by `src/og.py` from the real components and
+layers (`--replace` writes it into `src/assets/img/`); JPEG, since it is a photograph (the PNG of the same frame is
+about ten times larger). `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
+madeira, à noite.» / «… the logo and a photograph of an arched stone entrance with wooden doors, at night.»
 
 ## Accessibility (extension)
 WCAG 2.2 AA (see the contrast matrix; reading text 7:1 and above). One h1 per page. Landmarks: header, main,
 footer, nav (language), group (theme), section (waiting list, labelled by its h2). Skip link is the first Tab
 stop. Tab order (home): skip, Dia, Noite, PT, EN, action, email, consent, privacy link, button, footer link;
 the scroll cue and the honeypot are out of the order. Focus ring visible on every ground (also on the drawn
-checkbox). Drawing: `role="img"` with a short description; its parts are presentational. Form: real labels,
+checkbox). Photograph: the entrance is one `role="img"` with the manifest's alt text (generic: no street, no
+number read out); its layers are `alt=""`. Form: real labels,
 `aria-invalid` + `aria-describedby` inline messages, focus to the first invalid field, `role="status"` for
 sending outcomes (always rendered, so it is announced), `aria-busy` while sending, 44px targets (the inline
 privacy link reaches 44px into the free space below its line). The email field is described by the list
 sentence. The sun note describes both theme buttons while the sky decides. `prefers-contrast: more` lifts muted
-text to the strong ink (on the hall too) and draws the drawing's fine lines, hatching and cross-hatching at
-(nearly) full ink (`--ink-of` 1, `--ink-oh` 0.9, `--ink-ox` 0.8); forced colours turn the drawing into a clean
-CanvasText line drawing and hide the light layers; print drops the pinning, the top bar, the scroll cue and the form. Keyboard and the sequence: Enter or
+text to the strong ink (on the hall too); forced colours keep the photograph (images keep their colours) and hide
+the light layers (shade, lamplight, the hall's light); print drops the pinning, the top bar, the scroll cue and the form. Keyboard and the sequence: Enter or
 Space on the action plays the walk-in (any key stops it) and lands in the email field; Tab from the action
 lands on the email field with the list in view (a jump, no replay of the sequence); focusing anything
 in the first screen mid-sequence rewinds to the rest state, so focus is never on an invisible element. Only
@@ -1118,11 +1301,19 @@ Before the run brings it in, the list's content has no pointer target but stays 
 accessibility tree (nothing is made inert or hidden).
 
 ## Implementation notes (extension)
-- Source: `src/` (build.py, scene.py, hand.py, site.css, site.js, tokens.tpl.css, noite.css, styleguide.py,
-  og.py, `assets/` with the emblem, fonts, icons, favicon and og.png, `tests/`). `python3 src/build.py`
-  rebuilds `docs/` completely; every path is relative to `build.py`, nothing is read from outside `src/`.
-  `scene.py` models the doorway in metres and projects it; `hand.py` turns every edge into seeded pen and
-  brush geometry (see Components › entrance). The build is deterministic.
+- Source: `src/` (build.py, photo.py, site.css, site.js, tokens.tpl.css, noite.css, styleguide.py, og.py,
+  `assets/` with the emblem, fonts, icons, favicon, og.jpg and `photo/` (the layers per theme, AVIF + WebP, and
+  photo.json), `tests/`). `python3 src/build.py` rebuilds `docs/` completely with Python 3 alone; every path is
+  relative to `build.py`, nothing is read from outside `src/`. `photo.py` turns photo.json into the markup (see
+  Components › entrance); the photo files are encoded once by the asset pipeline and copied as they are (the build
+  needs no image library and is deterministic). The caderno drawing's generators (`scene.py`, `hand.py`) and every
+  rule and token that drew it (`.k*`, `.w-*`, `--pen-*`, `--ink-*`, `--w-*`, `--i-*`, the hall's SVG layers, the
+  load animation) are gone.
+- Photo asset pipeline (outside the site, in the working notes `photo/py/`; Python with numpy, OpenCV and Pillow
+  with AVIF): `masks`, `grade`, `build_dia`, `night`, `build_noite`, `export` (the first pass), then for this
+  integration `plate2` (the hall), `export2` (plate files, LQIPs), `facade2` (the elliptical edge), `spill2` (the
+  lamplight as an RGBA overlay), and `photoint-tools/ship_assets.py`, which copies the files the page uses into
+  `src/assets/photo/` and writes photo.json.
 - Tests (Playwright + Chromium, never touching the real endpoint; they need `require("playwright")` to resolve:
   `npm i -D playwright && npx playwright install chromium` in the repository, or a global install on
   `NODE_PATH`): `node src/tests/reverse-scroll.test.js docs` (the reverse-scroll / overscroll / toolbar
@@ -1136,7 +1327,7 @@ accessibility tree (nothing is made inert or hidden).
   colour hand-off is ΔRGB 0 on every pixel of the frame (list words and footer text excepted) from the moment the
   screen is one colour, mid-rise, at p = 1 and with the seam on screen, Dia and Noite, at 390 × 844, 430 × 932,
   375 × 667, 320 × 568, 844 × 390, 768 × 1024, 1440 × 900, 1920 × 1080 and 2560 × 1080; on 320 × 568, 375 × 553, 375 × 667 and 390 × 664
-  the door stands on the floor line in the first screen and the cue is never sliced) and `node
+  the photograph's foot is inside the first screen and the cue is never sliced) and `node
   src/tests/list.test.js docs` (50 checks: a tap or a click on the email field or the button never moves the
   page, at three rest positions on 390 × 844 and 375 × 667 by touch and 1440 × 900 and 1280 × 720 by mouse, and the
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
@@ -1146,7 +1337,7 @@ accessibility tree (nothing is made inert or hidden).
   the sky, clear of the crest at five sizes). `src/tests/png.js` decodes the screenshots (Node's zlib only).
 - Output: `docs/index.html`, `docs/en/index.html`, `docs/privacidade/index.html`, `docs/en/privacy/index.html`,
   `docs/404.html`, `docs/design/index.html` (noindex, unlinked styleguide), `assets/css/tokens.css`,
-  `assets/css/site.css`, `assets/js/site.js`, fonts, images, `favicon.svg`, `robots.txt`, `sitemap.xml` (home
+  `assets/css/site.css`, `assets/js/site.js`, fonts, images, `assets/photo/{dia,noite}/` (72 files), `favicon.svg`, `robots.txt`, `sitemap.xml` (home
   and privacy, with hreflang), `site.webmanifest`, `.nojekyll`.
 - Cache busting: the build stamps every local CSS/JS URL with `?v=<sha256 prefix>` (GitHub Pages caches for
   10 minutes; this keeps HTML and CSS/JS in step).
@@ -1157,20 +1348,21 @@ accessibility tree (nothing is made inert or hidden).
   Pages), the only third-party request is the form submit to Supabase (EU).
 - Raw hex appears only in tokens.css, plus what cannot read CSS: the two `theme-color` metas, the manifest and
   favicon.svg.
-- Budget, measured on the home page with gzip -9 (fonts as shipped): 140.6 kB — HTML 60.1 (round 3: the list
-  lamp removed, −0.5), CSS 9.9 (tokens 3.6, site 6.4; comments stripped), JS 8.4 (round 3: +1.5, the camera's
-  keyframes, the input modality, the list's rise, the mailto in the error), fonts 62.2 (Cinzel 40.7, Alegreya 12.5,
-  Alegreya Sans 9.0); target 150 kB, ceiling 170 kB (og and icons
-  excluded). The privacy notice is about 92 kB. The drawing is inline SVG (the caderno line work is most of the HTML). CLS 0 on every page
-  (the wrapper grows below the fold). LCP is text.
+- Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded): 89.3 kB — HTML 9.2 (was 60.1
+  with the inline drawing), CSS 8.7 (tokens 3.3 with the two LQIPs, site 5.4), JS 9.2 (+0.8: the photo's loading
+  and decoding, the camera's geometry), fonts 62.2 (Cinzel 40.7, Alegreya 12.5, Alegreya Sans 9.0); target 150 kB,
+  ceiling 170 kB (og and icons excluded). The privacy notice is 6.8 kB of HTML.
+  The photo is counted on its own (Components › entrance › Budgets: 98 KB by day, 47 KB by night on a 3× phone).
+  The HTML lost the inline SVG drawing (it was most of the page) and gained a `<picture>` per layer and theme. CLS 0
+  on every page (the photograph's boxes are sized by CSS; the wrapper grows below the fold).
 
 ## Responsive behavior
 
 | Name | Query | Key changes |
 |---|---|---|
-| Stacked (default) | portrait, below 900px | lockup · lede · status · action, then the entrance on the floor line (door axis on the page axis), then the cue band; the wash overshoot stays clear of the action |
-| Tight portrait | `(orientation: portrait) and (max-height: 42.5em)` (≤ 680px tall) | top bar inset 4px, lede 16px above, action 8px under the status, 16px between the action and the wash, compact cue band |
-| Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 24px minimum, lede 12px above, no cue band, the drawing takes the height that is left (the door stands on the floor line in the first screen) |
+| Stacked (default) | portrait, below 900px | lockup · lede · status · action, then the photograph at the foot (door axis on the page axis, its faded top may rise 5% into the space under the action), then the cue band |
+| Tight portrait | `(orientation: portrait) and (max-height: 42.5em)` (≤ 680px tall) | top bar inset 4px, lede 16px above, action 8px under the status, 16px between the action and the photograph, compact cue band |
+| Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 24px minimum, lede 12px above, no cue band, the photograph takes the height that is left (door and steps in the first screen) |
 | Split | `(min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em)` | 5fr text \| 6fr entrance, 64px apart, container 86rem; lede 48px under the lockup; action 48px under the status; top bar inset follows the container |
 | Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 24–28px, lede 18px, status 4px under it, action right under it, entrance min 16rem |
 | Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 18px; then 20px |
@@ -1187,11 +1379,14 @@ line); the field and the button are 48px. Nothing collapses into a menu: there a
 
 Do:
 - Use the original logo exactly (emblem.svg + Cinzel lockup files, byte-identical), at 24px or more.
-- Read colours through the semantic roles (`--color-*`) and the drawing's roles (`--i-*`, `--w-*`); add new
-  values to tokens.css first.
+- Read colours through the semantic roles (`--color-*`) and the photograph's roles (`--t-*`, `--photo-lqip`,
+  `--color-leaf-shade`); add new values to tokens.css first.
 - Keep one action per screen and give it the only full-ink underline there.
 - Mark a current control with ink and the brass tick; keep underlines for links.
-- Keep `--color-hall` the one colour of the door's last light, the flood and the waiting list (ΔRGB 0).
+- Keep `--color-hall` the one colour of the hall's light and the waiting list (ΔRGB 0), and grade the
+  photograph's far arch to clip to it.
+- Ship every photo layer as AVIF + WebP at the ladder's widths, sized by CSS, lazy unless the first paint needs it;
+  keep the first paint on a phone under 180 KB.
 - Move only `transform` and `opacity`; promote layers only while they move.
 - Give every interruption back to the visitor at once (wheel, touch, key, pointer).
 - Respect the visitor: a stored choice, then the sky over the house (the system's dark mode decides only
@@ -1209,7 +1404,9 @@ Don't:
   was removed in round 3).
 - Add a second gesture on load, ambient loops, parallax, cursors, counters or sound.
 - Use `scroll-behavior: smooth` or hijack native scrolling; the walk-in is the only programmatic scroll.
-- Fade a flat colour over the stone or the tree; the hand-off is colour over the same colour.
+- Fade a flat colour over the stone or the tree: the hall's light only comes up once the doorway covers the screen.
+- Use a blend mode on a moving layer (a backdrop read-back every frame); bake the look into an RGBA layer.
+- Let the photograph read as a rectangle: its margin converges to the page colour.
 - Put raw hex outside tokens.css (except the theme-color metas, the manifest and favicon.svg).
 - Quote private correspondence or name people in the repository.
 - Store anything about the visitor other than the Dia / Noite choice.
@@ -1220,11 +1417,12 @@ Don't:
 3. Re-measure the contrast matrix after any colour change (the hall surface too).
 4. Keep the logo untouched; new pages reuse `.lockup`.
 5. Keep tracked capitals inside the logo and sentence case everywhere else.
-6. Change the drawing in `src/scene.py` (metres, one-point perspective), never by hand in the HTML.
+6. Change the photograph in the asset pipeline (re-export, then `ship_assets.py`, which rewrites photo.json), never
+   by hand in the HTML; keep the layers' rects in facade fractions.
 7. Change the sequence in the table in `src/site.js` (element, p range, curve, values) and the curves in
    tokens.css (`--curve-*`); keep it transform and opacity only, re-record it (frame by frame) at 390 and
    1440, both themes, and re-run `src/tests/` and the 4× CPU trace (no frame over 50ms, p95 ≤ 17ms).
-8. Any new layer whose opacity changes per frame joins the promotion list in site.js (`LAYERS`).
+8. Any new layer whose opacity or transform changes per frame joins the promotion list in site.js (`LAYERS`).
 9. Re-run the copy check (banned words, privacy) after any text change.
 10. Prefer more space over more ornament.
 
@@ -1249,16 +1447,22 @@ Don't:
 - Deploy: the live site lags this build (review round 2 #7: cache-busting hashes and the head theme script
   differ). Publish once this round lands, then re-check the live index, en/, privacidade/ and 404 against the
   build. The repository has since moved to fingerprinted file names (its last commit); keep that when merging.
-- The first frame of a wheel scroll at 1440 × 900 with no mouse movement before it (a scripted or a touchpad
-  scroll that does not move the pointer) still creates the drawn layers: 67–83ms in 3 of 6 runs under 4×
-  CPU throttle with software raster (the previous build: 83ms in 1 of 6). A visitor's mouse arriving first
-  readies them (33ms worst after).
+- Under 4× CPU throttle with software raster, an occasional frame of 50ms (3 vsyncs) was seen at 1440 × 900 in
+  earlier runs (the frame that creates the layers; once a style recalculation); none in the final set (54 runs).
+- WebKit: the layer strategy (the facade as its own layer, so WebKit can composite the decoded image directly at
+  any zoom; no blend modes) is reasoned, not measured: check memory and frame times on a real iPhone.
 - Real-device pass on iOS Safari (17–26) and Android Chrome for the single driver, rubber-band overscroll and
   the collapsing toolbar: the headless runs above use Chromium only (WebKit was not available here), and the
   iOS overscroll is emulated in the regression test, not reproduced.
 - Raster figures above come from headless Chromium with software raster; real GPUs raster faster, phones
-  with little GPU memory may need the promotion list trimmed (it is 7 layers plus the two leaves).
-- Real photography of the house once restored (not before; the drawing must not become the façade).
+  with little GPU memory may need the promotion list trimmed (11 layers, each the photograph's box or smaller).
+- The walk-in's sharpness is bounded by the master: past p ≈ 0.48 (the jambs leaving the frame) even the 2388px
+  facade is drawn at 0.4–0.6 source px per device px; it is itself a 2× super-resolution of a 1194px photograph.
+  A sharper walk-in needs a larger original (a photograph of the house's own door, see below).
+- The list held at rest through a resize (keyboard, rotation) is tested in Chromium's emulation only; check a
+  rotation and an in-app browser's keyboard on real phones.
+- The photograph is a generic Portuguese entrance chosen by the client, not this house: when the house is
+  restored, photograph its own door the same way (one frame, the doors closed, plus the layers).
 - Content pages (rooms, ground floor, contacts) reuse these tokens and the hall surface.
 - Cinzel could be subset further to capitals only (about 30 KB saved).
 - A double opt-in email and an unsubscribe link belong to the sending tool, not this page.

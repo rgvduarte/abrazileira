@@ -46,9 +46,21 @@ try { localStorage.setItem(KEY, t); } catch (e) {}
 if (sky) root.setAttribute("data-sol", ""); else root.removeAttribute("data-sol");
 }
 sync();
+if (root.__photo) { root.__photo.loaded(); root.__photo.enlarge(t); }
 window.requestAnimationFrame(function () { root.classList.remove("is-instant"); });
 }
+var want = null;
 function swap(t, keep, sky) {
+var w = root.__photo && root.__photo.ready(t);
+if (!w) return swapNow(t, keep, sky);
+want = t;
+w.then(function () { if (want === t) { want = null; if (t !== current()) swapNow(t, keep, sky); } });
+}
+function warmOther() { if (root.__photo) root.__photo.ready(current() === "dia" ? "noite" : "dia", 1); }
+group.addEventListener("pointerenter", warmOther);
+group.addEventListener("focusin", warmOther);
+group.addEventListener("touchstart", warmOther, { passive: true });
+function swapNow(t, keep, sky) {
 var slow = !keep && sky !== undefined;
 if (still.matches || (root.__portaBusy && root.__portaBusy())) return apply(t, keep, sky);
 if (slow) root.classList.add("is-sky");
@@ -88,22 +100,80 @@ sync();
 sky();
 })();
 (function () {
+var scene = document.querySelector(".scene[data-geo]");
+if (!scene) return;
+function theme() {
+var t = root.getAttribute("data-theme");
+return t === "dia" || t === "noite" ? t : window.matchMedia("(prefers-color-scheme: dark)").matches ? "noite" : "dia";
+}
+function imgs(t) { return scene.querySelectorAll("picture.t-" + t + " img"); }
+function ok(im) { return im && im.complete && im.naturalWidth > 0; }
+function loaded() {
+var f = scene.querySelector(".ph--facade picture.t-" + theme() + " img");
+if (ok(f)) { scene.classList.add("is-loaded"); return; }
+scene.classList.remove("is-loaded");
+if (f) f.addEventListener("load", loaded, { once: true });
+}
+function ready(t, wait) {
+var list = imgs(t), ps = [], i;
+for (i = 0; i < list.length; i++) {
+if (list[i].loading !== "eager") list[i].loading = "eager";
+if (list[i].decode) ps.push(list[i].decode().catch(function () {}));
+}
+if (!window.Promise) return null;
+return Promise.race([Promise.all(ps), new Promise(function (r) { setTimeout(r, wait || 800); })]);
+}
+var BIG = ".ph--facade picture, .leaf picture", big = false, warmed = {};
+function slow() { var c = navigator.connection; return !!(c && (c.saveData || /2g/.test(c.effectiveType || ""))); }
+function bigSizes() { return Math.round(scene.offsetWidth * 3) + "px"; }
+function setSizes(pic, v) { var e = pic.querySelectorAll("source, img"), i; for (i = 0; i < e.length; i++) if (e[i].getAttribute("sizes") !== v) e[i].setAttribute("sizes", v); }
+function pics(t) { return scene.querySelectorAll(BIG.replace(/picture/g, "picture.t-" + t)); }
+function warmBig(t) {
+if (warmed[t] || slow() || !scene.offsetWidth || root.getAttribute("data-sequence") !== "scroll") return;
+warmed[t] = 1;
+var list = pics(t), v = bigSizes(), i;
+for (i = 0; i < list.length; i++) {
+var c = list[i].cloneNode(true), im = c.querySelector("img");
+im.setAttribute("loading", "eager");
+setSizes(c, v);
+if (im.decode) im.decode().catch(function () {});
+}
+}
+function enlarge(t) {
+if (!big || slow()) return;
+var list = pics(t || theme()), v = bigSizes(), i;
+for (i = 0; i < list.length; i++) setSizes(list[i], v);
+}
+function upgrade() { if (big) return; big = true; enlarge(); }
+root.__photo = { ready: ready, loaded: loaded, theme: theme, upgrade: upgrade, enlarge: enlarge };
+loaded();
+function later() {
+scene.classList.add("is-ready");
+ready(theme(), 4000);
+var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1200); };
+setTimeout(function () { idle(function () { warmBig(theme()); }, { timeout: 3000 }); }, 600);
+}
+if (document.readyState === "complete") later(); else window.addEventListener("load", later, { once: true });
+})();
+(function () {
 var wrap = document.querySelector("[data-porta]");
 if (!wrap) return;
 var $ = function (s) { return wrap.querySelector(s); },
 stage = $(".porta__stage"), frame = $(".porta__frame"), intro = $(".intro"), scene = $(".scene"),
-back = $(".scene__art--back"), backHidden = false,
-door = (scene.getAttribute("data-door") || "0.5 0.5 0.3 0.5").split(" ").map(Number),
+plate = $(".ph--plate"), facade = $(".ph--facade"), leafL = $(".leaf--l"), leafR = $(".leaf--r"),
+shadeL = leafL.querySelector(".leaf__shade"), shadeR = leafR.querySelector(".leaf__shade"),
+G = JSON.parse(scene.getAttribute("data-geo") || "{}"),
 css = getComputedStyle(root),
 num = function (n, d) { var v = parseFloat(css.getPropertyValue(n)); return isNaN(v) ? d : v; },
-openL = num("--open-l", 47), openR = num("--open-r", 61),
+OPEN = num("--open-door", G.open || 84) * Math.PI / 180, COS = 1 - Math.cos(OPEN),
 TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35,
-cam = { dx: 0, dy: 0, s: 4, k: 0 }, pin = 0, run = 1,
+cam = { dx: 0, dy: 0, k: 0, s: 8, kp: G.k || 0.8 }, pin = 0, run = 1,
 probe = document.createElement("div"),
 cue = $(".porta__cue"),
 list = document.getElementById("lista"), reveal = list && list.querySelector("[data-reveal]"),
 rv = function (s) { return (reveal && reveal.querySelector(s)) || document.createElement("i"); },
-shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false;
+shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false,
+held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1;
 probe.className = "porta__probe";
 probe.setAttribute("aria-hidden", "true");
 stage.appendChild(probe);
@@ -126,35 +196,47 @@ var E = {
 copy: curve("--curve-copy", [0.33, 1, 0.68, 1]),
 door: curve("--curve-door", [0.3, 0.55, 0.35, 1]),
 pan: curve("--curve-pan", [0.35, 0.4, 0.3, 1]),
-fade: curve("--curve-fade", [0.45, 0, 0.55, 1]),
+light: curve("--curve-light", [0.55, 0, 0.75, 0.55]),
 rise: curve("--ease-out", [0.23, 1, 0.32, 1]),
 flight: curve("--curve-flight", [0.45, 0, 0.3, 1])
 };
-var FLIGHT = num("--dur-flight", 1200), WEIGHT = num("--flight-weight", 2), RISE = num("--rise-list", 16);
+var FLIGHT = num("--dur-flight", 1250), WEIGHT = num("--flight-weight", 2), WLIST = num("--flight-weight-list", 1.2),
+RISE = num("--rise-list", 16);
 function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-var DOOR = [0, 0.36], PAN = [0, 0.3], ZOOM = [0.01, 0.76], LIGHT = [0.5, 0.66], COVER_AT = 0.76, COVERED = COVER_AT, LAG = 0.1,
-TEXT = 1, COVER = 2, LIST = 3, step = function (x) { return x > 0 ? 1 : 0; },
+var DOOR = [0, 0.36], PAN = [0, 0.3], CENTRE = [0.36, 0.56], KX = [0.01, 0.36, 0.58, 0.76], LIGHT = [0.6, 0.76],
+COVER_AT = 0.76, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
 lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
-var DISSOLVE = [$(".hall__flat"), LIGHT[0], LIGHT[1], E.fade, function (u) { return [u, null]; }, COVER];
 var T = [
 [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
 [cue, 0, 0.05, E.copy, function (u) { return [1 - u, null]; }, TEXT],
-[$(".leaf--l"), DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (openL * u).toFixed(3) + "deg)"]; }],
-[$(".leaf--r"), DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (-openR * u).toFixed(3) + "deg)"]; }],
-[$(".hall__light"), DOOR[0], DOOR[1], E.door, function (u) { return [u, null]; }],
-[$(".spill"), DOOR[0], DOOR[1], E.door, function (u) { return [u, null]; }],
-DISSOLVE,
-[$(".porta__flood"), COVER_AT, COVER_AT + 0.01, step, function (u) { return [u, null]; }, COVER],
+[leafL, DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (OPEN * u).toFixed(4) + "rad)"]; }],
+[leafR, DOOR[0], DOOR[1], E.door, function (u) { return [null, "rotateY(" + (-OPEN * u).toFixed(4) + "rad)"]; }],
+[shadeL, DOOR[0], DOOR[1], E.door, function (u) { return [Math.sin(OPEN * u), null]; }],
+[shadeR, DOOR[0], DOOR[1], E.door, function (u) { return [Math.sin(OPEN * u), null]; }],
+[$(".ph--spill"), DOOR[0], DOOR[1], E.door, function (u) { return [(1 - Math.cos(OPEN * u)) / COS, null]; }],
+[$(".porta__flood"), LIGHT[0], LIGHT[1], E.light, function (u) { return [u, null]; }, COVER],
 [rv(".lista__title"), 0.745, 0.88, E.rise, lift(1), LIST],
 [rv(".lista__lede"), 0.75, 0.9, E.rise, lift(1), LIST],
 [rv(".form"), 0.755, 0.94, E.rise, lift(0.6), LIST]
 ];
+var KNEE = 0.25;
+function knee(a) {
+if (a <= 1 - KNEE) return a < 0 ? 0 : a;
+if (a >= 1 + KNEE) return 1;
+var d = a - 1 + KNEE;
+return a - d * d / (4 * KNEE);
+}
 function camAt(p) {
-var m = E.pan(clamp((p - PAN[0]) / (PAN[1] - PAN[0]))), s = scaleAt(p),
-my = cam.k ? Math.max(clamp((s - 1) * cam.k), clamp((p - 0.4) / 0.26)) : m;
+var m = E.pan(clamp((p - PAN[0]) / (PAN[1] - PAN[0]))), s = scaleAt(p), my = m, a, b;
+if (cam.k) {
+a = knee((s - 1) * cam.k);
+b = clamp((p - CENTRE[0]) / (CENTRE[1] - CENTRE[0]));
+b = b * b * (3 - 2 * b);
+my = 1 - (1 - a) * (1 - b);
+}
 return "translate(" + (cam.dx * m).toFixed(2) + "px," + (cam.dy * my).toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
 }
-var KX = [ZOOM[0], LIGHT[0], LIGHT[1], ZOOM[1]], KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
+var KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
 function keys(sA, sB, S) {
 var i, d = [], a, b, h;
 KY = [0, Math.log(sA), Math.log(sB), Math.log(S)];
@@ -173,8 +255,11 @@ var i = p < KX[1] ? 0 : p < KX[2] ? 1 : 2, h = KX[i + 1] - KX[i], t = (p - KX[i]
 return Math.exp((2 * t3 - 3 * t2 + 1) * KY[i] + (t3 - 2 * t2 + t) * h * KM[i] + (-2 * t3 + 3 * t2) * KY[i + 1] + (t3 - t2) * h * KM[i + 1]);
 }
 function measure() {
-var W = scene.offsetWidth, H = scene.offsetHeight;
-var cx = scene.offsetLeft + door[0] * W, cy = scene.offsetTop + door[1] * H;
+var fw = stage.clientWidth, focused = !!(list && document.activeElement && document.activeElement !== list && list.contains(document.activeElement));
+if (focused && held.w === fw && held.run > 0) wrap.style.setProperty("--porta-run", held.run + "px");
+else if (wrap.style.getPropertyValue("--porta-run")) wrap.style.removeProperty("--porta-run");
+var W = scene.offsetWidth, H = scene.offsetHeight, hx = G.hp[0] * W, hy = G.hp[1] * H;
+var cx = scene.offsetLeft + hx, cy = scene.offsetTop + hy;
 for (var el = scene.offsetParent; el && el !== stage; el = el.offsetParent) { cx += el.offsetLeft; cy += el.offsetTop; }
 var vw = stage.clientWidth, vh = probe.offsetHeight || window.innerHeight,
 stick = Math.min(0, vh - frame.offsetHeight);
@@ -188,15 +273,21 @@ if (ir.top - st < vh && ir.bottom - st > vh + 0.5) cue.style.visibility = "hidde
 var sh = Math.max(vh, stage.clientHeight + stick);
 cam.dx = vw / 2 - cx;
 cam.dy = vh / 2 - stick - cy;
-cam.k = vh > vw * 1.1 && cam.dy < -1 ? (1 - door[1]) * H / -cam.dy : 0;
-var ow = door[2] * W, oh = door[3] * H, LEAVES = 0.86;
-var tall = 2 * Math.max(vh / 2, sh - vh / 2) / oh;
-cam.s = Math.max(vw / (ow * LEAVES), tall) * 1.04;
-var sB = Math.min(1.35 * tall, cam.s / 1.12), sA = Math.min(0.8 * tall, sB / 1.25);
-keys(Math.max(1.05, sA), Math.max(1.1, sB), cam.s);
-var r = wrap.getBoundingClientRect();
-pin = r.top + window.pageYOffset - stick;
-run = Math.max(1, wrap.offsetHeight - stage.offsetHeight);
+cam.k = vh > vw * 1.1 && cam.dy < -1 ? (1 - G.hp[1]) * H / -cam.dy : 0;
+var d = G.persp * H, lw = (G.gap[0] - G.door[0]) * W, f = d / (d + lw * Math.sin(OPEN)),
+xl = hx + (G.door[0] * W + lw * Math.cos(OPEN) - hx) * f, xr = hx + (G.door[2] * W - lw * Math.cos(OPEN) - hx) * f;
+var inDoor = Math.max(vw / 2 / Math.min(hx - xl, xr - hx), vh / 2 / ((G.hp[1] - G.door[1]) * H),
+(sh - vh / 2) / ((G.door[3] - G.hp[1]) * H)) * 1.05;
+var L = G.light, zl = Math.max(vw / 2 / (L[0] * W), vh / 2 / (L[1] * H), (sh - vh / 2) / (L[2] * H)),
+end = Math.max(inDoor * 1.5, Math.min(Math.pow(zl, 1 / G.k), G.cover));
+cam.kp = Math.max(G.k, 1 - Math.log(G.grow * 0.97) / Math.log(end));
+cam.s = end;
+keys(Math.pow(inDoor, 0.3), inDoor, end);
+var r = wrap.getBoundingClientRect(), natural = wrap.offsetHeight - stage.offsetHeight;
+if (!wrap.style.getPropertyValue("--porta-run")) held = { w: fw, run: natural };
+pin = r.top + window.pageYOffset;
+run = Math.max(1, natural - stick);
+mw = vw; mh = vh;
 }
 function target() {
 var y = window.pageYOffset;
@@ -205,11 +296,11 @@ return { y: y, p: clamp((y - pin) / run) };
 function render(r, p) {
 if (p === undefined) p = r;
 var i, t, s, v, q;
-if ((r >= DOOR[1]) !== backHidden) { backHidden = !backHidden; back.style.visibility = backHidden ? "hidden" : ""; }
 if ((Math.max(r, p - LAG) >= COVER_AT) !== lit) { lit = !lit; document.body.style.backgroundColor = lit ? "var(--color-hall)" : ""; }
 if (r <= 0 && p <= 0) {
 for (i = 0; i < T.length; i++) { s = T[i][0].style; s.opacity = ""; s.transform = ""; s.pointerEvents = ""; }
 scene.style.transform = "";
+plate.style.transform = "";
 return;
 }
 for (i = 0; i < T.length; i++) {
@@ -224,18 +315,21 @@ if (t[5] === TEXT) s.pointerEvents = v[0] < 0.5 ? "none" : "";
 else if (t[5] === LIST) s.pointerEvents = v[0] < 0.5 ? "none" : "auto";
 }
 scene.style.transform = camAt(r);
+plate.style.transform = "scale(" + Math.pow(scaleAt(r), cam.kp - 1).toFixed(5) + ")";
 }
-var LAYERS = [[scene, "transform"], [$(".hall__light"), "transform, opacity"], [intro, "transform, opacity"],
-[$(".porta__cue"), "opacity"], [$(".spill"), "transform, opacity"], [$(".hall__flat"), "opacity"], [$(".porta__flood"), "opacity"]],
-DRAWN = 2,
+var LAYERS = [[facade, "transform"], [scene, "transform"], [plate, "transform"], [leafL, "transform"], [leafR, "transform"],
+[shadeL, "opacity"], [shadeR, "opacity"], [$(".ph--spill"), "opacity"], [intro, "transform, opacity"],
+[$(".porta__cue"), "opacity"], [$(".porta__flood"), "opacity"]],
+DRAWN = 1,
+WARM = 8,
 sharp = 0, sharpT, rasterS = 1, lift = 0, STEP = 2.2, ready = false;
 function promote(yes) {
 clearTimeout(sharpT);
 sharp = 0;
-if (!yes && ready && !promoted) { ready = false; for (var j = 0; j < DRAWN; j++) LAYERS[j][0].style.willChange = ""; }
 if (yes === promoted) return;
 promoted = yes;
 ready = false;
+if (yes && root.__photo) root.__photo.upgrade();
 lift = 0;
 rasterS = scaleAt(Math.max(0, shown));
 for (var i = 0; i < LAYERS.length; i++) LAYERS[i][0].style.willChange = yes ? LAYERS[i][1] : "";
@@ -243,12 +337,12 @@ for (var i = 0; i < LAYERS.length; i++) LAYERS[i][0].style.willChange = yes ? LA
 function crisp(r) {
 if (!promoted || sharp) return;
 if (lift) {
-LAYERS[lift - 1][0].style.willChange = LAYERS[lift - 1][1];
-if (lift < DRAWN) { LAYERS[lift][0].style.willChange = ""; lift++; } else lift = 0;
+LAYERS[0][0].style.willChange = LAYERS[0][1];
+lift = 0;
 return;
 }
 var sNow = scaleAt(r);
-if (fl && r < LIGHT[1] && sNow > rasterS * STEP) {
+if (fl && r < KX[2] && sNow > rasterS * STEP) {
 LAYERS[0][0].style.willChange = "";
 rasterS = sNow;
 lift = 1;
@@ -278,6 +372,7 @@ raf = 0;
 if (!on) return;
 var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
 last = now;
+if (!rq && !fl) endOff = g.p >= 1 ? g.y - pin - run : -1;
 if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;
 else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
 if (Math.abs(g.p - r) < EPS) r = g.p;
@@ -297,8 +392,8 @@ if (r !== g.p || calm < 8) raf = window.requestAnimationFrame(tick);
 else {
 last = 0;
 clearTimeout(idle);
-if (shown <= 0) idle = setTimeout(function () { promote(false); }, 400);
-else if (shown < COVERED) idle = setTimeout(rest, 250);
+if (shown <= 0) idle = setTimeout(settle, 300);
+else if (shown < KX[2]) idle = setTimeout(rest, 250);
 }
 }
 function kick() { if (on && !raf) raf = window.requestAnimationFrame(tick); }
@@ -323,14 +418,21 @@ fl = null;
 listen(false);
 }
 function zoomAt(y) { return Math.log(scaleAt(clamp((y - pin) / run))) / KY[3]; }
+function listAt(y) {
+var q = clamp((y - pin) / run), a = 0, i, t;
+for (i = 8; i < 11; i++) { t = T[i]; a += t[3](clamp((q - t[1]) / (t[2] - t[1]))); }
+return a / 3;
+}
 function journey(y0, y1) {
-var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0);
+var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0), l, pl = listAt(y0);
 for (i = 1; i <= N; i++) {
 y = y0 + (y1 - y0) * i / N;
 z = zoomAt(y);
+l = listAt(y);
 ys.push(y);
-J.push(J[i - 1] + Math.abs(y - ys[i - 1]) / run + WEIGHT * Math.abs(z - pz));
+J.push(J[i - 1] + Math.abs(y - ys[i - 1]) / run + WEIGHT * Math.abs(z - pz) + WLIST * Math.abs(l - pl));
 pz = z;
+pl = l;
 }
 return function (j) {
 j *= J[N];
@@ -370,18 +472,20 @@ function prime() {
 if (!on || promoted || shown > 0) return;
 promote(true);
 clearTimeout(idle);
-idle = setTimeout(function () { if (shown <= 0) promote(false); }, 400);
+idle = setTimeout(function () { if (shown <= 0) settle(); }, 400);
 }
 function warm(e) {
 if (!on || promoted || ready || shown > 0 || (e && e.pointerType && e.pointerType !== "mouse")) return;
 ready = true;
-for (var i = 0; i < DRAWN; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
+for (var i = 0; i < WARM; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
 }
 function refresh() { try { refreshInner(); } catch (err) { bail("refresh", err); } }
 function refreshInner() {
 rq = 0;
 if (!on) return;
+var was = endOff, w0 = mw, h0 = mh;
 measure();
+if (was >= 0 && !fl && (mw !== w0 || mh !== h0) && target().p < 1) window.scrollTo(0, pin + run + was);
 if (fl) { fl.y1 = fl.to(); fl.at = journey(fl.y0, fl.y1); }
 if (shown >= 0) render(shown, seen < 0 ? shown : seen);
 calm = 0;
@@ -397,6 +501,7 @@ clearTimeout(idle);
 window.removeEventListener("scroll", kick);
 render(0);
 promote(false);
+if (ready) { ready = false; for (var j = 0; j < WARM; j++) LAYERS[j][0].style.willChange = ""; }
 stage.style.removeProperty("--stick");
 if (cue) cue.style.visibility = "";
 shown = -1;
@@ -417,10 +522,13 @@ window.addEventListener("scroll", kick, { passive: true });
 kick();
 }
 window.addEventListener("wheel", prime, { passive: true });
+wrap.addEventListener("pointerdown", function (e) { if (e.target.closest && e.target.closest('a[href="#lista"]')) prime(); }, { passive: true });
 window.addEventListener("pointermove", warm, { passive: true });
+function settle() { if (promoted) promote(false); }
 window.addEventListener("touchstart", prime, { passive: true });
 window.addEventListener("resize", queue);
 window.addEventListener("orientationchange", queue);
+if (list) list.addEventListener("focusout", function () { if (wrap.style.getPropertyValue("--porta-run")) queue(); });
 if (window.visualViewport) window.visualViewport.addEventListener("resize", queue);
 window.addEventListener("load", queue);
 window.addEventListener("pageshow", function () { shown = -1; seen = -1; queue(); });
@@ -433,7 +541,7 @@ if (keyed && on && target().p > 0.01) window.scrollTo(0, pin);
 try { set(); } catch (err) { bail("set", err); }
 root.__portaBusy = function () { return on && (!!fl || !!raf); };
 root.__porta = { fly: fly, land: land, geo: function () {
-return { pin: pin, run: run, S: cam.s, light: LIGHT, sLight: [Math.exp(KY[1]), Math.exp(KY[2])], flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen };
+return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen };
 } };
 })();
 (function () {
@@ -562,8 +670,10 @@ if (e.key === " ") toList(e);
 }
 list.addEventListener("focusin", function (e) {
 if (!keyed || (e.relatedTarget && list.contains(e.relatedTarget))) return;
-var y = listY(), d = y - window.pageYOffset;
+var y = listY(), d = y - window.pageYOffset,
+fits = e.target.getBoundingClientRect().bottom - list.getBoundingClientRect().top <= window.innerHeight - 8;
 if (list.offsetHeight <= window.innerHeight + 2) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
+else if (fits) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
 else if (d > 2) {
 window.scrollTo(0, y);
 if (e.target.scrollIntoView) e.target.scrollIntoView({ block: "nearest" });

@@ -6,7 +6,7 @@
     --color-accent-text: var(--latao);       /*  7.87:1 */
     --color-status-small: var(--color-text-muted);   /* «Abre brevemente.» on phones: quieter than the action */
     --color-mark: var(--latao);
-    --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.41:1, floor line */
+    --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.41:1, hairline rules */
     --color-focus: var(--latao);
     --color-selection: color-mix(in srgb, var(--latao) 28%, var(--noite));
     --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
@@ -15,52 +15,10 @@
     --color-hall: var(--sala-noite);         /* lamplight = the waiting-list surface (one token) */
     --color-field-hall: var(--luz-nucleo);   /* fields lit by the same lamp, not the pink day paper */
 
-    /* the same drawing on the walnut night paper: light ink, dark earth washes, glazes of lamplight */
-    --i-ink: color-mix(in srgb, var(--pedra) 58%, var(--noite));
-    --i-ink-bar: color-mix(in srgb, var(--tinta) 60%, var(--noite));
-    --i-ink-wood: color-mix(in srgb, var(--pedra) 46%, var(--noite));
-    --i-ink-leaf: color-mix(in srgb, var(--pedra) 44%, var(--noite));
-    --i-ink-hall: color-mix(in srgb, var(--luz-borda) 62%, var(--nogueira));
-    --i-iron: color-mix(in srgb, var(--tinta) 55%, var(--noite));
-    --ink-o: 0.9;
-    --ink-o2: 0.8;
-    --ink-oh: 0.55;
-    --ink-ox: 0.42;
-    --ink-of: 0.66;
-    --ink-ograin: 0.35;
-    --w-wall: var(--pedra);           --wo-wall: 0.035;
-    --w-stone: var(--pedra);          --wo-stone: 0.1;
-    --w-stone2: var(--pedra);         --wo-stone2: 0.04;
-    --w-shade: var(--noite);          --wo-shade: 0;
-    --w-wood: var(--castanho);        --wo-wood: 0.34;
-    --w-wood2: var(--noite);          --wo-wood2: 0.35;
-    --w-wood-dk: var(--noite);        --wo-wood-dk: 0.45;
-    --w-glass: var(--latao);          --wo-glass: 0.4;
-    --w-step: var(--pedra);           --wo-step: 0.1;
-    --w-riser: var(--pedra);          --wo-riser: 0.05;
-    --w-pot: var(--castanho);         --wo-pot: 0.32;
-    --w-potdk: var(--noite);          --wo-potdk: 0.4;
-    --w-soil: var(--noite);           --wo-soil: 0.8;
-    --w-leaf1: var(--oliva);
-    --w-leaf2: var(--azulejo);
-    --w-leaf3: color-mix(in srgb, var(--oliva) 60%, var(--noite));
-    --wo-leaf: 0.5;
-    --wo-mass: 0.12;
-    --w-trunk: var(--pedra);          --wo-trunk: 0.12;
-    --w-lglass: var(--luz-nucleo);
-    --w-lglass2: var(--luz);
-    --w-lamp: var(--nogueira);
-    --w-room: var(--noite);           --wo-room: 0;
-    --i-room-base: color-mix(in srgb, var(--luz-borda) 34%, var(--noite));
-    --w-hfloor: var(--luz-borda);     --wo-hfloor: 0.32;
-    --w-htile: var(--nogueira);       --wo-htile: 0.18;
-    --w-hdado: var(--azulejo);        --wo-hdado: 0.16;
-    --w-hdeep: var(--nogueira);       --wo-hdeep: 0.32;
-    --wo-hwin: 0.7;          /* the inner door's window is lit at night too: never a dull slab inside the golden hall */
-    --wo-hpool: 0;
-    --i-brass: var(--latao);
-    --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));
-    --o-night: 1;
-    --o-day: 0;
-    --o-turn: 0;
-    --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
+    /* the same photograph relit for the night (its own files), lamplight on the steps as the doors open */
+    --t-dia: none;
+    --t-noite: contents;
+    --t-spill: block;
+    --photo-lqip: LQIP_NOITE;
+    --color-leaf-shade: color-mix(in srgb, var(--noite) 40%, transparent);   /* the lantern side turns away: 1 - 0.40 sin(angle) */
+    --color-door-ring: #090200;              /* the door frame at night, behind the doorway's edge */

@@ -13,6 +13,17 @@
 //    was (not floating in the form's box) and does not repeat the sentence above it.
 // E. The sun note: with no stored choice, the sky over Torres Vedras decides (a system dark mode does not override
 //    it); the note is visible on phones too, in the serif, and never touches the crest.
+// F. The walk-in is fluid on portrait screens: the doorway's foot, sampled every 0.004 of progress from 0.3 to 0.6
+//    (settled), never changes speed by more than 1.5px from one step to the next (the camera's rise was clipped, a
+//    bob of about 6px per step, review r1).
+// G. The list stays at rest when the screen changes size under it: a keyboard that resizes the page (focus in the
+//    email field at the end of the run and at the page end, the page 300px shorter, then back) and a rotation round
+//    trip: the field stays opaque and in view, and the page comes back where it was.
+// H. The doors start on the first pixel, also where the stage first scrolls to its pin (390 x 664: stick < 0).
+// I. No pale pinstripe round the doors at rest (review r1: the page colour showed through along the hinges and the
+//    head): at 393 x 852 @3, 844 x 390 @3, 1440 x 900 @2 and 768 x 1024 @2, Dia, with the layers as loaded and
+//    promoted, no unsaturated pixel within 1.5 device px of the doorway's edge is 40 levels brighter than the walnut
+//    3px either side of it (brass hinges and the gap excepted).
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 600000);
 const { chromium } = require("playwright"), serve = require("./serve.js");
 const [, , dir] = process.argv;
@@ -122,6 +133,79 @@ const [, , dir] = process.argv;
         font: getComputedStyle(n).fontFamily.split(",")[0], noteBottom: Math.round(nr.bottom), noteRight: Math.round(nr.right), emblemTop: Math.round(er.top), emblemLeft: Math.round(er.left) }; });
     const clear = r.noteBottom <= r.emblemTop || r.noteRight <= r.emblemLeft;
     report(r.theme === want && r.sol && r.w > 100 && r.h >= 16 && /Alegreya"?$/.test(r.font.replace(/'/g, '"')) && clear, n, "E sun note", scheme, when.slice(11, 16), JSON.stringify(r));
+    await c.close();
+  }
+  // F. camera smoothness on portrait screens
+  for (const [n, w, h] of [["m390", 390, 844], ["m664", 390, 664], ["t768", 768, 1024]]) {
+    const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const ys = [], ps = [];
+    for (let p = 0.3; p <= 0.6001; p += 0.004) {
+      const r = await pg.evaluate(async (p) => { const G = document.documentElement.__porta.geo(), y = Math.round(G.pin + p * G.run), want = Math.min(1, Math.max(0, (y - G.pin) / G.run)); scrollTo(0, y);
+        let ok = false; for (let i = 0; i < 200 && !ok; i++) { await new Promise((f) => requestAnimationFrame(f)); const g = document.documentElement.__porta.geo(); ok = Math.abs(g.r - want) < 1e-9 && g.r === g.p; }
+        return { ok, y: document.querySelector(".ph--hall").getBoundingClientRect().bottom, p: document.documentElement.__porta.geo().r }; }, p);
+      if (r.ok) { ys.push(r.y); ps.push(r.p); }
+    }
+    const v = (i) => (ys[i] - ys[i - 1]) / (ps[i] - ps[i - 1]) * 0.004;     /* px per 0.004 of progress, whatever the rounding of scrollY */
+    let dv = 0, at = 0; for (let i = 2; i < ys.length; i++) { const d = Math.abs(v(i) - v(i - 1)); if (d > dv) { dv = d; at = ps[i]; } }
+    report(ys.length >= 70 && isFinite(dv) && dv <= 1.5, n, "F doorway foot: largest change of speed per 0.004 of progress (px)", JSON.stringify({ samples: ys.length, dv: +dv.toFixed(2), at: +at.toFixed(3) }));
+    await c.close();
+  }
+
+  // G. keyboard resize and rotation with the list at rest
+  const look = (pg) => pg.evaluate(() => { const q = (s) => document.querySelector(s), r = q("#email").getBoundingClientRect(); let o = 1; for (let e = q("#email"); e; e = e.parentElement) o *= +getComputedStyle(e).opacity;
+    return { y: Math.round(scrollY), op: +o.toFixed(3), top: Math.round(r.top), bottom: Math.round(r.bottom), ih: innerHeight, active: document.activeElement && document.activeElement.id }; });
+  for (const [n, w, h, kb] of [["m375", 375, 667, 300], ["m390", 390, 844, 330]]) for (const where of ["end-of-run", "page-end"]) {
+    const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const g = await geo(pg); await pg.evaluate((y) => scrollTo(0, y), where === "page-end" ? g.max : g.listY); await pg.waitForTimeout(900);
+    const box = await pg.locator("#email").boundingBox(); await pg.touchscreen.tap(box.x + 30, box.y + 20); await pg.waitForTimeout(400);
+    const a0 = await look(pg);
+    await pg.setViewportSize({ width: w, height: h - kb }); await pg.waitForTimeout(900); const a1 = await look(pg);
+    await pg.setViewportSize({ width: w, height: h }); await pg.waitForTimeout(900); const a2 = await look(pg);
+    const vis = (r) => r.op >= 0.999 && r.top >= 0 && r.bottom <= r.ih && r.active === "email";
+    report(vis(a0) && vis(a1) && vis(a2) && Math.abs(a2.y - a0.y) <= 2, n, "G keyboard resize at", where, JSON.stringify({ a0, a1, a2 }));
+    await c.close();
+  }
+  {
+    const c = await ctx(375, 667); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const g = await geo(pg); await pg.evaluate((y) => scrollTo(0, y), g.listY); await pg.waitForTimeout(900);
+    const box = await pg.locator("#email").boundingBox(); await pg.touchscreen.tap(box.x + 30, box.y + 20); await pg.waitForTimeout(400);
+    const a0 = await look(pg);
+    await pg.setViewportSize({ width: 667, height: 375 }); await pg.waitForTimeout(900); const a1 = await look(pg);
+    await pg.setViewportSize({ width: 375, height: 667 }); await pg.waitForTimeout(900); const a2 = await look(pg);
+    report(a1.op >= 0.999 && a2.op >= 0.999 && a2.top >= 0 && a2.bottom <= a2.ih && Math.abs(a2.y - a0.y) <= 2, "m375", "G rotation round trip", JSON.stringify({ a0, a1, a2 }));
+    await c.close();
+  }
+
+  // H. the first pixel moves the doors, also before the stage pins
+  for (const [n, w, h] of [["m664", 390, 664], ["m390", 390, 844]]) {
+    const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const r = await pg.evaluate(async () => { scrollTo(0, 2); for (let i = 0; i < 60; i++) await new Promise((f) => requestAnimationFrame(f));
+      const m = new DOMMatrix(getComputedStyle(document.querySelector(".leaf--l")).transform);
+      return { y: scrollY, stick: parseFloat(document.querySelector(".porta__stage").style.getPropertyValue("--stick")) || 0, deg: +(Math.atan2(-m.m13, m.m11) * 180 / Math.PI).toFixed(3) }; });
+    report(r.deg > 0.05, n, "H doors move on the first pixels", JSON.stringify(r));
+    await c.close();
+  }
+  // I. the doorway's edge at rest
+  const png = require("./png.js");
+  for (const [w, h, dpr] of [[393, 852, 3], [844, 390, 3], [1440, 900, 2], [768, 1024, 2]]) for (const promote of [false, true]) {
+    const c = await ctx(w, h, { deviceScaleFactor: dpr }); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1200);
+    if (promote) await pg.evaluate(() => { for (const s of [".ph--facade", ".scene", ".ph--plate", ".leaf--l", ".leaf--r"]) document.querySelector(s).style.willChange = "transform"; });
+    await pg.waitForTimeout(300);
+    const s = await pg.evaluate(() => { const r = document.querySelector(".scene").getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; });
+    const clip = { x: s.x + s.w * 0.30, y: s.y + s.h * 0.33, width: s.w * 0.36, height: s.h * 0.53 };
+    const im = png.decode(await pg.screenshot({ clip }));
+    const P = (x, y) => im.px(Math.max(0, Math.min(im.w - 1, Math.round(x))), Math.max(0, Math.min(im.h - 1, Math.round(y))));
+    const L = (x, y) => { const p = P(x, y); return 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; }, Lp = (x, y) => { const p = P(x, y); return p[0] - p[2] > 45 ? 0 : L(x, y); };
+    const I = 4 / 2388, ex = (f) => (s.x + f * s.w - clip.x) * dpr, ey = (f) => (s.y + f * s.h - clip.y) * dpr;
+    let seams = 0;
+    for (const xe of [ex(0.32412 + I), ex(0.6407 - I)]) for (let y = Math.ceil(ey(0.40)); y < ey(0.80); y++) {
+      let m = 0; for (let x = Math.floor(xe - 1.5); x <= Math.ceil(xe + 1.5); x++) m = Math.max(m, Lp(x, y));
+      const a = L(xe - 3, y), b2 = L(xe + 3, y); if (Math.max(a, b2) <= 110 && m - Math.max(a, b2) > 40) seams++; }
+    const top = ey(0.34776 + 4 / 2634), g0 = ex(0.4537), g1 = ex(0.5111);
+    for (let x = Math.ceil(ex(0.34)); x < ex(0.625); x++) { if (x > g0 && x < g1) continue;
+      let m = 0; for (let y = Math.floor(top - 1.5); y <= Math.ceil(top + 1.5); y++) m = Math.max(m, Lp(x, y));
+      const a = L(x, top - 3), b2 = L(x, top + 3); if (Math.max(a, b2) <= 110 && m - Math.max(a, b2) > 40) seams++; }
+    report(!seams, `${w}x${h}@${dpr}`, "I doorway edge at rest" + (promote ? " (layers promoted)" : ""), JSON.stringify({ seams }));
     await c.close();
   }
   console.log("list", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);

@@ -4,7 +4,7 @@
 // Scrolls down and back with wheel, touch drags, programmatic jumps, emulated rubber-band overscroll (scrollY < 0 and
 // > max) and a viewport-height change mid-sequence (mobile toolbar). After each scenario the hero must be at its exact
 // rest state: .intro computed opacity 1 and transform none, no inline style left, lockup at its original place,
-// camera/leaves/light/flood at rest. During every scenario: opacity stays within [0, 1], scale within [1, S].
+// camera/leaves/plate/shade/flood at rest. During every scenario: opacity stays within [0, 1], scale within [1, S].
 // Fast flicks (F): the title is back within 100ms of reaching the top, and a fling down never shows the list panel's
 // edge over a stage that is not yet flat hall colour.
 setTimeout(()=>{console.log('TIMEOUT');process.exit(2)},900000);
@@ -32,8 +32,8 @@ for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
   const check=async(name)=>{await pg.waitForTimeout(900);
     const r=await pg.evaluate(()=>{const q=s=>document.querySelector(s),cs=e=>getComputedStyle(e);const i=q('.intro'),l=q('.lockup').getBoundingClientRect();let op=1;for(let e=q('.lockup');e;e=e.parentElement)op*=+cs(e).opacity;
       return {y:scrollY,introOpacity:cs(i).opacity,introTransform:cs(i).transform,inline:i.getAttribute('style')||'',lockupOpacity:+op.toFixed(4),lockTop:l.top,lockLeft:l.left,
-        scene:cs(q('.scene')).transform,leafL:cs(q('.leaf--l')).transform,light:cs(q('.hall__light')).opacity,flood:cs(q('.porta__flood')).opacity,lede:cs(q('.lede')).opacity,bad:window.__bad.splice(0)}});
-    const ok=r.y<=0&&r.introOpacity==='1'&&r.introTransform==='none'&&!/opacity|transform/.test(r.inline)&&r.lockupOpacity===1&&Math.abs(r.lockTop-rest0.top)<0.5&&Math.abs(r.lockLeft-rest0.left)<0.5&&r.scene==='none'&&r.leafL==='none'&&r.light==='0'&&r.flood==='0'&&r.bad.length===0;
+        scene:cs(q('.scene')).transform,leafL:cs(q('.leaf--l')).transform,plate:cs(q('.ph--plate')).transform,light:cs(q('.leaf__shade')).opacity,flood:cs(q('.porta__flood')).opacity,lede:cs(q('.lede')).opacity,bad:window.__bad.splice(0)}});
+    const ok=r.y<=0&&r.introOpacity==='1'&&r.introTransform==='none'&&!/opacity|transform/.test(r.inline)&&r.lockupOpacity===1&&Math.abs(r.lockTop-rest0.top)<0.5&&Math.abs(r.lockLeft-rest0.left)<0.5&&r.scene==='none'&&r.leafL==='none'&&r.plate==='none'&&r.light==='0'&&r.flood==='0'&&r.bad.length===0;
     (ok?pass++:fail++);results.push({vp:n,scheme,name,ok,...(ok?{}:r)});console.log(ok?'PASS':'FAIL',n,scheme,name,ok?'':JSON.stringify(r));};
   const toTop=async()=>{await pg.evaluate(()=>{window.__fakeY=null;scrollTo(0,0)})};
   await pg.evaluate(()=>{const s=document.querySelector('.scene');window.__S=999});

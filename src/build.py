@@ -1,8 +1,9 @@
 """Build the A Brazileira site into ../docs from the sources in this folder.
 
 Portable: every path is relative to this file. The folder is self-contained (assets/ holds the emblem,
-fonts, icons, favicon and the Open Graph image), so `python3 src/build.py` works from any checkout.
-The build is deterministic and rewrites ../docs completely.
+fonts, icons, favicon, the Open Graph image and the photographic entrance in assets/photo), so
+`python3 src/build.py` works from any checkout with Python 3 alone (no image tools: the photo layers are encoded
+once by the asset pipeline and copied as they are). The build is deterministic and rewrites ../docs completely.
 """
 import hashlib, json, os, re, shutil, sys
 
@@ -11,7 +12,7 @@ SRC = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.join(os.path.dirname(SRC), "docs")
 ASSETS = os.path.join(SRC, "assets")
 sys.path.insert(0, SRC)
-import scene  # noqa: E402
+import photo  # noqa: E402
 
 BASE = "https://abrazileira.com/"
 CONTACT = "inn@abrazileira.com"
@@ -38,108 +39,10 @@ def emblem(idp="ab-emblem"):
     return f'<svg viewBox="0 0 200 228" aria-hidden="true" focusable="false">{inner}</svg>'
 
 
-# ---------------------------------------------------------------- scene
-NUM = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
-
-
-def painted_top(markup):
-    """The highest point any path in the drawing paints (end and control points, which bound the curves). The
-    plaster washes are loose and reach above the modelled extents the viewBox is cut to; the stacked layout keeps
-    that overshoot clear of the text above (--scene-over)."""
-    top = float("inf")
-    for d in re.findall(r' d="([^"]*)"', markup):
-        x = y = sx = sy = 0.0
-        for cmd, args in re.findall(r"([MmLlHhVvCcSsQqTtZz])([^MmLlHhVvCcSsQqTtZz]*)", d):
-            n = [float(v) for v in NUM.findall(args)]
-            rel = cmd.islower()
-            c = cmd.upper()
-            if c == "Z":
-                x, y = sx, sy
-                continue
-            if c == "H":
-                for v in n:
-                    x = x + v if rel else v
-                continue
-            if c == "V":
-                for v in n:
-                    y = y + v if rel else v
-                    top = min(top, y)
-                continue
-            k = {"M": 2, "L": 2, "T": 2, "C": 6, "S": 4, "Q": 4}[c]
-            for i in range(0, len(n) - k + 1, k):
-                grp = n[i:i + k]
-                for j in range(1, k, 2):
-                    top = min(top, grp[j] + (y if rel else 0))
-                nx, ny = grp[k - 2] + (x if rel else 0), grp[k - 1] + (y if rel else 0)
-                if c == "M" and i == 0:
-                    sx, sy = nx, ny
-                x, y = nx, ny
-    return top
-
-
-def scene_markup(idp="ab"):
-    """The entrance: back svg (hall), hall light (HTML), front svg (everything else), light spill, door leaves.
-    Only the HTML layers move (opacity / transform), so the drawing is never repainted while it animates."""
-    scene.EXT.clear()
-    o = scene.build()
-    xs = [p[0] for p in scene.EXT]
-    ys = [p[1] for p in scene.EXT]
-    m = 8.0
-    vbx, vby = min(xs) - m, min(ys) - m
-    vbw = max(xs) + m - vbx
-    vbh = scene.G - vby          # the street (bottom of the steps) is the bottom edge: the page floor line
-    lf = o["leaf"]
-    sp = o["spill"]
-    fx = lambda v: (v - vbx) / vbw
-    fy = lambda v: (v - vby) / vbh
-    pc = lambda f: f"{f * 100:.4f}%"
-    door_w = (lf["x1"] - lf["x0"]) / vbw
-    door_h = (lf["y1"] - lf["y0"]) / vbh
-    door_cx, door_cy = fx(0), fy((lf["y0"] + lf["y1"]) / 2)
-    sx0, sx1 = min(q[0] for q in sp["pts"]), max(q[0] for q in sp["pts"])
-    sy0, sy1 = min(q[1] for q in sp["pts"]), max(q[1] for q in sp["pts"])
-    over = max(0.0, (vby - painted_top(o["body"] + o["back"])) / vbh)   # wash above the box, share of its height
-    clip = ",".join(f"{(q[0] - sx0) / (sx1 - sx0) * 100:.2f}% {(q[1] - sy0) / (sy1 - sy0) * 100:.2f}%" for q in sp["pts"])
-    axis = fx(0)
-    style = ";".join([
-        f"--scene-ratio:{vbw / vbh:.5f}",
-        f"--scene-axis:{axis:.6f}",
-        f"--persp:{scene.D / vbw:.5f}",
-        f"--vp-x:{pc(fx(o['vp'][0]))}",
-        f"--vp-y:{pc(fy(o['vp'][1]))}",
-        f"--leaf-left:{pc(fx(lf['x0']))}",
-        f"--leaf-mid:{pc(fx(0))}",
-        f"--leaf-top:{pc(fy(lf['y0']))}",
-        f"--leaf-w:{door_w / 2 * 100:.4f}%",
-        f"--leaf-h:{door_h * 100:.4f}%",
-        f"--door-cx:{pc(door_cx)}",
-        f"--door-cy:{pc(door_cy)}",
-        f"--spill-x:{pc(fx(sx0))}",
-        f"--spill-y:{pc(fy(sy0))}",
-        f"--spill-w:{pc((sx1 - sx0) / vbw)}",
-        f"--spill-h:{pc((sy1 - sy0) / vbh)}",
-        f"--scene-over:{over:.4f}",
-    ])
-    vb = f"{scene.r1(vbx)} {scene.r1(vby)} {scene.r1(vbw)} {scene.r1(vbh)}"
-    back = (f'<svg class="scene__art scene__art--back" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
-            f'{o["back_defs"]}\n{o["back"]}</svg>')
-    front = (f'<svg class="scene__art" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
-             f'{o["defs"]}\n{o["body"]}</svg>')
-    # data-motion: test hooks for every moving layer (attributes only, never styled)
-    # the pendant: by night it hangs lit above the lit hall, so it shows in the gap of the ajar doors; by day it is
-    # part of the lit hall and appears with it (in daylight an unlit shade in the dark gap read as a stray blot)
-    lamp = o["lamp"].replace('class="hall__art hall__lamp"', 'class="hall__art hall__lamp {}"')
-    hall = (f'<div class="hall" data-motion="opening"><div class="hall__light" data-motion="light">{o["hall"]}'
-            f'{lamp.format("i-day")}</div>{lamp.format("i-night")}<div class="hall__flat" data-motion="handoff"></div></div>')
-    spill = f'<div class="spill" data-motion="spill" style="clip-path:polygon({clip})">{sp["svg"]}</div>'
-    leaves = (f'<div class="door"><div class="leaf leaf--l" data-motion="leaf-l"><div class="leaf__face">{scene.leaf_svg("l")}</div></div>'
-              f'<div class="leaf leaf--r" data-motion="leaf-r"><div class="leaf__face">{scene.leaf_svg("r")}</div></div></div>')
-    # data-door: the opening (cx cy w h) as fractions of the scene box, read once by site.js for the camera
-    data = f"{door_cx:.5f} {door_cy:.5f} {door_w:.5f} {door_h:.5f}"
-    out = f'<div class="scene" data-motion="camera" data-door="{data}">\n{back}\n{hall}\n{front}\n{spill}\n{leaves}\n</div>'
-    if idp != "ab":
-        out = out.replace('id="ab-', f'id="{idp}-').replace("url(#ab-", f"url(#{idp}-")
-    return out, dict(vb=(vbx, vby, vbw, vbh), style=style, axis=axis, over=over)
+# ---------------------------------------------------------------- the entrance (photo.py)
+def scene_markup(p="", motion=True):
+    """the photograph of the entrance in layers, and the custom properties that place them (on .entrance)"""
+    return photo.scene_markup(p, motion=motion), photo.style_vars()
 
 
 # ---------------------------------------------------------------- copy
@@ -149,13 +52,12 @@ T = {
         privacy_href="privacidade/", privacy_url=BASE + "privacidade/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
         desc="A Brazileira, hotel em Torres Vedras. Uma casa antiga em restauro. Abre brevemente.",
-        og_alt="A Brazileira, Boutique Hotel, Torres Vedras: o logótipo e o desenho de uma entrada em arco com as portas entreabertas, à noite.",
+        og_alt="A Brazileira, Boutique Hotel, Torres Vedras: o logótipo e a fotografia de uma entrada em arco de pedra com portas de madeira, à noite.",
         skip="Saltar para o conteúdo", theme="Tema", day="Dia", night="Noite", langnav="Idioma",
         sol_day="É dia em Torres Vedras.", sol_night="É noite em Torres Vedras.",
         lede="Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.",
         status="Abre brevemente.",
         cta="Entrar na lista de espera",
-        art="Desenho de uma entrada em arco de pedra, com portas duplas de madeira.",
         list_h="Lista de espera",
         list_p="Deixe-nos o seu email e avisamos quando abrirmos.",
         legend="Inscrição na lista de espera",
@@ -176,13 +78,12 @@ T = {
         privacy_href="privacy/", privacy_url=BASE + "en/privacy/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
         desc="A Brazileira, a hotel in Torres Vedras, Portugal. An old house under restoration. Opening soon.",
-        og_alt="A Brazileira, Boutique Hotel, Torres Vedras: the logo and a drawing of an arched entrance with its doors ajar, at night.",
+        og_alt="A Brazileira, Boutique Hotel, Torres Vedras: the logo and a photograph of an arched stone entrance with wooden doors, at night.",
         skip="Skip to content", theme="Theme", day="Day", night="Night", langnav="Language",
         sol_day="It is daytime in Torres Vedras.", sol_night="It is night in Torres Vedras.",
         lede="An old house in Torres Vedras is being restored to welcome guests.",
         status="Opening soon.",
         cta="Join the waiting list",
-        art="Drawing of an arched stone entrance with double wooden doors.",
         list_h="Waiting list",
         list_p="Leave your email and we will let you know when we open.",
         legend="Sign up for the waiting list",
@@ -236,8 +137,15 @@ THEME_HEAD = ('<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}
               'return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};'
               'if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}'
               'r.setAttribute("data-theme",t)})(document.documentElement)</script>')
-# the scroll cue, drawn with the drawing's pen rather than set as an icon: two strokes, one a little longer and
-# bowed, that cross where they meet (the pen's overshoot), at the contour weight (site.css)
+
+
+def theme_head(p):
+    """the head script of the home page: the theme, then a preload of the first-paint photo files of that theme"""
+    return THEME_HEAD.replace('r.setAttribute("data-theme",t)})', 'r.setAttribute("data-theme",t);' + photo.head_preload(p) + '})', 1)
+
+
+# the scroll cue, drawn with a pen rather than set as an icon: two strokes, one a little longer and bowed, that
+# cross where they meet (the pen's overshoot), at --stroke-cue (site.css)
 CHEVRON = ('<svg viewBox="0 0 16 10" aria-hidden="true" focusable="false">'
            '<path d="M1.1 1.6c2.2 2.3 4.4 4.6 7.2 6.9"/><path d="M7.5 8.7c2.3-2.2 4.6-4.6 7.3-7.5"/></svg>')
 TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
@@ -253,7 +161,7 @@ def lockup_html(level="h1", idp="ab-emblem", extra=""):
             f'</{level}>')
 
 
-def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follow"):
+def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follow", preload=False):
     alt = "\n".join(f'<link rel="alternate" hreflang="{h}" href="{u}">' for h, u in alternates)
     ogm = ""
     if og:
@@ -265,7 +173,8 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <meta property="og:url" content="{canonical}">
 <meta property="og:locale" content="{t['og_locale']}">
 <meta property="og:locale:alternate" content="{t['alt_locale']}">
-<meta property="og:image" content="{BASE}assets/img/og.png">
+<meta property="og:image" content="{BASE}assets/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="{t['og_alt']}">
@@ -275,7 +184,7 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-{THEME_HEAD}
+{theme_head(p) if preload else THEME_HEAD}
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{canonical}">
@@ -352,13 +261,14 @@ def waitlist(t):
 </section>"""
 
 
-def page(k, scene_html, scene_style):
+def page(k):
     t = T[k]
     p = t["prefix"]
+    scene_html, scene_style = scene_markup(p)
     ld = {"@context": "https://schema.org", "@type": "Hotel", "name": "A Brazileira", "url": BASE,
           "address": {"@type": "PostalAddress", "addressLocality": "Torres Vedras", "addressCountry": "PT"}}
     alternates = [("pt-PT", BASE), ("en", BASE + "en/"), ("x-default", BASE)]
-    return f"""{head(t, p, t['title'], t['desc'], t['url'], alternates)}
+    return f"""{head(t, p, t['title'], t['desc'], t['url'], alternates, preload=True)}
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
 </head>
 <body class="home">
@@ -375,7 +285,7 @@ def page(k, scene_html, scene_style):
 <p class="status">{t['status']}</p>
 <p class="cta-row"><a class="cta" href="#lista">{t['cta']}</a></p>
 </div>
-<div class="entrance" role="img" aria-label="{t['art']}" style="{scene_style}">
+<div class="entrance" role="img" aria-label="{photo.alt(k)}" style="{scene_style}">
 {scene_html}
 </div>
 </div>
@@ -537,6 +447,8 @@ def tokens_css():
     noite = read(os.path.join(SRC, "noite.css")).rstrip("\n")
     css = tpl.replace("/*NOITE*/", noite, 1)
     css = css.replace("/*NOITE*/", "\n".join(l[2:] if l.startswith("  ") else l for l in noite.split("\n")), 1)
+    # the photo's placeholders (24px, drawn blurred), one per theme, are theme tokens like any other
+    css = css.replace("LQIP_DIA", photo.lqip_svg(photo.P["lqip"]["dia"])).replace("LQIP_NOITE", photo.lqip_svg(photo.P["lqip"]["noite"]))
     return css
 
 
@@ -610,9 +522,8 @@ def main():
     if os.path.isdir(DOCS):
         shutil.rmtree(DOCS)
     os.makedirs(DOCS)
-    sc_html, info = scene_markup()
-    write(os.path.join(DOCS, "index.html"), page("pt", sc_html, info["style"]))
-    write(os.path.join(DOCS, "en/index.html"), page("en", sc_html, info["style"]))
+    write(os.path.join(DOCS, "index.html"), page("pt"))
+    write(os.path.join(DOCS, "en/index.html"), page("en"))
     write(os.path.join(DOCS, "privacidade/index.html"), page_privacy("pt"))
     write(os.path.join(DOCS, "en/privacy/index.html"), page_privacy("en"))
     write(os.path.join(DOCS, "404.html"), page404())
@@ -623,8 +534,15 @@ def main():
               "alegreya-latin-400-normal.woff2", "alegreya-sans-latin-500-normal.woff2",
               "OFL-cinzel.txt", "OFL-alegreya.txt", "OFL-alegreya-sans.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
-    for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "og.png"]:
+    for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "og.jpg"]:
         copy("img/" + f, "assets/img/" + f)
+    shipped = 0
+    for theme in ("dia", "noite"):                 # the photo layers, exactly the files photo.json lists
+        for name, files in sorted(photo.P["layers"][theme].items()):
+            for f in files:
+                for fmt in ("avif", "webp"):
+                    copy(f"photo/{theme}/{name}-{f['w']}.{fmt}", f"assets/photo/{theme}/{name}-{f['w']}.{fmt}")
+                    shipped += f[fmt]
     copy("favicon.svg", "favicon.svg")
     write(os.path.join(DOCS, ".nojekyll"), "")
     # GitHub Pages custom domain; keeps the domain attached on every rebuild
@@ -646,9 +564,10 @@ def main():
         ],
     }, ensure_ascii=False, indent=2) + "\n")
     import styleguide
-    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD))
+    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD, photo))
     stamp(DOCS)
-    print("built", DOCS, {k: (round(v, 4) if isinstance(v, float) else v) for k, v in info.items() if k != "style"})
+    fp = {t: {w: round(photo.bytes_first_paint(t, w) / 1024, 1) for w in (720, 1080, 1300)} for t in ("dia", "noite")}
+    print("built", DOCS, "photo layers", round(shipped / 1024), "KB; first paint (AVIF KB by scene device px):", fp)
 
 
 if __name__ == "__main__":

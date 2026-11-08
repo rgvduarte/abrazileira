@@ -1,0 +1,434 @@
+{
+ "note": "Photographic entrance (A Porta): layers, geometry and LQIP. Generated from photo/out2/manifest.json (the asset pipeline); geometry is a fraction of the facade image (x / width, y / height).",
+ "aspect": 0.90661,
+ "geometry": {
+  "doorway": {
+   "x0": 0.32412,
+   "y0": 0.34776,
+   "x1": 0.6407,
+   "y1": 0.84358
+  },
+  "doorAxisX": 0.48241,
+  "gapAtRest": {
+   "x0": 0.45771,
+   "y0": 0.34776,
+   "x1": 0.50712,
+   "y1": 0.84358
+  },
+  "hingeX": {
+   "leafL": 0.32412,
+   "leafR": 0.6407
+  },
+  "leafL": {
+   "x0": 0.32412,
+   "y0": 0.34776,
+   "x1": 0.45771,
+   "y1": 0.84358
+  },
+  "leafR": {
+   "x0": 0.50712,
+   "y0": 0.34776,
+   "x1": 0.6407,
+   "y1": 0.84358
+  },
+  "interiorPlate": {
+   "x0": 0.19095,
+   "y0": 0.10782,
+   "x1": 0.77387,
+   "y1": 1.02012
+  },
+  "hallPoint": {
+   "x": 0.48241,
+   "y": 0.63326
+  },
+  "reveal": {
+   "x0": 0.32412,
+   "y0": 0.34776,
+   "x1": 0.6407,
+   "y1": 0.84358
+  },
+  "spillNoite": {
+   "x0": 0.01968,
+   "y0": 0.40812,
+   "x1": 0.9799,
+   "y1": 0.99582
+  }
+ },
+ "layers": {
+  "dia": {
+   "facade": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      794
+     ],
+     "avif": 42839,
+     "webp": 53104
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      1191
+     ],
+     "avif": 84201,
+     "webp": 102074
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      1765
+     ],
+     "avif": 138236,
+     "webp": 169644
+    },
+    {
+     "w": 2388,
+     "px": [
+      2388,
+      2634
+     ],
+     "avif": 205946,
+     "webp": 262702
+    }
+   ],
+   "leaf-l": [
+    {
+     "w": 720,
+     "px": [
+      96,
+      394
+     ],
+     "avif": 3078,
+     "webp": 3202
+    },
+    {
+     "w": 1080,
+     "px": [
+      144,
+      591
+     ],
+     "avif": 5732,
+     "webp": 5970
+    },
+    {
+     "w": 1600,
+     "px": [
+      214,
+      875
+     ],
+     "avif": 9582,
+     "webp": 10314
+    },
+    {
+     "w": 2388,
+     "px": [
+      319,
+      1306
+     ],
+     "avif": 15111,
+     "webp": 16646
+    }
+   ],
+   "leaf-r": [
+    {
+     "w": 720,
+     "px": [
+      96,
+      394
+     ],
+     "avif": 2932,
+     "webp": 3294
+    },
+    {
+     "w": 1080,
+     "px": [
+      144,
+      591
+     ],
+     "avif": 5751,
+     "webp": 6262
+    },
+    {
+     "w": 1600,
+     "px": [
+      214,
+      875
+     ],
+     "avif": 9709,
+     "webp": 10982
+    },
+    {
+     "w": 2388,
+     "px": [
+      319,
+      1306
+     ],
+     "avif": 15581,
+     "webp": 17506
+    }
+   ],
+   "plate": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      1243
+     ],
+     "avif": 16880,
+     "webp": 12668
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      1865
+     ],
+     "avif": 35997,
+     "webp": 26088
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      2763
+     ],
+     "avif": 75343,
+     "webp": 53240
+    }
+   ],
+   "reveal": [
+    {
+     "w": 1080,
+     "px": [
+      342,
+      591
+     ],
+     "avif": 1834,
+     "webp": 2334
+    },
+    {
+     "w": 2388,
+     "px": [
+      756,
+      1306
+     ],
+     "avif": 2990,
+     "webp": 5076
+    }
+   ]
+  },
+  "noite": {
+   "facade": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      794
+     ],
+     "avif": 19661,
+     "webp": 18880
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      1191
+     ],
+     "avif": 39446,
+     "webp": 37540
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      1765
+     ],
+     "avif": 68641,
+     "webp": 65984
+    },
+    {
+     "w": 2388,
+     "px": [
+      2388,
+      2634
+     ],
+     "avif": 112183,
+     "webp": 111140
+    }
+   ],
+   "leaf-l": [
+    {
+     "w": 720,
+     "px": [
+      96,
+      394
+     ],
+     "avif": 1246,
+     "webp": 1012
+    },
+    {
+     "w": 1080,
+     "px": [
+      144,
+      591
+     ],
+     "avif": 2195,
+     "webp": 1762
+    },
+    {
+     "w": 1600,
+     "px": [
+      214,
+      875
+     ],
+     "avif": 3483,
+     "webp": 3264
+    },
+    {
+     "w": 2388,
+     "px": [
+      319,
+      1306
+     ],
+     "avif": 6298,
+     "webp": 5278
+    }
+   ],
+   "leaf-r": [
+    {
+     "w": 720,
+     "px": [
+      96,
+      394
+     ],
+     "avif": 1172,
+     "webp": 862
+    },
+    {
+     "w": 1080,
+     "px": [
+      144,
+      591
+     ],
+     "avif": 1928,
+     "webp": 1592
+    },
+    {
+     "w": 1600,
+     "px": [
+      214,
+      875
+     ],
+     "avif": 3328,
+     "webp": 2714
+    },
+    {
+     "w": 2388,
+     "px": [
+      319,
+      1306
+     ],
+     "avif": 5814,
+     "webp": 4834
+    }
+   ],
+   "plate": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      1243
+     ],
+     "avif": 4053,
+     "webp": 6968
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      1865
+     ],
+     "avif": 6948,
+     "webp": 12420
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      2763
+     ],
+     "avif": 11420,
+     "webp": 23102
+    }
+   ],
+   "reveal": [
+    {
+     "w": 1080,
+     "px": [
+      342,
+      591
+     ],
+     "avif": 1516,
+     "webp": 2094
+    },
+    {
+     "w": 2388,
+     "px": [
+      756,
+      1306
+     ],
+     "avif": 2646,
+     "webp": 4770
+    }
+   ],
+   "spill": [
+    {
+     "w": 1080,
+     "px": [
+      1037,
+      700
+     ],
+     "avif": 22759,
+     "webp": 34606
+    },
+    {
+     "w": 1600,
+     "px": [
+      1536,
+      1037
+     ],
+     "avif": 42512,
+     "webp": 61396
+    }
+   ]
+  }
+ },
+ "lqip": {
+  "dia": "data:image/webp;base64,UklGRioEAABXRUJQVlA4TB0EAAAvF0AGAA0oaNvI0e2Rf/6A/0FE9H8CIiQzCZOICo7qKgc+2hdQeRkwaiPJkbWvyB/p7uVrHGwbSVJU+Yd5DM9kvaG4bSQl13+Zd29mnP5HAFrVOkA42xS+IksDov98g3xH2JMH+lFI2P1RISLxGlopVnKIaCHDPKkbRrKOCTEBXECOtW2KrLz/X9WKu7u7O+yBQ0auOYtgAUTsgZxD6izAXa+7dk9PVf3pXYLESJIUSYqo7p65Z2ZG/fV4KZgZF6arJLmR5EiSWWTlrBb/f+Pe9FZ3p0VOn/oHLF1AVEREScFURKuIRjmpoAKIggCCIgCAOnGo4kjNgWJD8+XI5hBq4KASREQBETGRAgQEHYCIoDBCIxhJw8kNCdZ1kyarc4maAABgaAggAARAChMd01F52tbj2iIbRreObTk6TrmJoogIAAIASpFBMWtDUOTr3PVnL7yi1h+n/HKrB9xdtKA1phhIDAQBQIHy05yBvJpgVbh3YQWuaq9yeSamS/719ffh2XzqzFaFqiMoKAAChjn7+Yv70as1hssHy1eb6xctTr3kYtOgx8rdvLmy63VWDJN6QMRQEBDzMuCfldd/+G6T9qOBs7x73hp6vyDrHB/OP7q3P+7P1oetcXB5KEAAACTEM+OjNx6H+lqT197RwFna2Ml1+eO9zeeT666GYlKGa4e1CCCQEABIEH31y8FfH3eFy/VQsKxbXlhzrEPk2nwdT2W7bVYN1/SWQScKHgEAkMgaeetyopKCHdBqtkA/2nXYSjaezeFjQHWCvcifv35jdf78WgAgEMTKxOVyAhgotNNe4nLQPi/XV5r54l9do8V3OVAfBn0cye8A4DCHYiqhacFyXCGJRYSMS6smIQDzwpyJemtr/+YeqOU9ACDgPKApKOYRCBYaUHJiCOWYdLLWd8fBp7mPNBZzAMAcD1JAUADAT3q/mB0hzOI/ux3LLxoaXUHMWP+2qniR3PYLAABeUBAEEvQx7fX/8FXczNPUr0WlrqNrN4I5VzPenT35slYBAPFmKmCQzIhOvl6jFLq21VB1apeRYa/meLZl1+Hx4Wb7dpQPAICqWgiYKKYELS86OFG0cekpJQq/E5IoxETXqW3/sfV7AABNgYmpkjONKBb+G3d1NWqyaYkuKzkKrvA1broiMQUABHOSwk6nO5mW9YrfXTy1ForZ3XF/4XslR3ktMsY03fcvZ/rfRAYAJHIRgsx3Q89Y7W7s1HbB/HHKRLPIWfjjAlOhmzy7x/v+9fupD5NzAwCSrA9oB8D05M4bCm1U50APx1ZtJl2d8X6m7NuZYX2NFnMHAICAyCJzvlnKlZdr0DEB2sCw7npNWuY02/x0xv86+qrpl1RtAKCTjiKMipBSUMABkCCCRwiVKkpVfMGxs21qZAeApQMA",
+  "noite": "data:image/webp;base64,UklGRkYDAABXRUJQVlA4TDkDAAAvF0AGAA2gbds2kKcklf9/uEdE9D/QtgIz9pnU5H+p770UgIGSSJKcrkPnX+ELeJwDehFq2jaCzB9fx/umw6EokqSmyfhXiAS+ufqfAAaAaucyUQCuvMun6qkCVJpchGcGS6cz8Kz0AQx5yf4f8EGObNuqrcy19znvPvsfjTx0Io1I6SItcmKHyN3hyX3n7o1LDyQ3kuRIkkXW7nH2PP1lXL7dGZAjSVIkedQc0++EOP1145upmIDdP37gv6sUwmSFgPgLlWEqOcd2dHY8UN+ioqWAAPEr61oYxpA1U2atZ51RZ9M2MlGZSALET24rRVWE06ZPyt4InONudOiYERT6hduqMeNmGdMqPb0edr++ze8btDhePZ6TQwgXolQ/zdmusZSDLNs9D/ueX/fa8fmz9PnaL51b8+9GzYySiqQAgH1oenjmiEwv29vr7eyryZfPPFezZXd93dy8WI+u47KuAAEgdowL9uLT9eDv7W0t1pfHvf1vZzycc81RN20c/pysnpQbkyoTgGy1w0yXg/FhG3I8+7rrPfj4PR+7cnMpF/kj14hiSseaSQIAMqvuLS5/7+Bb0xyNOjfzL0e/juTweHA+TU2eqryZrFlTFwDe1/ttz94+zlECWvmXmzY3JZSb5RzuZFdlzdTnN50WCYDUWK7GpJU0DlasvOx4f9/tgRsJpLX9kr+v1XIt5goAIETHKyWHIhZ3+e7U/XH6v3xPAgNFkVbRiwQgIe0QSCWyAhaWoBKgWvcrQ6dXCQpAhVEONchQD93yEzcAVl6jFhHyRJRYrwSApKYOUoJUdLgDFUWpRUKz7DbDWTR+WMsCAE2GoIEAZqlIWawcGqkhU40d3eiwAICUGlkMiS5dDjBriWCWSmWAbGmbAABIgyjCbCqVF3g+HhWRWyoIKRsRgf0pK0UWOyQv1XAPx/Xz34VGXEOvsC1EnHrbOhkAkI3CRkqXEs2jG+Opi1FyO5hmdSZs/WPxqO9QABBKZXmumo3+7zPdzMS+31ulo1qk/anVkCK7nlGUswQAiCyyso5GwXK18Ri6lrFsnWugVX9bvNGdo/aTAnmXMMxaGJBAVkS0ADZKLMwCAKGAfwoA"
+ },
+ "alt": {
+  "pt": "Entrada em arco de pedra calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro.",
+  "en": "Limestone arched entrance with double wooden doors, a fanlight, a wall lantern and an olive tree in a clay pot."
+ },
+ "camera": {
+  "perspective": 0.987,
+  "plateParallax": 0.8,
+  "openDeg": 84,
+  "shade": {
+   "dia": 0.28,
+   "noite": 0.4
+  },
+  "plateGrow": 1.84,
+  "plateCover": 20,
+  "light": [
+   0.0724,
+   0.1264,
+   0.1158
+  ],
+  "note": "plateGrow: the plate is the doorway grown 1.84x about hallPoint, so with zoom^0.8 it covers the doorway to zoom 1.84^5 = 21 (plateCover keeps a margin). light: the far arch, within dRGB 4 of the hall colour: half width, reach above and below hallPoint (fractions of the facade)."
+ }
+}

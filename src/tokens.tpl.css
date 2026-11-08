@@ -4,7 +4,7 @@
    Three layers, read top to bottom:
      1. primitives   brand words for the house materials (raw values live ONLY here)
      2. semantic     roles the interface reads: Dia (default) and Noite
-     3. illustration roles the entrance drawing reads (stone, wood, brass, light)
+     3. photograph   roles the photographic entrance reads (which theme's photo, its placeholder, the leaf shade)
    site.css consumes layers 2 and 3 only.
    ========================================================================== */
 
@@ -77,9 +77,8 @@
   --noite: #1C120B;          /* walnut night, never #000                 */
   --linho: #F3E6D6;          /* linen: text on noite (14.99:1)           */
   --linho-escuro: #C2AE96;   /* secondary text on noite (8.58:1)         */
-  --luz-nucleo: #FFF2D6;     /* lamplight: core                          */
+  --luz-nucleo: #FFF2D6;     /* lamplight: core (form fields by night)   */
   --luz: #F4C978;            /* lamplight: body                          */
-  --luz-borda: #B9782C;      /* lamplight: falloff                       */
   --barro: #9E3B1E;          /* terracotta (handmade ceramics): form errors on the hall surface */
   /* the hall you walk into: ONE colour per theme, used by the doorway's final light AND the waiting list */
   --sala-dia: #F2DEC4;       /* lime-washed hall by day (papel warmed by latao, 22%) */
@@ -185,39 +184,16 @@
   --underline-offset-inline: 0.2em;   /* links inside a sentence */
   --tick-w: 0.75em;          /* the current control: a short brass tick under the word */
   --tick-h: 2px;
-  /* the pen (the drawing's ink, multiplied by --ink-k and --ink-u in site.css): contour, detail, hatching,
-     cross-hatching, fine; the olive leaves, the lantern's iron; the hall seen through the door (finer) */
-  --pen-contour: 1.15px;
-  --pen-detail: 0.82px;
-  --pen-hatch: 0.52px;
-  --pen-cross: 0.48px;
-  --pen-fine: 0.55px;
-  --pen-leaf: 0.5px;
-  --pen-iron: 0.7px;
-  --pen-hall: 0.62px;
-  --pen-hall-fine: 0.45px;
-  --pen-hall-hatch: 0.4px;
-  --pen-hall-motif: 0.35px;
-  --pen-rim: 1.1px;          /* a wash's pooled edge */
-  --ink-ohall: 0.9;          /* the hall's ink, then its fine lines, hatching and tile motifs */
-  --ink-ohall-f: 0.7;
-  --ink-ohall-h: 0.6;
-  --ink-ohall-m: 0.55;
-  --wo-rim: 0.55;            /* a wash's rim, as a share of its glaze */
+  --stroke-cue: 1.15px;      /* the scroll cue: a chevron drawn at a pen's weight */
 
   /* ---- Motion --------------------------------------------------------------
      One source for every curve: site.css uses them as timing functions, site.js reads the
      scroll curves (--curve-*) once at start-up and evaluates them per frame. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* entrances, exits, presses, messages */
-  --ease-door: cubic-bezier(0.3, 0.1, 0.2, 1);         /* the doors ease ajar once on load    */
   --dur-ui: 150ms;           /* hover colour (with the ease keyword)    */
   --dur-theme: 400ms;        /* Dia <-> Noite cross-fade (the visitor's choice) */
   --dur-sky: 1400ms;         /* ... when the sun changes it on its own: slower, gentler */
   --ease-sky: cubic-bezier(0.45, 0, 0.55, 1);
-  --dur-door: 1100ms;        /* doors ease ajar, once                     */
-  --delay-door: 200ms;
-  --ajar-l: 41deg;
-  --ajar-r: 27deg;
   --dur-press: 160ms;        /* button and link press: scale(0.97)      */
   --dur-state: 200ms;        /* form messages, tick                      */
   --dur-out: 160ms;          /* form controls give way to the success line */
@@ -229,12 +205,12 @@
   --curve-copy: cubic-bezier(0.33, 1, 0.68, 1);        /* text leaves as the doors start (easeOutCubic) */
   --curve-door: cubic-bezier(0.3, 0.55, 0.35, 1);      /* the doors move from the first pixel     */
   --curve-pan: cubic-bezier(0.35, 0.4, 0.3, 1);        /* the doorway travels to the centre early */
-  --curve-fade: cubic-bezier(0.45, 0, 0.55, 1);        /* light layers (symmetric in-out)         */
-  --dur-flight: 1200ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
+  --curve-light: cubic-bezier(0.55, 0, 0.75, 0.55);    /* the hall's light fills the screen: slow, then all at once */
+  --dur-flight: 1250ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
   --curve-flight: cubic-bezier(0.45, 0, 0.3, 1);      /* its time curve: soft start, long gentle settle */
   --flight-weight: 2;        /* the walk-in weighs 3x a plain pixel: the doorway is crossed at a readable pace */
-  --open-l: 47deg;           /* extra swing on scroll: left leaf 41 -> 88deg */
-  --open-r: 61deg;           /* right leaf 27 -> 88deg (both end edge-on, just under 90) */
+  --flight-weight-list: 1.2; /* and the list's arrival (its change of opacity) weighs too: it rises in over about 300ms */
+  --open-door: 84deg;        /* the leaves swing inwards from closed (0) to 84deg, in the photo's perspective */
 
   /* ---- Layers -------------------------------------------------------------- */
   --z-scene: 1;
@@ -278,7 +254,7 @@
   --color-text-muted: var(--castanho);     /*  6.11:1 */
   --color-accent-text: var(--latao-texto); /*  5.08:1 */
   --color-mark: var(--latao-marca);        /*  3.56:1, graphic */
-  --color-ground: var(--nogueira);         /* floor line = illustration ink */
+  --color-ground: var(--nogueira);         /* hairline rules (styleguide), 3:1 and up */
   --color-link-line: color-mix(in srgb, currentColor 45%, transparent);   /* a text link's resting underline (pointer screens) */
   --color-focus: var(--nogueira);          /*  9.03:1 */
   --color-selection: var(--areia);
@@ -288,60 +264,13 @@
   --smoothing: auto;                       /* dark ink on paper: the platform default */
   --smoothing-moz: auto;
 
-  /* ==== 3. Illustration · Dia: sepia ink and earth washes on paper (sun from the upper left) ==== */
-  --i-ink: color-mix(in srgb, var(--tinta) 84%, var(--nogueira));
-  --i-ink-bar: var(--i-ink);
-  --i-ink-wood: var(--tinta);
-  --i-ink-leaf: color-mix(in srgb, var(--tinta) 72%, var(--oliva));
-  --i-ink-hall: color-mix(in srgb, var(--nogueira) 82%, var(--castanho));
-  --i-iron: var(--tinta);
-  --ink-o: 0.92;
-  --ink-o2: 0.84;
-  --ink-oh: 0.62;
-  --ink-ox: 0.5;
-  --ink-of: 0.72;
-  --ink-ograin: 0.42;
-  --w-wall: var(--areia);                                              --wo-wall: 0.62;
-  --w-stone: color-mix(in srgb, var(--pedra) 80%, var(--latao));       --wo-stone: 0.55;
-  --w-stone2: color-mix(in srgb, var(--pedra) 55%, var(--castanho));   --wo-stone2: 0.16;
-  --w-shade: color-mix(in srgb, var(--castanho) 50%, var(--pedra));    --wo-shade: 0.3;
-  --w-wood: var(--castanho);                                           --wo-wood: 0.8;
-  --w-wood2: var(--nogueira);                                          --wo-wood2: 0.32;
-  --w-wood-dk: var(--nogueira);                                        --wo-wood-dk: 0.5;
-  --w-glass: color-mix(in srgb, var(--azulejo) 30%, var(--pedra));     --wo-glass: 0.42;
-  --w-step: var(--areia);                                              --wo-step: 0.85;
-  --w-riser: var(--pedra);                                             --wo-riser: 0.78;
-  --w-pot: color-mix(in srgb, var(--castanho) 62%, var(--latao));      --wo-pot: 0.58;
-  --w-potdk: var(--castanho);                                          --wo-potdk: 0.42;
-  --w-soil: var(--nogueira);                                           --wo-soil: 0.8;
-  --w-leaf1: var(--oliva);
-  --w-leaf2: color-mix(in srgb, var(--azulejo) 70%, var(--oliva));
-  --w-leaf3: color-mix(in srgb, var(--oliva) 55%, var(--nogueira));
-  --wo-leaf: 0.6;
-  --wo-mass: 0.3;
-  --w-trunk: color-mix(in srgb, var(--nogueira) 62%, var(--pedra));   --wo-trunk: 0.6;
-  --w-lglass: var(--areia);
-  --w-lglass2: var(--pedra);
-  --w-lamp: var(--castanho);
-  --w-room: color-mix(in srgb, var(--nogueira) 72%, var(--tinta));     --wo-room: 0.8;
-  --i-room-base: var(--papel);
-  --w-hfloor: var(--pedra);                                            --wo-hfloor: 0.4;
-  --w-htile: color-mix(in srgb, var(--nogueira) 40%, var(--pedra));    --wo-htile: 0.3;
-  --w-hdado: var(--azulejo);                                           --wo-hdado: 0.2;
-  --w-hdeep: color-mix(in srgb, var(--latao) 40%, var(--castanho));   --wo-hdeep: 0.3;
-  --wo-hwin: 0.9;
-  --wo-hpool: 0;
-  --i-brass: var(--latao);
-  --i-wood-shade: var(--nogueira);
-  --light-core: var(--luz-nucleo);
-  --light-mid: var(--luz);
-  --light-edge: var(--luz-borda);
-  --o-night: 0;              /* lamplight layers */
-  --o-day: 1;                /* sun shadows, reflections */
-  --o-turn: 0.22;            /* a leaf turned away from the sun reads darker */
-  /* the hall once the doors open (HTML layers between the two svgs); it always ends on --color-hall */
-  --i-hall-light: var(--color-hall);                                    /* lime-washed hall in daylight */
-  --i-spill: none;                                                      /* no lamplight by day */
+  /* ==== 3. Photograph · Dia ==== */
+  --t-dia: contents;                       /* the day photograph is shown (picture.t-dia) */
+  --t-noite: none;
+  --t-spill: none;                         /* no lamplight on the steps by day */
+  --photo-lqip: LQIP_DIA;                  /* the placeholder until the photo loads (build.py writes it) */
+  --color-leaf-shade: color-mix(in srgb, var(--noite) 28%, transparent);   /* a leaf turned from the daylight: 1 - 0.28 sin(angle) */
+  --color-door-ring: #47210B;              /* the door frame's walnut, behind the doorway's edge (site.css .ph--hall) */
 }
 
 /* The hall surface (waiting list, footer on the home page): lamplight in both themes, so it reads
@@ -365,7 +294,7 @@
 }
 
 /* From 900px the action and the button step up to 18px, and to 20px from 1200px: under the 26px lede, clearly
-   above the 16px status, so the one action holds its own beside a large drawing. */
+   above the 16px status, so the one action holds its own beside a large photograph. */
 @media (min-width: 56.25em) { :root { --size-cta: var(--size-read); --track-cta: 0.015em; } }
 @media (min-width: 75em) { :root { --size-cta: 1.25rem; } }
 

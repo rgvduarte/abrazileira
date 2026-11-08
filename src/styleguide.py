@@ -60,7 +60,7 @@ def pairs():
     return rows
 
 
-def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=""):
+def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head="", photo=None):
     prims = primitives()
     # the form copies link to the real notice: from /design/ that is one level up
     T_sg = dict(T["pt"], privacy_href="../" + T["pt"]["privacy_href"])
@@ -72,18 +72,28 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=
         f"<tr><td>{t}</td><td>{label}</td><td><code>--{fg}</code> {fh}</td><td><code>--{bg}</code> {bh}</td>"
         f"<td class=\"sg-num\">{r:.2f}:1</td><td>{use}</td></tr>"
         for t, label, fg, fh, bg, bh, r, use in pairs())
-    scene_d, info_d = scene_markup("sgd")
-    scene_n, info_n = scene_markup("sgn")
+    scene_d, style_d = scene_markup("../", motion=False)
+    scene_n, style_n = scene_d, style_d
     space = "\n".join(
         f'<li><span class="sg-bar" style="inline-size:var(--space-{i})"></span><code>--space-{i}</code> {px}px</li>'
         for i, px in zip(range(1, 10), (4, 8, 12, 16, 24, 32, 48, 64, 96)))
 
-    scene_od, info_od = scene_markup("sgod")
-    scene_on, info_on = scene_markup("sgon")
 
-    def open_door(theme, scene_html, style):
-        return (f'<figure class="sg-open" data-theme="{theme}"><div class="entrance sg-entrance" aria-hidden="true" style="{style}">'
-                f'{scene_html}</div><figcaption>{theme.capitalize()} · portas abertas, sala iluminada</figcaption></figure>')
+    def photo_state(theme, scene_html, style, state, caption):
+        return (f'<figure class="sg-open sg-open--{state}" data-theme="{theme}"><div class="entrance sg-entrance" aria-hidden="true" style="{style}">'
+                f'{scene_html}</div><figcaption>{theme.capitalize()} · {caption}</figcaption></figure>')
+
+    # the layers of each theme, their files and weights (photo.json): what the page ships
+    def layer_rows():
+        out = []
+        names = {"facade": "Fachada (porta transparente)", "leaf-l": "Folha esquerda", "leaf-r": "Folha direita",
+                 "plate": "Sala (vestíbulo desfocado)", "reveal": "Sombra da ombreira", "spill": "Luz nos degraus (Noite)"}
+        for th in ("dia", "noite"):
+            for name, files in photo.P["layers"][th].items():
+                ws = " · ".join(f"{f['px'][0]}×{f['px'][1]}: {f['avif'] / 1024:.1f} / {f['webp'] / 1024:.1f}" for f in files)
+                out.append(f"<tr><td>{th.capitalize()}</td><td>{names[name]}</td><td class=\"sg-num\">{ws}</td></tr>")
+        return "\n".join(out)
+    fp = {t: [photo.bytes_first_paint(t, w) / 1024 for w in (720, 1080, 1600)] for t in ("dia", "noite")}
 
     def form_state(theme, state, k, label):
         """The real waiting-list form (from build.waitlist), with unique ids and a fixed state."""
@@ -128,12 +138,11 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=
     timeline = [
         ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 a 0.14", "opacidade 1 a 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
         ("Indicador de deslizar", "Decoração", "0 a 0.05", "opacidade 1 a 0", "--curve-copy"),
-        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 a 0.36", "esquerda +47° (41° a 88°), direita +61° (27° a 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
-        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 a 0.36", "opacidade 0 a 1 (o valor das folhas)", "--curve-door"),
-        ("Câmara: centrar a porta", "Principal", "0 a 0.30", "translação em linha reta até ao centro do ecrã; em ecrãs ao alto a subida acompanha o crescimento (a linha do chão fica aos pés de quem entra e sai pela margem de baixo)", "--curve-pan (0.35, 0.4, 0.3, 1); ao alto, presa ao zoom"),
-        ("Câmara: entrar", "Principal", "0.01 a 0.76", "escala geométrica 1 a S por quatro pontos (1; a sala começa a dissolver-se; a sala é toda luz; a abertura cobre o ecrã), curva monótona que começa suave e não trava: a câmara continua até só haver luz", "cúbica monótona sobre log(escala), por ecrã"),
-        ("A sala dissolve-se na luz", "Apoio, passagem", "0.50 a 0.66", "camada lisa --color-hall dentro da porta, opacidade 0 a 1, enquanto a sala ainda se lê como sala; depois só as ombreiras e as folhas passam para fora do ecrã", "--curve-fade (0.45, 0, 0.55, 1)"),
-        ("Uma só cor", "Apoio", "a partir de 0.76", "opacidade 0 ou 1: a mesma cor sobre a mesma cor (cobre as folhas de perfil); a página por trás do palco toma a mesma cor", "degrau (nunca uma mistura a meio)"),
+        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 a 0.36", "rodam para dentro sobre as dobradiças exteriores, de fechadas a 84°, na perspetiva da fotografia; escurecem com o seno do ângulo", "--curve-door (0.3, 0.55, 0.35, 1)"),
+        ("Luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 a 0.36", "opacidade 0 a 1 com a abertura (1 − cos do ângulo)", "--curve-door"),
+        ("Câmara: centrar o ponto de fuga", "Principal", "0 a 0.30", "translação em linha reta até ao centro do ecrã; em ecrãs ao alto a subida acompanha o crescimento (o pé da fotografia fica aos pés de quem entra e sai pela margem de baixo)", "--curve-pan (0.35, 0.4, 0.3, 1); ao alto, presa ao zoom"),
+        ("Câmara: entrar", "Principal", "0.01 a 0.76", "escala geométrica por quatro pontos (1; o limiar quando as portas acabam de abrir; a porta cobre o ecrã aos 0.58; dentro do arco de luz ao fundo aos 0.76); a sala cresce como zoom<sup>0,8</sup>; curva monótona que começa suave e não trava", "cúbica monótona sobre log(escala), por ecrã"),
+        ("A luz da sala", "Apoio, chegada", "0.60 a 0.76", "uma camada lisa --color-hall sobre todo o palco, opacidade 0 a 1, depois de a porta cobrir o ecrã: a câmara entra na luz e o fim é o próprio token (ΔRGB 0)", "--curve-light (0.55, 0, 0.75, 0.55)"),
         ("Lista de espera", "Chegada", "0.745 a 0.94", "título, frase e formulário começam juntos quando o ecrã é uma só cor e assentam um a seguir ao outro (0.88, 0.90, 0.94): opacidade 0 a 1, sobem 16px (o formulário 10px) além do próprio scroll; em repouso no fim do percurso", "--ease-out sobre p"),
     ]
     trows = "\n".join(f"<tr><td>{a}</td><td>{b}</td><td class=\"sg-num\">{c}</td><td>{d}</td><td>{e}</td></tr>" for a, b, c, d, e in timeline)
@@ -198,12 +207,17 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-controls {{ display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-5); margin-block-start: var(--space-5); }}
 .sg-foot {{ margin-block-start: var(--space-4); font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-entrance {{ flex: none; block-size: 26rem; max-block-size: none; margin: 0; overflow: clip; }}
-.sg-opens {{ display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }}
+.sg-opens {{ display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }}
 .sg-open {{ margin: 0; padding: var(--space-5); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-ui); }}
 .sg-open .sg-entrance {{ block-size: 20rem; margin-block-end: var(--space-3); }}
-.sg-open .leaf--l {{ transform: rotateY(var(--open-l)); }}
-.sg-open .leaf--r {{ transform: rotateY(calc(var(--open-r) * -1)); }}
-.sg-open :is(.hall__light, .spill) {{ opacity: 1; }}
+.sg-open--open .leaf--l {{ transform: rotateY(var(--open-door)); }}
+.sg-open--open .leaf--r {{ transform: rotateY(calc(var(--open-door) * -1)); }}
+.sg-open--open .leaf__shade {{ opacity: 0.99; }}
+.sg-open--open .ph--spill {{ display: var(--t-spill); opacity: 1; }}
+.sg-open--hall .scene {{ transform: scale(2.5); }}
+.sg-open--hall .ph--plate {{ transform: scale(0.833); }}   /* 2.5^0.8 / 2.5: the hall grows slower than the doorway */
+.sg-open--hall .leaf--l {{ transform: rotateY(var(--open-door)); }}
+.sg-open--hall .leaf--r {{ transform: rotateY(calc(var(--open-door) * -1)); }}
 .sg-forms {{ display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--measure-form)), 1fr)); margin-block-end: var(--space-5); }}
 .sg-tag--row {{ margin-block: var(--space-6) var(--space-3); }}
 .sg-states {{ display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); padding: var(--space-5); border: var(--hairline) solid var(--color-ground); }}
@@ -245,8 +259,8 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 <h2>Dia e Noite</h2>
 <p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, até o visitante escolher, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite guarda a escolha, que passa a valer sempre; tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
 <div class="sg-panels">
-{panel("dia", scene_d, info_d["style"], "Dia", "Noite")}
-{panel("noite", scene_n, info_n["style"], "Dia", "Noite")}
+{panel("dia", scene_d, style_d, "Dia", "Noite")}
+{panel("noite", scene_n, style_n, "Dia", "Noite")}
 </div>
 
 <h2>Estados e peças pequenas</h2>
@@ -261,12 +275,22 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 <figure><span class="notice__item"><span class="sg-h2">Finalidade</span></span><figcaption>nome de secção (nota de privacidade)</figcaption></figure>
 </div>
 
-<h2>A porta aberta</h2>
-<p class="sg-note">O estado final da sequência, que é também o que vê quem prefere movimento reduzido: as portas abertas e a sala iluminada. Na página, o deslizar leva da porta entreaberta até aqui e depois até à lista de espera.</p>
+<h2>A fotografia em camadas</h2>
+<p class="sg-note">A entrada é uma fotografia (a mesma porta de dia e reiluminada à noite, ficheiros próprios para cada tema), cortada em camadas que se alinham pela geometria da fachada (<code>assets/photo/photo.json</code>): a sala ao fundo &lt; a sombra da ombreira &lt; as duas folhas &lt; a fachada, com a porta transparente &lt; a luz nos degraus (Noite). As folhas rodam para dentro sobre as dobradiças exteriores, até 84°, na perspetiva da própria fotografia (o ponto de fuga da sala); escurecem ao virar (1 − 0,28 · sen do ângulo de dia, 0,40 à noite). A sala, um vestíbulo desfocado com um arco de luz ao fundo, cresce mais devagar do que a porta (zoom<sup>0,8</sup>): está mais longe. A margem da fachada converge para a cor da página (Papel de dia, Noite à noite), por isso a fotografia nunca se lê como um retângulo. Em repouso, sem JavaScript ou com movimento reduzido: a fotografia tal como é, portas fechadas, a luz da sala na frincha.</p>
 <div class="sg-opens">
-{open_door("dia", scene_od, info_od["style"])}
-{open_door("noite", scene_on, info_on["style"])}
+{photo_state("dia", scene_d, style_d, "rest", "em repouso: portas fechadas")}
+{photo_state("dia", scene_d, style_d, "open", "portas abertas (84°)")}
+{photo_state("dia", scene_d, style_d, "hall", "a entrar (2,5×)")}
+{photo_state("noite", scene_n, style_n, "rest", "em repouso: portas fechadas")}
+{photo_state("noite", scene_n, style_n, "open", "portas abertas, luz nos degraus")}
+{photo_state("noite", scene_n, style_n, "hall", "a entrar (2,5×)")}
 </div>
+<p class="sg-note">Ficheiros (largura × altura: AVIF / WebP, KB). Cada camada tem um <code>&lt;picture&gt;</code> por tema com AVIF e WebP em larguras que acompanham a da fachada, um <code>sizes</code> comum (a largura da cena) e <code>loading="lazy"</code>: a imagem do tema escondido nunca é pedida; o script do cabeçalho pré-carrega as quatro da primeira pintura do tema escolhido. Primeira pintura (AVIF) com a cena a 720 / 1080 / 1600 px de dispositivo: Dia {fp["dia"][0]:.0f} / {fp["dia"][1]:.0f} / {fp["dia"][2]:.0f} KB, Noite {fp["noite"][0]:.0f} / {fp["noite"][1]:.0f} / {fp["noite"][2]:.0f} KB (orçamento: 180 KB num telemóvel). Até a imagem chegar, um marcador de 24 px desfocado ocupa o lugar; as dimensões vêm do CSS (sem deslocamento de layout).</p>
+<div class="sg-scroll" tabindex="0" role="region" aria-label="Ficheiros da fotografia"><table>
+<thead><tr><th>Tema</th><th>Camada</th><th>Ficheiros</th></tr></thead>
+<tbody>
+{layer_rows()}
+</tbody></table></div>
 
 <h2 id="sg-lista">Lista de espera</h2>
 <p class="sg-note">O formulário real, nos seus estados. A superfície é a luz da sala nos dois temas, por isso a tinta é escura em ambos. Mensagens em linha com <code>aria-invalid</code> e <code>aria-describedby</code>; envio e erros numa região <code>role="status"</code>. Sem JavaScript o conjunto fica inativo e uma nota indica o email de contacto.</p>
@@ -307,19 +331,18 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 {trows}
 </tbody></table></div>
 <ul class="sg-rules">
-<li><code>--dur-door</code> 1100ms · <code>--ease-door</code> · ao carregar, as portas ficam entreabertas uma vez (41° e 27°).</li>
 <li><code>--dur-flight</code> 1200ms · <code>--curve-flight</code> (0.45, 0, 0.3, 1) · <code>--flight-weight</code> 2 · a ação «Entrar na lista de espera» (e o indicador de deslizar) faz a entrada pela porta: o mesmo motor desliza a página até à lista, as portas abrem e a câmara entra; cada píxel do caminho pesa 1 + 2 × a mudança de escala, por isso a passagem pela porta lê-se com calma e a subida da lista é mais rápida. Um caminho mais curto dura menos (× √ da fração, nunca menos de 35%). Qualquer roda, toque, tecla ou clique fora da ação para-a onde está (uma tecla mantida premida ou um segundo clique na própria ação não a param). No fim, o foco vai para o campo de email (<code>preventScroll</code>), que é descrito pela frase da lista. Movimento reduzido: o mesmo destino, de uma vez.</li>
 <li>Progresso desenhado: as portas, a luz e a câmara seguem o progresso suavizado; o texto do herói usa o menor dos dois (sai com as portas, volta com o próprio scroll); a passagem para a cor da sala usa o maior entre o suavizado e o do scroll menos 0.1 (num deslize rápido o palco já é cor da sala quando a lista chega).</li>
 <li><code>--dur-press</code> 160ms · botão e ação: <code>scale(0.97)</code> ao premir. <code>--dur-state</code> 200ms · mensagens do formulário, visto. Sucesso: os campos saem em 160ms e a frase entra em 240ms.</li>
 <li><code>--dur-theme</code> 400ms · <code>--ease-out</code> · troca Dia/Noite escolhida pelo visitante, em fundido (View Transitions, ou transição de cor). <code>--dur-sky</code> 1400ms · <code>--ease-sky</code> (0.45, 0, 0.55, 1) · a troca que o sol faz sozinho, mais lenta e suave. Sem fundido enquanto a sequência se move (espera que pare) e com movimento reduzido.</li>
 <li><code>--dur-ui</code> 150ms · cor dos controlos ao passar o rato (curva <code>ease</code>).</li>
-<li><code>prefers-reduced-motion: reduce</code> · sem sequência nem palco fixo: portas abertas, sala iluminada, a ação leva logo à lista e põe o foco no email. Sem JavaScript: portas entreabertas, sem palco fixo, o tema do sistema, a ação é uma ligação simples para a lista.</li>
+<li><code>prefers-reduced-motion: reduce</code> · sem sequência nem palco fixo: a fotografia como é, portas fechadas, a lista a seguir; a ação leva logo à lista e põe o foco no email. Sem JavaScript: o mesmo, com o tema do sistema; a ação é uma ligação simples para a lista.</li>
 </ul>
 
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
 <li>Maiúsculas espaçadas só dentro do logótipo. Frases em Alegreya 400; interface em Alegreya Sans 500, frase normal, 16 a 18px. Quatro tamanhos de texto fora do logótipo, nada abaixo de 16px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
-<li>Fundos planos: Papel de dia, Noite (#1C120B, nogueira escura) à noite. O único gradiente é a luz dentro do desenho, à noite.</li>
+<li>Fundos planos: Papel de dia, Noite (#1C120B, nogueira escura) à noite. A fotografia funde-se neles pela margem; nenhum gradiente na interface.</li>
 <li>O sublinhado é só para ligações. O estado atual de um controlo é tinta forte e um traço curto em latão; o estado nunca é só cor.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>
 <li>Sem itálicos decorativos, pontos de exclamação, emoji ou palavras de virtude.</li>

@@ -19,8 +19,8 @@
 // 844 x 390, 768 x 1024, 1440 x 900, 1920 x 1080, 2560 x 1080): EVERY pixel of the frame (list content and footer text excepted) is exactly
 // --color-hall from the moment the screen becomes one colour (p = flat), at the middle of the list's rise, at p = 1 and
 // with the seam (where the stage releases) on screen: no second colour, no edge left; and on short portrait phones
-// (320 x 568, 375 x 553) the door stands on the floor line inside the first screen and the scroll cue is never sliced
-// by the screen's edge.
+// (320 x 568, 375 x 553) the photograph's foot (the steps) is inside the first screen and the scroll cue is never
+// sliced by the screen's edge.
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 600000);
 const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
 const [, , dir] = process.argv;
@@ -96,8 +96,8 @@ const STATE = () => {
         for (let k = 0; k < 40; k++) { await pg.mouse.wheel(0, -120); await pg.waitForTimeout(16); }
         await pg.waitForTimeout(1000);
         const r = await pg.evaluate(() => { const q = (s) => document.querySelector(s), cs = (e) => getComputedStyle(e), i = q(".intro");
-          return { y: scrollY, o: cs(i).opacity, t: cs(i).transform, inline: i.getAttribute("style") || "", scene: cs(q(".scene")).transform, light: cs(q(".hall__light")).opacity }; });
-        report(r.y <= 0 && r.o === "1" && r.t === "none" && !/opacity|transform/.test(r.inline) && r.scene === "none" && r.light === "0" && !errs.length, n, mode, theme, JSON.stringify(r));
+          return { y: scrollY, o: cs(i).opacity, t: cs(i).transform, inline: i.getAttribute("style") || "", scene: cs(q(".scene")).transform, leaf: cs(q(".leaf--l")).transform, light: cs(q(".leaf__shade")).opacity }; });
+        report(r.y <= 0 && r.o === "1" && r.t === "none" && !/opacity|transform/.test(r.inline) && r.scene === "none" && r.leaf === "none" && r.light === "0" && !errs.length, n, mode, theme, JSON.stringify(r));
         await c.close(); continue;
       }
       const fr = await pg.evaluate(() => __fr), r = await pg.evaluate(STATE);
@@ -146,7 +146,7 @@ const STATE = () => {
     report(!bad.length, n, "handoff", theme, JSON.stringify({ token: g.tok.join(","), pixels: n0, off: bad.length, first: bad.slice(0, 4) }));
     await c.close();
   }
-  // short portrait phones: the first screen holds the door on its floor line, and the cue is whole or absent
+  // short portrait phones: the first screen holds the whole photograph down to its steps, and the cue is whole or absent
   for (const [n, w, h] of [["se320", 320, 568], ["se375", 375, 553], ["m375", 375, 667], ["m390s", 390, 664]]) for (const page of ["", "en/"]) {
     const c = await b.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true }); const pg = await c.newPage(); await serve.offline(pg);
     await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(1300);
