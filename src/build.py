@@ -489,6 +489,8 @@ def main():
         copy("img/" + f, "assets/img/" + f)
     copy("favicon.svg", "favicon.svg")
     write(os.path.join(DOCS, ".nojekyll"), "")
+    # GitHub Pages custom domain; keeps the domain attached on every rebuild
+    write(os.path.join(DOCS, "CNAME"), "abrazileira.com\n")
     write(os.path.join(DOCS, "robots.txt"), f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n")
     write(os.path.join(DOCS, "sitemap.xml"), sitemap())
     write(os.path.join(DOCS, "site.webmanifest"), json.dumps({
