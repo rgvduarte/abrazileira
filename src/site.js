@@ -7,7 +7,8 @@
   var root = document.documentElement,
     still = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  /* ---------------------------------------------------------------- 1. Dia / Noite */
+  /* ---------------------------------------------------------------- 1. Dia / Noite
+     The head script has already set data-theme: the visitor's stored choice, or the sky over Torres Vedras. */
   (function () {
     var group = document.querySelector("[data-theme-switch]"),
       dark = window.matchMedia("(prefers-color-scheme: dark)"),
@@ -30,29 +31,50 @@
         for (i = 0; i < metas.length; i++) metas[i].setAttribute("content", bg);
       }
     }
-    function apply(t) {
+    function apply(t, keep) {
       root.setAttribute("data-theme", t);
-      try { localStorage.setItem(KEY, t); } catch (e) {}
+      if (keep) {                         /* a choice: it wins over the sky from now on, and is remembered */
+        root.removeAttribute("data-sol");
+        try { localStorage.setItem(KEY, t); } catch (e) {}
+      }
       sync();
+    }
+    /* the 400ms cross-fade (none while the sequence is under way or with reduced motion) */
+    function swap(t, keep) {
+      if (still.matches || (root.__portaBusy && root.__portaBusy())) return apply(t, keep);
+      if (document.startViewTransition) {
+        document.startViewTransition(function () { apply(t, keep); });
+        return;
+      }
+      root.classList.add("is-theming");
+      apply(t, keep);
+      clearTimeout(timer);
+      timer = setTimeout(function () { root.classList.remove("is-theming"); }, 450);
     }
     group.addEventListener("click", function (e) {
       var b = e.target.closest("[data-theme-set]");
       if (!b) return;
       var t = b.getAttribute("data-theme-set");
-      if (t === current()) return;
-      if (still.matches || (root.__portaBusy && root.__portaBusy())) return apply(t);
-      if (document.startViewTransition) {
-        document.startViewTransition(function () { apply(t); });
-        return;
-      }
-      root.classList.add("is-theming");
-      apply(t);
-      clearTimeout(timer);
-      timer = setTimeout(function () { root.classList.remove("is-theming"); }, 450);
+      if (t === current()) return apply(t, true);   /* choosing what the sky chose is still a choice */
+      swap(t, true);
     });
+    /* Torres Vedras time: until the visitor chooses, the page keeps the sky over the house (head script). If
+       the sun rises or sets while the page is open, the lamps come on (or go out) with the same cross-fade,
+       once, at that minute; a tab coming back from the background catches up at once. */
+    var sol = root.__sol, solT;
+    function sky() {
+      clearTimeout(solT);
+      if (!sol || !root.hasAttribute("data-sol")) return;
+      var now = Date.now(), up = sol(now), t = up ? "dia" : "noite", m;
+      if (t !== current()) swap(t, false);
+      for (m = 1; m <= 1440 && sol(now + m * 60000) === up; m++);   /* the next sunrise or sunset, to the minute */
+      if (m <= 1440) solT = setTimeout(sky, m * 60000 - (now % 60000) + 500);
+    }
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) sky(); });
     if (dark.addEventListener) dark.addEventListener("change", sync);
     group.hidden = false;
     sync();
+    sky();
   })();
 
   /* ---------------------------------------------------------------- 2. The door sequence
@@ -109,8 +131,10 @@
       door: curve("--curve-door", [0.3, 0.55, 0.35, 1]),
       pan: curve("--curve-pan", [0.35, 0.4, 0.3, 1]),
       zoom: curve("--curve-zoom", [0.5, 0.05, 0.3, 1]),
-      fade: curve("--curve-fade", [0.45, 0, 0.55, 1])
+      fade: curve("--curve-fade", [0.45, 0, 0.55, 1]),
+      flight: curve("--curve-flight", [0.45, 0, 0.3, 1])
     };
+    var FLIGHT = num("--dur-flight", 1500), WEIGHT = num("--flight-weight", 2);
     function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
     /* The timeline: [element, from p, to p, curve, value(u) -> [opacity, transform]].
@@ -213,7 +237,7 @@
     function tick(now) {
       raf = 0;
       if (!on) return;
-      var g = target(), dt = last ? Math.min(64, now - last) : 16.7, r;
+      var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
       last = now;
       if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;           /* first frame, or a jump: no replay */
       else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
@@ -240,6 +264,71 @@
       }
     }
     function kick() { if (on && !raf) raf = window.requestAnimationFrame(tick); }
+
+    /* The walk-in on request (the hero action and the scroll cue). Still ONE driver: this loop writes the
+       scroll position itself, eased over time, and the scene follows it through the same smoothing as a
+       hand scroll, so the doors swing and the camera walks in exactly as they do under the finger.
+       The flight eases the visual journey, not the scroll distance: each pixel of the way weighs
+       1 + --flight-weight x the walk-in's change of (log) scale over it, so the camera passes through the
+       doorway at a readable pace and the plain rise of the list goes quicker. (Easing the distance put the
+       peak speed in the doorway: the walk-in took 250ms and the list half the flight.) Time curve
+       --curve-flight: soft start, long gentle settle. Duration --dur-flight for the whole way from the rest
+       state, shorter for a shorter way (sqrt of the share of the journey, never under 35%). The first frame
+       moves nothing: the layers are promoted in it, so no frame of the travel pays for creating them. Any
+       wheel, touch, key or pointer input, or a scroll that is not ours, ends the flight at once and leaves
+       the page where it is, in the visitor's hands. */
+    var fl = null, STOP = ["wheel", "touchstart", "pointerdown", "keydown"];
+    function listen(yes) {
+      for (var i = 0; i < STOP.length; i++) window[yes ? "addEventListener" : "removeEventListener"](STOP[i], land, { passive: true, capture: true });
+    }
+    function land() {
+      if (!fl) return;
+      fl = null;
+      listen(false);
+    }
+    function zoomAt(y) { return E.zoom(clamp((clamp((y - pin) / run) - ZOOM[0]) / (ZOOM[1] - ZOOM[0]))); }
+    /* journey share (0..1) -> scroll position, from a table of the weighted way (96 steps, built once) */
+    function journey(y0, y1) {
+      var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0);
+      for (i = 1; i <= N; i++) {
+        y = y0 + (y1 - y0) * i / N;
+        z = zoomAt(y);
+        ys.push(y);
+        J.push(J[i - 1] + Math.abs(y - ys[i - 1]) / run + WEIGHT * Math.abs(z - pz));
+        pz = z;
+      }
+      return function (j) {
+        j *= J[N];
+        for (i = 1; i < N && J[i] < j; i++);
+        var a = J[i - 1], b = J[i];
+        return ys[i - 1] + (b > a ? Math.min(1, (j - a) / (b - a)) : 1) * (ys[i] - ys[i - 1]);
+      };
+    }
+    function flightStep(now) {
+      var f = fl, y0 = window.pageYOffset;
+      if (f.y >= 0 && Math.abs(y0 - f.y) > 4) { land(); return target(); }   /* someone else scrolled */
+      if (f.t0 < 0) f.t0 = now;
+      var u = Math.min(1, (now - f.t0) / f.d), y = f.at(E.flight(u));
+      if (u >= 1) y = f.y1;
+      f.y = y;
+      window.scrollTo(0, y);
+      if (u >= 1) { land(); f.done(); }
+      return { y: y, p: clamp((y - pin) / run) };
+    }
+    function fly(to, done) {
+      if (!on) return false;
+      land();
+      var y0 = window.pageYOffset, y1 = to(), full = Math.max(1, y1 - pin), dist = Math.abs(y1 - y0);
+      if (dist < 2) { done(); return true; }
+      fl = { to: to, y0: y0, y1: y1, y: -1, t0: -1, done: done, at: journey(y0, y1),
+        d: FLIGHT * Math.min(1, Math.max(0.35, Math.sqrt(dist / full))) };
+      promote(true);
+      clearTimeout(idle);
+      listen(true);
+      calm = 0;
+      kick();
+      return true;
+    }
     /* a wheel turn or a touch at the top is about to scroll: promote now, so the first frame of the
        sequence does not also pay for creating its layers (dropped again if nothing moves) */
     function prime() {
@@ -252,6 +341,7 @@
       rq = 0;
       if (!on) return;
       measure();
+      if (fl) { fl.y1 = fl.to(); fl.at = journey(fl.y0, fl.y1); }
       if (shown >= 0) render(shown);
       calm = 0;
       kick();
@@ -259,6 +349,7 @@
     function queue() { if (on && !rq) rq = window.requestAnimationFrame(refresh); }
 
     function off() {
+      land();
       on = false;
       if (raf) window.cancelAnimationFrame(raf);
       raf = 0;
@@ -299,7 +390,8 @@
     });
     set();
     /* while the sequence is under way, the theme changes without a cross-fade (no snapshot mid-shot) */
-    root.__portaBusy = function () { return on && shown > 0.01; };
+    root.__portaBusy = function () { return on && (shown > 0.01 || !!fl); };
+    root.__porta = { fly: fly, land: land };
   })();
 
   /* ---------------------------------------------------------------- 3. The waiting list
@@ -394,15 +486,19 @@
   })();
 
   /* ---------------------------------------------------------------- 4. The list: arrival
-     The hero action and the scroll cue jump straight to the list (no smooth scroll: the sequence never
-     plays as a flash) and put the focus in the email field. The list content rises in once, in two
-     beats (title + sentence, then the form), as soon as its title enters the screen: that happens
+     The hero action and the scroll cue walk the visitor in through the door: the driver (section 2) flies
+     the scroll to the list, the doors open and the camera enters on the way, and the focus lands in the
+     email field at the end (preventScroll; the field sits inside the region named «Lista de espera», so a
+     screen reader announces where it arrived, without a live region). Reduced motion or no sequence: the
+     same landing at once. Arriving with #lista: a jump, never a replay. The list content rises in once,
+     in two beats (title + sentence, then the form), as soon as its title enters the screen: that happens
      while the walk-in is still ending, because the list overlaps the last part of the run (CSS). */
   (function () {
     var el = document.querySelector("[data-reveal]"), list = document.getElementById("lista"),
       email = document.getElementById("email");
     if (!el || !list) return;
-    function now() { el.classList.add("is-now", "is-in"); }
+    /* show the content at once, unless its entrance is already playing (then it finishes) */
+    function now() { if (!el.classList.contains("is-in")) el.classList.add("is-now", "is-in"); }
     function listY() { return list.getBoundingClientRect().top + window.pageYOffset; }
     if (!still.matches && "IntersectionObserver" in window) {
       root.classList.add("js-reveal");
@@ -411,14 +507,22 @@
       }, { rootMargin: "0px" });
       io.observe(el.firstElementChild || el);
     }
-    function toList(e) {
-      e.preventDefault();
-      now();
-      window.scrollTo(0, listY());
+    function arrive() {
       if (email && !email.closest("fieldset:disabled")) email.focus({ preventScroll: true });
     }
+    function toList(e) {
+      e.preventDefault();
+      if (!still.matches && root.__porta && root.__porta.fly(listY, arrive)) return;
+      now();
+      window.scrollTo(0, listY());
+      arrive();
+    }
     var links = document.querySelectorAll('.porta a[href="#lista"]');
-    for (var i = 0; i < links.length; i++) links[i].addEventListener("click", toList);
+    for (var i = 0; i < links.length; i++) {
+      links[i].addEventListener("click", toList);
+      /* a link answers Enter; the action is drawn as a button, so it answers Space too */
+      links[i].addEventListener("keydown", function (e) { if (e.key === " " && !e.repeat) toList(e); });
+    }
     /* keyboard: arriving in the form from outside brings the whole list into view, already revealed */
     list.addEventListener("focusin", function (e) {
       now();

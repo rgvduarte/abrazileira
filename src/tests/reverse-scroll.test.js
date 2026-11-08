@@ -13,6 +13,8 @@ const VPS=(process.env.VPS||'m390:390:844,d1440:1440:900').split(',').map(s=>s.s
 for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
   const mobile=+w<900;
   const c=await b.newContext({viewport:{width:+w,height:+h},colorScheme:scheme,isMobile:mobile,hasTouch:mobile});
+  // the default theme follows the sky over Torres Vedras, not the system: choose it, so both themes are covered whatever the hour
+  await c.addInitScript(t=>{try{localStorage.setItem('ab-tema',t)}catch(e){}},scheme==='dark'?'noite':'dia');
   await c.addInitScript(()=>{ // fake scroll position hook (rubber-band emulation) + invariant monitor
     const d=Object.getOwnPropertyDescriptor(window,'pageYOffset')||Object.getOwnPropertyDescriptor(Window.prototype,'pageYOffset');
     const dy=Object.getOwnPropertyDescriptor(window,'scrollY')||Object.getOwnPropertyDescriptor(Window.prototype,'scrollY');

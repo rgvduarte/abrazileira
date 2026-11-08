@@ -5,8 +5,8 @@ description: >-
   A coming-soon page for a boutique hotel in Torres Vedras, Portugal, and step 1 of its design system.
   The canvas is warm paper (papel #F9F0E9), never white, and by night a walnut dark (noite #1C120B), never
   black. The voice is the client's original logo: a crowned B in a laurel wreath over A BRAZILEIRA /
-  BOUTIQUE HOTEL / TORRES VEDRAS in Cinzel roman capitals; everything else is Cormorant Garamond in sentence
-  case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
+  BOUTIQUE HOTEL / TORRES VEDRAS in Cinzel roman capitals; what the house says is set in Alegreya and the
+  interface in Alegreya Sans, both in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
   switch the whole page, including the drawing. The signature is a line drawing of a generic Portuguese stone
   doorway: its walnut doors ease ajar once on load, and scrolling opens them, walks in through the doorway
   and arrives in the lit hall, where the waiting list is. Shapes are square-cut; depth comes only from the
@@ -76,41 +76,42 @@ typography:
     letterSpacing: 0.3em
     textTransform: uppercase
   title:                      # «Lista de espera», «Nota de privacidade»
-    fontFamily: "'Cormorant Garamond', 'Cormorant fallback', 'EB Garamond', Garamond, 'Times New Roman', serif"
-    fontSize: "clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem)"   # 28 -> 40px
-    fontWeight: 500
-    lineHeight: 1.1
-    letterSpacing: 0
-  lede:
-    fontFamily: "'Cormorant Garamond', 'Cormorant fallback', 'EB Garamond', Garamond, 'Times New Roman', serif"
-    fontSize: "clamp(1.25rem, min(1.02rem + 0.95vw, 3.4svh), 1.75rem)"  # 20 -> 28px
-    fontWeight: 500
-    lineHeight: 1.32
-    letterSpacing: 0
-  cta:                        # the one action, field labels, inputs, consent, button
-    fontFamily: "Cormorant Garamond"
+    fontFamily: "Alegreya, 'Alegreya title fallback', 'Times New Roman', serif"
+    fontSize: "clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem)"   # 26 -> 34px
+    fontWeight: 400
+    lineHeight: 1.18
+    letterSpacing: -0.01em
+  lede:                       # the sentence; the list sentence; the privacy intro; the 404 lines; the thank-you
+    fontFamily: "Alegreya, 'Alegreya lede fallback', 'Times New Roman', serif"
+    fontSize: "clamp(1.125rem, min(0.84rem + 1.43vw, 3.2svh), 1.625rem)"   # 18 (320) -> 19 (390) -> 26px
+    fontWeight: 400
+    lineHeight: "calc(1em + 0.45rem)"   # 19/26, 26/33
+    letterSpacing: -0.005em
+  read:                       # privacy notice body; the email the guest types; the no-JS line
+    fontFamily: "Alegreya, 'Alegreya fallback', 'Times New Roman', serif"
     fontSize: 18px
-    fontWeight: 500
-    lineHeight: 1.25
+    fontWeight: 400
+    lineHeight: 1.5556        # 18/28
     letterSpacing: 0
-  read:                       # privacy notice body
-    fontFamily: "Cormorant Garamond"
-    fontSize: 18px
-    fontWeight: 500
+  consent:
+    fontFamily: "Alegreya, 'Alegreya consent fallback', 'Times New Roman', serif"
+    fontSize: 16px
+    fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
-  ui:                         # Dia · Noite, PT · EN, status
-    fontFamily: "Cormorant Garamond"
+  cta:                        # the one action and the button
+    fontFamily: "'Alegreya Sans', 'Alegreya Sans cta fallback', Arial, sans-serif"
+    fontSize: "16px below 900px, 18px from 900px"
+    fontWeight: 500
+    lineHeight: 1.25
+    letterSpacing: "0.018em / 0.015em"
+  ui:                         # Dia · Noite, PT · EN (0.06em), status, labels, messages, section names, footer
+    fontFamily: "'Alegreya Sans', 'Alegreya Sans fallback', Arial, sans-serif"
     fontSize: 16px
     fontWeight: 500
-    lineHeight: 1.25
-    letterSpacing: 0
-  small:                      # footer, inline form messages
-    fontFamily: "Cormorant Garamond"
-    fontSize: 15px
-    fontWeight: 500
-    lineHeight: 1.25
-    letterSpacing: 0
+    lineHeight: "1.25 one line, 1.5 multi-line"
+    letterSpacing: 0.018em
+    fontVariantNumeric: lining-nums
 
 rounded:
   none: 0px                   # everything, fields and button included
@@ -146,20 +147,20 @@ components:
     minSize: 44px
   cta:                        # «Entrar na lista de espera»: a text link-button
     textColor: "{colors.color-text-strong}"
-    decoration: "underline 1px, offset 0.3em"
+    decoration: "underline 1px, offset 0.28em"
     typography: "{typography.cta}"
     minHeight: 44px
     pressed: "scale(0.97), 160ms"
   lede:
     textColor: "{colors.color-text}"
     typography: "{typography.lede}"
-    maxWidth: 21em
+    maxWidth: 20em
   status:
     textColor: "{colors.color-accent-text}"
     typography: "{typography.ui}"
   footer:
     textColor: "{colors.color-text-muted}"
-    typography: "{typography.small}"
+    typography: "{typography.ui}"
   floor-line:
     borderColor: "{colors.color-ground}"
     height: 1px
@@ -173,7 +174,7 @@ components:
     backgroundColor: "{colors.hall-field}"
     borderColor: "{colors.hall-field-line}"
     textColor: "{colors.hall-text-strong}"
-    typography: "{typography.cta}"
+    typography: "{typography.read}"   # Alegreya 400, lining figures
     height: 48px
     rounded: "{rounded.none}"
   text-input-invalid:
@@ -197,7 +198,7 @@ components:
   form-message:
     textColor: "{colors.hall-text-strong}"
     errorColor: "{colors.hall-error}"
-    typography: "{typography.cta}"
+    typography: "{typography.ui}"
 ---
 
 # A Brazileira · DESIGN.md
@@ -211,8 +212,10 @@ economical hatching for shade and loose watercolour washes, all baked into vecto
 
 **Dia** is paper and limestone in sunlight: flat papel ground, walnut doors, brass knobs, a faint cast
 shadow on the plaster. **Noite** is the same drawing after dark: walnut-black ground, the doors and stone
-gone dark, and lamplight coming through the gap, the fanlight and the wall lantern. The page follows the
-visitor's system theme; the Dia · Noite control overrides it and remembers the choice.
+gone dark, and lamplight coming through the gap, the fanlight and the wall lantern. Until the visitor chooses,
+the page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
+lantern is lit when it really is (without JavaScript it follows the system theme). The Dia · Noite control
+overrides it and remembers the choice.
 
 Scrolling is the one journey on the page, short and fluid (about 1.4 screens): the doors swing open from the
 first pixel, the hall lights up, the view walks in through the doorway, and the hall's light becomes the
@@ -226,13 +229,15 @@ only inside the drawing. Barro (terracotta) exists only for form errors. The int
 **Key characteristics**
 - Canvas `{colors.papel}` by day, `{colors.noite}` by night; the hall `{colors.color-hall}`; all flat.
 - The original logo, unchanged: emblem.svg inline + Cinzel 600 / 700 / 400 lockup at the logo's ratios.
-- One reading face: Cormorant Garamond 500, roman, sentence case. Tracked capitals exist only in the logo.
+- One voice in two cuts: Alegreya 400 for what the house says, Alegreya Sans 500 for the interface (same
+  designers, same skeleton), roman, sentence case. Tracked capitals exist only in the logo.
 - One accent: brass, `{colors.latao-texto}` by day (5.08:1), `{colors.latao}` by night (7.87:1).
 - One action on the first screen: «Entrar na lista de espera» / «Join the waiting list».
 - Square corners everywhere; the only radius is the 2px corner of the focus ring.
 - Depth comes from the drawing alone (perspective, light), never from interface shadows.
 - Motion: the doors ease ajar once on load (1.1s); one scroll-linked sequence (144svh, one plain-JS driver)
-  opens them into the waiting list; the hero action jumps straight to the list; Dia ↔ Noite cross-fades in 400ms.
+  opens them into the waiting list; the hero action plays the same walk-in on its own (1.5s, any input stops
+  it) and lands in the email field; Dia ↔ Noite cross-fades in 400ms.
 
 ## Logo usage
 
@@ -321,36 +326,71 @@ success colour: success is a sentence («Obrigado. Avisamos quando abrirmos.»),
 ## Typography
 
 ### Font family
-- **Cinzel** 400 / 600 / 700, latin subset, self-hosted woff2 (12.5 / 13.6 / 13.6 KB). Logo lockup only.
-- **Cormorant Garamond** variable (wght 300–700), roman only, latin subset (27.9 KB). All reading text and UI.
-- No italic is shipped. Licences: `assets/fonts/OFL-*.txt`.
+- **Cinzel** 400 / 600 / 700, latin subset, self-hosted woff2 (12.5 / 13.6 / 13.6 KB), byte-identical to the
+  original logo files. Logo lockup only.
+- **Alegreya** 400 (Huerta Tipográfica), roman only: every sentence the house says (lede, titles, the list
+  sentence, the consent, the privacy notice) and the email a guest types. 12.5 KB.
+- **Alegreya Sans** 500, roman only: the interface (Dia · Noite, PT · EN, status, the action, labels, messages,
+  the button, section names, the footer). 9.0 KB. The sans is the serif without its serifs, so the page speaks
+  with one voice; it was chosen over the Garamond because it is calligraphic and humane, not a template face.
+- Subset to Latin + Portuguese (ASCII, nbsp, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €),
+  layout features `kern`, `liga` (fi, fl, Th only) and `lnum`, unhinted. No italic, no bold: one file per
+  family, `font-synthesis: none`. Licences: `assets/fonts/OFL-*.txt` (neither name is reserved, so subsetting
+  is allowed).
 
-### Hierarchy
+### Hierarchy (computed, Chromium)
 
-| Token | Family | 320–375px | 1440px | Weight | Line height | Tracking | Case | Use |
+Four text sizes outside the logo, nothing under 16px. Squint order on every width: lockup > lede > action >
+status and controls.
+
+| Token | Family | 320px | 390px | 1440px | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|---|---|---|
-| wordmark | Cinzel | 28px | 55px | 600 | 1.05 | 0.045em | caps | A BRAZILEIRA |
-| kind | Cinzel | 14px | 27.5px | 700 | 1.05 | 0.12em | caps | BOUTIQUE HOTEL |
-| place | Cinzel | 11.2px | 22px | 400 | 1.05 | 0.3em | caps | TORRES VEDRAS |
-| title | Cormorant | 28px | 40px | 500 | 1.1 | 0 | sentence | Lista de espera, Nota de privacidade |
-| lede | Cormorant | 20px | 28px | 500 | 1.32 | 0 | sentence | the one sentence; the list sentence |
-| cta | Cormorant | 18px | 18px | 500 | 1.25–1.35 | 0 | sentence | the action, labels, fields, consent, button |
-| read | Cormorant | 18px | 18px | 500 | 1.5 | 0 | sentence | privacy notice |
-| ui | Cormorant | 16px | 16px | 500 | 1.25 | 0 | sentence | Dia · Noite, PT · EN, status |
-| small | Cormorant | 15px | 15px | 500 | 1.25 | 0 | sentence | footer, inline form messages |
+| wordmark | Cinzel | 28px | 28px | 55px | 600 | 1.05 | 0.045em | A BRAZILEIRA |
+| kind | Cinzel | 14px | 14px | 27.5px | 700 | 1.05 | 0.12em | BOUTIQUE HOTEL |
+| place | Cinzel | 11.2px | 11.2px | 22px | 400 | 1.05 | 0.3em | TORRES VEDRAS |
+| title | Alegreya | 26px | 26px | 34px | 400 | 1.18 | −0.01em | Lista de espera, Nota de privacidade |
+| lede | Alegreya | 18px | 19px | 26px | 400 | 1em + 7.2px (25.2 / 26.2 / 33.2px) | −0.005em | the sentence, the list sentence, the privacy intro, 404, thank-you |
+| read | Alegreya | 18px | 18px | 18px | 400 | 28px | 0 | privacy notice; the email field (lining figures) |
+| consent | Alegreya | 16px | 16px | 16px | 400 | 24px | 0 | the consent line |
+| cta | Alegreya Sans | 16px | 16px | 18px | 500 | 1.25 | 0.018em / 0.015em | the action, the button, «Voltar ao início» |
+| ui | Alegreya Sans | 16px | 16px | 16px | 500 | 20px / 24px | 0.018em (PT · EN 0.06em) | Dia · Noite, PT · EN, status, labels, messages, section names, footer |
 
-Above 1920px the root size grows to 112.5% (131.25% from 2560px): more scale, never more content. Inputs are
-18px, never below 16px, so iOS Safari does not zoom on focus.
+From 1920px the root size grows to 112.5% (131.25% from 2560px): everything scales together, never more
+content. The field is 18px, never below 16px, so iOS Safari does not zoom on focus.
 
 ### Principles
-- Tracked capitals live only inside the logo. Everything else is sentence case with no letter-spacing.
-- Roman only; no decorative italic. `text-wrap: balance` on the ledes.
+- What the house says is serif; what you operate is sans. Never Alegreya for controls, labels or buttons.
+- The status is quieter than the action by colour (brass, not ink, no underline) and space (8px under the
+  sentence, 16px / 24px before the action), never by weight. The lede leads by size: 19px over a 16px action
+  on phones, 26px over 18px from 900px.
+- Figures: old-style in the serif (art. 6.º, 24 meses), lining in the interface and the field (© 2026).
+- Tracked capitals live only inside the logo; PT and EN get 0.06em because capitals need air.
+- Line breaks by rule, not by luck: `text-wrap: balance` on the ledes and titles; on 320–359px phones the
+  Portuguese lede is set one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada / para
+  receber hóspedes.»: a plain wrap at 14.4em, with «para receber hóspedes» tied); `text-wrap: pretty` on
+  reading text; no hyphenation anywhere (the privacy notice is read word by word). Ties at build time
+  (`nb()` in build.py): «A Brazileira», «Torres Vedras», «© 2026», and every one-letter word holds to the next
+  («e avisamos», «a ser»). «nota de privacidade» never splits and sits on its own line under the consent.
+- Below 480px the footer sets «© 2026 A Brazileira» / «Torres Vedras, Portugal» / «Privacidade» on three lines.
+- Quotes: «» in Portuguese, “” in English (`q:lang()`). Noite text uses grayscale smoothing on macOS.
 - Height-aware sizes (`svh` inside `min()`) keep the lockup and lede in one screen on short laptops.
 
 ### Font loading and fallbacks
-`font-display: swap`; Cinzel 600 and Cormorant are preloaded. Metric-matched local fallbacks were measured
-with fontTools on the exact strings against Times / Liberation Serif:
-Cinzel 400 `size-adjust 100.19%`, 600 `97.12%`, 700 `105.16%`; Cormorant `97.1%`, ascent 95.16%, descent 29.56%.
+All five files are `font-display: swap`; Cinzel 600, Alegreya and Alegreya Sans are preloaded. Cinzel's
+fallbacks are unchanged (Times / Liberation Serif: 400 `size-adjust 100.19%`, 600 `97.12%`, 700 `105.16%`).
+Alegreya and Alegreya Sans have one local fallback per role (Times New Roman / Arial, or the metric-compatible
+Liberation and Tinos / Arimo), sized so each role's own strings set to the web font's width in Chromium, with
+English variants where the sentence differs (`[lang|=en]` swaps the stacks): lede 101.8 / 99.6%, list 100.4 /
+97.0%, intro 101.15 / 101.0%, title 101.3%, consent 100.2%, reading 100.9 / 100.71%; sans: interface 85.25%,
+action 86.0 / 90.0%, status 88.5 / 87.05%, back link 88.6 / 86.75%, footer name 87.62%, place 86.2%,
+separators 63.8%, footer link 88.05 / 86.06%. Ascent and descent overrides carry Alegreya's 1.016 / 0.345 and
+Alegreya Sans' typo 0.8 / 0.2 through the size-adjust. The privacy notice body uses the same Alegreya file
+under a second name with `font-display: optional` («Alegreya Text»): preloaded, so it is there on a normal
+load, and on a slow first visit the long paragraphs stay in their fallback for that view instead of
+re-wrapping around their links. Checked with every woff2 held back 2s: CLS 0 on home PT/EN, privacy PT/EN and
+404 at 320×568, 360, 375, 390, 430, 844×390, 768, 1024, 1280, 1440 and 1920, motion on and off; and the fallback
+layout matches the web font (no line-count change, no text start moving 3px or more) at about 200 widths from
+320 to 2560px. Regenerate the values after any copy change (they follow the strings).
 
 ## Layout
 
@@ -403,25 +443,40 @@ The arch is architecture, not a UI radius.
 
 **`lockup`** (h1 on the home page; a 24px home link on the privacy notice): see Logo usage. States: none.
 
-**`control`** (`.ctl`, buttons and links): Cormorant 500 16px, sentence case, muted colour, 44 × 44px minimum.
-- Default: `--color-text-muted`. Hover (fine pointer only): `--color-text-strong`, 160ms.
+**`control`** (`.ctl`, buttons and links): Alegreya Sans 500 16px, tracking 0.018em (PT · EN 0.06em), sentence
+case, muted colour, 44 × 44px minimum.
+- Default: `--color-text-muted`. Hover (fine pointer only): `--color-text-strong`, 150ms `ease`. Pressed:
+  `scale(0.97)`, 160ms `--ease-out` (the same press as the action and the button; none under reduced motion).
 - Focus-visible: 2px solid `--color-focus`, offset 3px, 2px corners; never animated.
 - Active / current: `--color-text-strong` + 1px underline 0.3em below (state is never colour alone);
   `aria-pressed="true"` for the theme, `aria-current="page"` for the language.
 
 **`theme switch`** (Dia · Noite / Day · Night): two real buttons in `role="group"`; hidden without JS.
-A head script reads `localStorage["ab-tema"]` and sets `data-theme` before the first paint (no flash);
-`meta[name=theme-color]` follows. Storage is wrapped in try/catch.
+A head script sets `data-theme` before the first paint (no flash): the stored choice
+(`localStorage["ab-tema"]`) if there is one, otherwise the sky over Torres Vedras now (Torres Vedras time,
+see A distinctive touch), marked `data-sol` and never stored. A click stores the choice, which wins from then
+on (choosing the theme already shown counts too). `meta[name=theme-color]` follows. Storage is wrapped in
+try/catch.
 
 **`language switch`**: two links (`hreflang`, `lang`, `aria-current`); on the privacy notice they point to the
 other language's notice.
 
 **`cta`** (`.cta`, «Entrar na lista de espera» / «Join the waiting list» → `#lista`): the only action on the
-first screen, a text link-button under the status. 18px tinta / linho, 1px underline 0.3em below, 44px tall.
-Hover (fine pointer): `--color-text`. Pressed: `scale(0.97)`, 160ms. Click, tap or Enter: an instant jump to the
-list (no smooth scroll, so the door sequence never plays as a flash; the scroll cue does the same) and the
-focus moves to the email field (`preventScroll`). There is no `scroll-behavior: smooth` anywhere. Tab from
-the action also lands on the email field with the list in view.
+first screen, a text link-button under the status. Alegreya Sans 500, 16px on phones and 18px from 900px,
+tinta / linho, 1px underline 0.28em below, 44px tall.
+Hover (fine pointer): see `link`. Pressed: `scale(0.97)`, 160ms `--ease-out`. Click, tap, Enter or Space (it
+is drawn as a button, so it answers Space too): the walk-in through the door, 1.5s, then the focus moves to
+the email field (`preventScroll`); the scroll cue does the same (see Motion › The walk-in on request). Any
+wheel, touch, key or pointer input during the flight stops it where it is. Reduced motion: the same landing
+at once. There is no `scroll-behavior: smooth` anywhere. Tab from the action lands on the email field with
+the list in view (a jump: keyboard focus never waits for an animation).
+
+**`link`** (`.cta`, `.link`, `.foot__link`, `.link-inline`): the underline is the affordance, 1px, never
+removed. Where a pointer can hover, the underline rests in the link's own ink at 45% (`--color-link-line`,
+`color-mix` with `currentColor`) and takes the full ink on hover, with the text at `--color-text-strong`:
+150ms `ease`, colour only, nothing moves. Touch screens keep the full underline (they never see the hover).
+(Before: hover lightened the text, which read as dimming by day and did nothing by night, where text and
+strong text are both linho.) The scroll cue darkens to strong ink on hover the same way.
 
 **`porta`** (the door sequence): `.porta` > `.porta__stage` (sticky) > `.porta__frame` (the first screen,
 100svh) + `.porta__flood`. Without JS or with reduced motion it is just the first screen. Every moving layer
@@ -472,7 +527,8 @@ Only HTML layers move (transform / opacity); the drawing is never repainted whil
 beats, as soon as its title enters the screen (which happens at p ≈ 0.82, while the walk-in ends): title +
 sentence opacity 0 → 1 and 12px, 560ms; the form +100ms, 8px, 480ms; `--ease-out`. The panel itself has no
 entrance (its colour is the light the camera carried in). If focus or a jump gets there first, the content
-is shown at once.
+is shown at once; during the walk-in on request the entrance plays and finishes as the flight lands (the focus
+arriving in the field never cuts it short).
 
 **`form`** (`[data-waitlist]`, `novalidate`; states on `data-state`):
 - Fields: «Email» label above a 48px input (`type=email`, `autocomplete=email`, `inputmode=email`,
@@ -481,11 +537,13 @@ is shown at once.
   44px hit area; the label links to the privacy notice. A honeypot field (`website`) sits off-screen,
   `aria-hidden`, `tabindex=-1`, `autocomplete=off`. The field fill is `--color-field-hall`: papel by day,
   luz-nucleo by night (the pink day paper clashed with the lamplight).
+- Field and checkbox hover (fine pointer): the 1px line darkens to `--color-text-strong`, 150ms `ease` (not on
+  an invalid field, whose barro edge stays); the focus ring stays the focus state.
 - Button: full width, 48px, tinta fill, papel text, square. Hover (fine pointer): nogueira. Pressed:
   `scale(0.97)`, 160ms, never while sending (`:active:not([aria-disabled=true])`). Its two labels share one
   grid cell, so «A enviar…» never changes its size.
 - **idle**: as above. **invalid** (client check, or the server's 400 `invalid_email` / `consent_required`):
-  the field gets `aria-invalid="true"`, a 2px barro edge and an inline message in barro 15px below it, tied
+  the field gets `aria-invalid="true"`, a 2px barro edge and an inline message in barro 16px below it, tied
   with `aria-describedby`; focus moves to the first invalid field; the message clears as soon as the value is
   fixed. **sending**: `aria-busy` on the form, `aria-disabled` on the button (focus stays on it), label
   «A enviar…» / «Sending…», further submits ignored. **success**: the fields give way to «Obrigado. Avisamos
@@ -503,11 +561,13 @@ is shown at once.
   `credentials: omit`, `referrerPolicy: no-referrer`, `cache: no-store`. The key is public by design: the
   table is not readable, only this function is callable. Nothing is sent before submit.
 
-**`footer`**: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (EN «Privacy»), 15px muted; the
-link is 44px tall. Below 480px the link takes its own line (no dangling separator).
+**`footer`**: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (EN «Privacy»), Alegreya Sans
+16/24px muted, lining figures; the link is 44px tall. Below 480px name, place and link take a line each (no
+dangling separator).
 
 **`privacy notice`** (`privacidade/`, `en/privacy/`): same top bar and tokens; the lockup (24px) as home
-link; h1 title; a short intro in lede size; eight short sections (h2 18px 600 + one paragraph at 18px / 1.5):
+link; h1 title (Alegreya 26–34px); a short intro in lede size; eight short sections (section name in Alegreya
+Sans 500 16px + one Alegreya paragraph at 18/28px, measure 26.5em, no hyphenation):
 controller and contact, data, purpose, legal basis (consent, art. 6(1)(a) GDPR, withdrawable), retention
 (until withdrawal, at most 24 months), processor (Supabase, EU servers in Paris), rights (incl. complaint to
 the CNPD), cookies (none; no analytics; the only third-party request is the form). «Última atualização:
@@ -576,6 +636,42 @@ only ever fades the hall colour over the hall colour, never over the stone.
   mobile toolbars come and go). It is re-measured on the events above, keeping the same progress.
 - Writes are `transform` and `opacity` on the moving elements only, never a custom property on a parent.
 
+### The walk-in on request (the hero action and the scroll cue)
+The client: «mesmo quando carregas só em entrar na waiting list, esse flow tem de ser fluido e para se notar
+que se entra pela porta, mas não muito demorado nem muito rápido». This replaces the former instant jump.
+
+- **Still one driver.** The same rAF loop writes the scroll position itself (`window.scrollTo` per frame, never
+  native smooth scroll) and the scene follows it through the same smoothing as a hand scroll, so the doors
+  swing, the hall lights and the camera walks in exactly as under the finger. The first frame moves nothing
+  (the layers are promoted in it), the travel starts on the next.
+- **It eases the visual journey, not the distance.** Each pixel of the way weighs 1 + `--flight-weight` (2) ×
+  the walk-in's change of (log) scale over it; the time curve `--curve-flight` (0.45, 0, 0.3, 1: soft start,
+  long gentle settle) runs over that weighted way (a 96-step table built once per flight). Easing the plain
+  distance was tried first and failed by eye: the peak speed fell in the doorway, the walk-in took 250ms and
+  the list's plain rise took half the flight. Weighted, the time splits into thirds that read as one gesture:
+
+  | Beat (from the click) | 390 × 844 | 1440 × 900 |
+  |---|---|---|
+  | Text leaves (intro opacity → 0.1) | 0–340ms | 0–330ms |
+  | Doors open, doorway centred | 0–620ms | 0–600ms |
+  | Walk-in: scale 1.6 → 4.9 (390) / 1.6 → 7.6 (1440) | 640–1040ms | 590–990ms |
+  | List title enters, rises and settles; form follows | 1040–1530ms | 1040–1500ms |
+  | Focus in the email field (`preventScroll`) | 1500ms | 1500ms |
+
+- **Duration** `--dur-flight` 1500ms for the whole way from the rest state; a shorter way is shorter
+  (× √share, never under 35%). The way is the same share of the sequence at every size (about 2 screens), so
+  390 and 1440 both fly 1.48–1.50s; tuned by eye on recorded video at 390 × 844 and 1440 × 900, Dia and Noite.
+- **Interruptible.** `wheel`, `touchstart`, `pointerdown` or `keydown` (capture, passive), or a scroll that is
+  not the flight's own (more than 4px from what it wrote), ends it at once: the page stays where it is, in the
+  visitor's hands, the focus is not moved.
+- **Lands** on the list's rest position (`#lista` top, the same place as the anchor and Tab), with the title and
+  the email field in view; the list content's entrance plays during the flight and has finished by then. The
+  focus moves to the email field with `preventScroll`; the field sits in the region named «Lista de espera»,
+  so a screen reader announces where it arrived, politely, without a live region.
+- **Never animated:** `prefers-reduced-motion: reduce` (the same landing at once, focus in the field), a
+  `#lista` link on load (a jump), Tab into the form (a jump), no JS (a plain anchor). Scrolling back up after
+  a flight returns the hero to its exact rest state (tested).
+
 ### Layers and performance budget
 - Budget: under 4× CPU throttle, at 390 × 844 (DPR 3) and 1440 × 900 (DPR 1), Dia and Noite: no frame over
   50ms and p95 ≤ 20ms while the page moves.
@@ -602,8 +698,9 @@ only ever fades the hall colour over the hall colour, never over the stone.
 | `--dur-reveal` / `--dur-reveal-2` | 560ms / 480ms, +100ms | `--ease-out` | the waiting list rises in, once, in two beats |
 | `--dur-state` | 200ms | `--ease-out` | form messages, checkbox tick (opacity + scale 0.8 → 1) |
 | `--dur-out` / `--dur-success` | 160ms / 240ms | `--ease-out` | success: the controls give way, the sentence takes their place |
+| `--dur-flight` | 1500ms (whole way) | `--curve-flight` (0.45, 0, 0.3, 1) over the weighted way (`--flight-weight` 2) | the hero action and the scroll cue walk in through the door to the list |
 | `--dur-press` | 160ms | `--ease-out` | action and button: `scale(0.97)` while pressed |
-| `--dur-ui` | 150ms | `ease` | control and link colour on hover |
+| `--dur-ui` | 150ms | `ease` | control and link colour on hover; a link's underline 45% → full ink; field and checkbox line darkens |
 
 ### Fallbacks
 - `prefers-reduced-motion: reduce`: no pinning and no scroll-linked motion, no load animation, no list
@@ -613,8 +710,9 @@ only ever fades the hall colour over the hall colour, never over the stone.
   the sequence down (inline styles and hints removed).
 - No JS: no pinning (the tall wrapper exists only with `.porta-on`, which site.js adds), doors ajar, theme
   follows the system, the list is visible with a disabled form and the `<noscript>` line.
-- Keyboard: Tab from the action lands on the email field with the list in view; focusing anything in the
-  pinned first screen mid-sequence rewinds to the rest state, so focus is never on an invisible element.
+- Keyboard: Enter or Space on the action plays the walk-in and lands in the email field; Tab from the action
+  lands on the email field with the list in view at once; focusing anything in the pinned first screen
+  mid-sequence rewinds to the rest state, so focus is never on an invisible element.
 
 ### Measured
 Playwright (headless Chromium, software raster), 4× CPU throttle via CDP, traced with CDP tracing
@@ -629,6 +727,17 @@ Playwright (headless Chromium, software raster), 4× CPU throttle via CDP, trace
 | same | 1440 | 16.7–16.8ms | 33–50ms (the first frame) | 0 | 35–65ms |
 | Finger drags (touch events, 18px per frame) | 390 | 16.7–16.8ms | 16.8–33ms | 0 | 10–15ms |
 
+The walk-in on request (same harness: a click, then every rAF interval from the first moving frame to the
+frame after the landing, traced; 3 runs per case, no harness polling while it flies):
+
+| Case | Viewport | Flight | Frames | p95 frame | Worst frame | Frames > 17.5ms |
+|---|---|---|---|---|---|---|
+| Action, Dia / Noite | 390 × 844, DPR 3 | 1483ms | 90 | 16.7–16.8ms | 16.8ms | 0 |
+| Action, Dia / Noite | 1440 × 900, DPR 1 | 1483–1500ms | 90–91 | 16.7–16.8ms | 16.8ms | 0 |
+| Scroll cue, Noite | 390 × 844, DPR 3 | 1483ms | 90 | 16.7ms | 16.8ms | 0 |
+
+The hand-scroll case was re-measured after the change and is as before (p95 16.7–16.8ms, worst 33ms, 0 over 50ms).
+
 Before this pass (the former build with the ViewTimeline driver, same harness, all frames): p95 33ms and
 frames up to 67ms at 1440, with 1.1–1.2s of raster per pass; the first version of the plain-JS driver,
 before the opacity layers were promoted, reached 2.7s of raster and frames of 200–230ms. The rest state at p = 0 is pixel-identical to the
@@ -636,6 +745,11 @@ drawing the client approved (only the pendant's antialiasing differs, it moved i
 Real devices are still to be checked (see Roadmap).
 
 ## Dia & Noite (extension)
+Which one shows: the visitor's stored choice; otherwise Torres Vedras time (Dia while the sun's altitude over
+39.09 N, 9.26 W is above −0.833°, the standard sunrise and sunset; Noite otherwise), decided by the head
+script before the first paint, so there is no flash. If the sun rises or sets while the page is open, the
+theme changes once, at that minute, with the 400ms cross-fade (a tab back from the background catches up at
+once); never while the visitor has chosen. Without JavaScript the system theme decides, as before.
 `[data-theme]` on any element scopes a theme to that subtree (the styleguide shows both side by side); the
 semantic block for Noite is written once in `src/noite.css` and emitted twice by the build (system preference
 unless Dia was chosen, and the manual choice). Illustration roles that change: ink colours and opacities (`--i-ink*`,
@@ -643,6 +757,23 @@ unless Dia was chosen, and the manual choice). Illustration roles that change: i
 lamplight gradient at night), `--i-room-base`, `--o-night` (lamplight layers), `--o-day` (sun shadows),
 `--o-turn` (a turned leaf darkens by day). `--color-hall` changes too (`--sala-dia` / `--sala-noite`), and
 `--color-field-hall` (papel / luz-nucleo).
+
+## A distinctive touch (extension)
+The client asked whether something should be added for «ar e feeling», beyond extra-premium UI. Four
+candidates from the brief were prototyped on the built page (injected, outside the build), recorded and judged
+against the motion budget (taste-skill: one hero motion per page, the door), Emil's first question (should
+this animate at all: purpose, frequency, what it costs the next action) and the Jobs filter (does it say
+something only this house can say, or is it decoration). One is kept.
+
+| Candidate | Prototype and measurement | Verdict |
+|---|---|---|
+| **Torres Vedras time**: the default Dia / Noite follows sunrise and sunset over the house | the sun's altitude at 39.09 N, 9.26 W from a low-precision solar ephemeris in the head script (about 600 bytes): sunrise/sunset within 1–2 minutes of published times for 2026 (8 Nov 07:13 / 17:29 UTC, 21 Jun 05:12 / 20:07, 21 Dec 07:53 / 17:18); 18 checks (both system schemes, stored choice, manual toggle, every page, a sunset while the page is open) | **Kept.** No motion, no pixel, no request: the page becomes a window onto the house at this hour. A visitor in São Paulo at 19:00 sees the lantern lit, because it is night in Torres Vedras. It says something only this house can say. |
+| **Ink draws itself** on first visit (contours, then washes bloom) | stroke-dash draw of the ink paths (top to bottom, 0.5s stagger, 0.9s each), washes fade in at 1.0s; holds 60fps under 4× throttle but rasters 133ms (390, DPR 3) / 316ms (1440) during the load window | **Removed.** It spends the page's one load gesture twice (the doors already ease ajar), withholds the drawing the client approved for 1.5s on the visit that matters most (the first), shows a grey wireframe on the way, and the line-draw reveal is a common template trope. |
+| **Living lantern** at night (irregular warm flicker of the lantern and the doorway light, opacity 0.86–1) | WAAPI opacity on the six lamplight layers, 4.2s irregular loop; cheap here, invisible in stills and only noticed as "something moves" beside the text | **Removed.** An endless ambient loop has no purpose a visitor can name (no feedback, no state, no space), pulls the eye from the sentence beside it, keeps the compositor busy on phones, and a flickering electric lantern reads as a failing bulb. The lamp is already alive where it counts: it is lit only at night, and the light swings open with the doors. |
+| **Sketchbook signature** «Torres Vedras, 2026» in the drawing's corner | single-stroke script lettering (Hershey script cuts) with a hand wobble, in the drawing's ink | **Removed.** It reads as a script font, not a hand (the brief's own condition), it sits on the steps and crowds the drawing, and it repeats what the lockup already says. |
+
+Evidence: frame strips, videos and the prototype measurements are kept with the review notes, not in the
+repository.
 
 ## Voice & content (extension)
 pt-PT first, EN second. Facts only.
@@ -680,8 +811,9 @@ checkbox). Drawing: `role="img"` with a short description; its parts are present
 `aria-invalid` + `aria-describedby` inline messages, focus to the first invalid field, `role="status"` for
 sending outcomes, `aria-busy` while sending, 44px targets. `prefers-contrast: more` lifts muted text and
 detail lines; forced colours turn the drawing into a clean CanvasText line drawing and hide the light
-layers; print drops the pinning, the top bar, the scroll cue and the form. Keyboard and the sequence: the
-action and Tab land on the email field with the list in view (no replay of the sequence); focusing anything
+layers; print drops the pinning, the top bar, the scroll cue and the form. Keyboard and the sequence: Enter or
+Space on the action plays the walk-in (any key stops it) and lands in the email field; Tab from the action
+lands on the email field with the list in view (a jump, no replay of the sequence); focusing anything
 in the first screen mid-sequence rewinds to the rest state, so focus is never on an invisible element.
 
 ## Implementation notes (extension)
@@ -691,8 +823,12 @@ in the first screen mid-sequence rewinds to the rest state, so focus is never on
   `scene.py` models the doorway in metres and projects it; `hand.py` turns every edge into seeded pen and
   brush geometry (see Components › entrance). The build is deterministic.
 - Tests (Playwright + Chromium, never touching the real endpoint): `node src/tests/reverse-scroll.test.js docs`
-  (the reverse-scroll / overscroll / toolbar regression, 40 checks) and `node src/tests/cta.test.js docs`
-  (the action jumps without replaying the sequence and focuses the email; click, Enter, Tab, reduced motion).
+  (the reverse-scroll / overscroll / toolbar regression, 40 checks; it chooses Dia or Noite explicitly, since
+  the default now follows the sky) and `node src/tests/cta.test.js docs` (the walk-in on request, 23 checks at
+  390 and 1440: click, Enter, Space and the scroll cue fly forwards only, 1.2–1.7s, with the scene playing,
+  and land with the title and the email in view and the focus in the email; a wheel, a key, a pointer press or
+  a touch stops it and nothing moves afterwards; Tab, reduced motion and `#lista` on load jump without a
+  replay; after a flight, wheeling back up restores the exact rest state).
 - Output: `docs/index.html`, `docs/en/index.html`, `docs/privacidade/index.html`, `docs/en/privacy/index.html`,
   `docs/404.html`, `docs/design/index.html` (noindex, unlinked styleguide), `assets/css/tokens.css`,
   `assets/css/site.css`, `assets/js/site.js`, fonts, images, `favicon.svg`, `robots.txt`, `sitemap.xml` (home
@@ -704,8 +840,10 @@ in the first screen mid-sequence rewinds to the rest state, so focus is never on
   submit to Supabase (EU).
 - Raw hex appears only in tokens.css, plus what cannot read CSS: the two `theme-color` metas, the manifest and
   favicon.svg.
-- Budget, measured on the home page with gzip -9 (fonts as shipped): 147.0 KB — HTML 57.9, CSS 13.9 (tokens 5.6, site 8.3), JS 7.5, fonts 67.7 (woff2 as shipped); limit 170 KB (og and
-  icons excluded). The drawing is inline SVG (the caderno line work is most of the HTML). CLS 0 on every page
+- Budget, measured on the home page with gzip -9 (fonts as shipped): 149.9 kB (146.4 KiB) — HTML 59.4, CSS 18.7
+  (tokens 8.4, site 10.3), JS 9.7 (the walk-in on request and Torres Vedras time added 2.0), fonts 62.2 (Cinzel
+  40.7, Alegreya 12.5, Alegreya Sans 9.0); target 150 kB, ceiling 170 kB (og and icons excluded). The privacy
+  notice is 96.9 kB. The drawing is inline SVG (the caderno line work is most of the HTML). CLS 0 on every page
   (the wrapper grows below the fold). LCP is text.
 
 ## Iteration guide
@@ -726,14 +864,18 @@ in the first screen mid-sequence rewinds to the rest state, so focus is never on
 - Canvas papel #F9F0E9 / noite #1C120B · hall #F2DEC4 / #FCE7BC · text nogueira #5F3819 / linho #F3E6D6 ·
   strongest tinta #2E1E14 · muted castanho #804F1E / linho-escuro #C2AE96 · brass text latao-texto #83602C
   by day, latao #DB9E42 by night · errors barro #9E3B1E on the hall only.
-- "A control in the A Brazileira system: Cormorant Garamond 500, 16px, sentence case, colour
+- "A control in the A Brazileira system: Alegreya Sans 500, 16px, tracking 0.018em, sentence case, colour
   `--color-text-muted`, 44px target, current state = `--color-text-strong` with a 1px underline 0.3em below,
   focus = 2px solid `--color-focus`, offset 3px."
-- "A form on the hall: `.surface-hall`, 26rem column, 18px labels above 48px square fields (papel by day,
-  luz-nucleo by night, 1px nogueira), a full-width 48px tinta button with papel text, errors in barro 15px under the field with
+- "A form on the hall: `.surface-hall`, 26rem column, Alegreya Sans 500 16px labels above 48px square fields
+  (Alegreya 400 18px text; papel by day, luz-nucleo by night, 1px nogueira), a full-width 48px tinta button with
+  papel text in Alegreya Sans 16/18px, the consent in Alegreya 16/24px, errors in barro 16px under the field with
   aria-invalid/aria-describedby, outcomes in a role=status line."
 
 ## Roadmap and known gaps
+- Real devices for the walk-in on request: iOS Safari (programmatic scroll per frame while the toolbar
+  collapses) and Android Chrome (the focus at the landing may raise the keyboard, since the click's user
+  activation is still valid 1.5s later).
 - Real-device pass on iOS Safari (17–26) and Android Chrome for the single driver, rubber-band overscroll and
   the collapsing toolbar: the headless runs above use Chromium only (WebKit was not available here), and the
   iOS overscroll is emulated in the regression test, not reproduced.

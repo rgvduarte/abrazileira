@@ -46,8 +46,8 @@ def pairs():
            ("Texto · lede", "nogueira", "papel", "texto"),
            ("Texto discreto · controlos, rodapé", "castanho", "papel", "texto"),
            ("Latão-texto · Torres Vedras, estado", "latao-texto", "papel", "texto"),
-           ("Emblema", "latao-marca", "papel", "gráfico ≥ 3:1"),
-           ("Foco · linha do chão", "nogueira", "papel", "não-texto ≥ 3:1")]
+           ("Emblema", "latao-marca", "papel", "gráfico mín. 3:1"),
+           ("Foco · linha do chão", "nogueira", "papel", "não-texto mín. 3:1")]
     noite = [("Texto · wordmark, lede", "linho", "noite", "texto"),
              ("Texto discreto · controlos, rodapé", "linho-escuro", "noite", "texto"),
              ("Latão · Torres Vedras, estado, emblema, foco", "latao", "noite", "texto")]
@@ -57,9 +57,9 @@ def pairs():
                  ("Texto · " + h, "nogueira", h, "texto"),
                  ("Rodapé · " + h, "castanho", h, "texto"),
                  ("Erro · " + h, "barro", h, "texto"),
-                 ("Borda do campo, foco · " + h, "nogueira", h, "não-texto ≥ 3:1")]
+                 ("Borda do campo, foco · " + h, "nogueira", h, "não-texto mín. 3:1")]
     hall += [("Texto do botão", "papel", "tinta", "texto"), ("Texto no campo · Dia", "tinta", "papel", "texto"),
-             ("Texto no campo · Noite", "tinta", "luz-nucleo", "texto"), ("Borda do campo · Noite", "nogueira", "luz-nucleo", "não-texto ≥ 3:1")]
+             ("Texto no campo · Noite", "tinta", "luz-nucleo", "texto"), ("Borda do campo · Noite", "nogueira", "luz-nucleo", "não-texto mín. 3:1")]
     rows = []
     for theme, lst in (("Dia", dia), ("Noite", noite), ("Sala (lista)", hall)):
         for label, fg, bg, use in lst:
@@ -123,15 +123,15 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
         for th in ("dia", "noite"))
 
     timeline = [
-        ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 → 0.16", "opacidade 1 → 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
-        ("Indicador de deslizar", "Decoração", "0 → 0.05", "opacidade 1 → 0", "--curve-copy"),
-        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 → 0.42", "esquerda +47° (41° → 88°), direita +61° (27° → 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
-        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 → 0.42", "opacidade 0 → 1 (o valor das folhas)", "--curve-door"),
-        ("Câmara: centrar a porta", "Principal", "0 → 0.36", "translação em linha reta até ao centro do ecrã", "--curve-pan (0.35, 0.4, 0.3, 1)"),
-        ("Câmara: entrar", "Principal", "0.04 → 0.90", "escala geométrica 1 → S: a abertura cobre todo o ecrã em qualquer proporção", "--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)"),
-        ("A sala torna-se a cor da lista", "Apoio, passagem", "0.60 → 0.86", "camada lisa --color-hall dentro da porta, opacidade 0 → 1", "--curve-fade (0.45, 0, 0.55, 1)"),
-        ("Luz em todo o palco", "Apoio", "0.86 → 0.92", "a mesma cor sobre a mesma cor (cobre as folhas de perfil)", "--curve-fade"),
-        ("Lista de espera", "Chegada", "título entra no ecrã a p ≈ 0.82", "título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms", "--ease-out"),
+        ("Texto (lockup, frase, estado, ação)", "Apoio, sai", "0 a 0.16", "opacidade 1 a 0, sobe 16px", "--curve-copy (0.33, 1, 0.68, 1)"),
+        ("Indicador de deslizar", "Decoração", "0 a 0.05", "opacidade 1 a 0", "--curve-copy"),
+        ("Folhas da porta", "Principal, desde o primeiro píxel", "0 a 0.42", "esquerda +47° (41° a 88°), direita +61° (27° a 88°)", "--curve-door (0.3, 0.55, 0.35, 1)"),
+        ("Sala iluminada, luz nos degraus (Noite)", "Apoio, levada pelas folhas", "0 a 0.42", "opacidade 0 a 1 (o valor das folhas)", "--curve-door"),
+        ("Câmara: centrar a porta", "Principal", "0 a 0.36", "translação em linha reta até ao centro do ecrã", "--curve-pan (0.35, 0.4, 0.3, 1)"),
+        ("Câmara: entrar", "Principal", "0.04 a 0.90", "escala geométrica 1 a S: a abertura cobre todo o ecrã em qualquer proporção", "--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)"),
+        ("A sala torna-se a cor da lista", "Apoio, passagem", "0.60 a 0.86", "camada lisa --color-hall dentro da porta, opacidade 0 a 1", "--curve-fade (0.45, 0, 0.55, 1)"),
+        ("Luz em todo o palco", "Apoio", "0.86 a 0.92", "a mesma cor sobre a mesma cor (cobre as folhas de perfil)", "--curve-fade"),
+        ("Lista de espera", "Chegada", "título entra no ecrã por volta de p = 0.82", "título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms", "--ease-out"),
     ]
     trows = "\n".join(f"<tr><td>{a}</td><td>{b}</td><td class=\"sg-num\">{c}</td><td>{d}</td><td>{e}</td></tr>" for a, b, c, d, e in timeline)
 
@@ -173,19 +173,19 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None):
 <style>
 body {{ display: block; font-size: var(--size-ui); }}
 .sg {{ max-inline-size: var(--container); margin-inline: auto; padding: var(--space-7) max(var(--gutter), env(safe-area-inset-left)) var(--space-9); }}
-.sg h1, .sg h2 {{ margin: 0; font-weight: var(--weight-text); color: var(--color-text-strong); }}
+.sg h1, .sg h2 {{ margin: 0; font-family: var(--font-title); font-weight: var(--weight-text); letter-spacing: var(--track-lede); color: var(--color-text-strong); }}
 .sg h1 {{ font-size: var(--size-lede); }}
 .sg h2 {{ font-size: var(--size-lede); margin-block: var(--space-8) var(--space-4); padding-block-start: var(--space-4); border-block-start: var(--hairline) solid var(--color-ground); }}
 :where(.sg) p, :where(.sg) ul {{ margin: 0; }}
 .sg-intro {{ display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }}
 .sg-intro .lockup {{ font-size: 1.5rem; }}
 .sg-intro p + p {{ margin-block-start: var(--space-2); color: var(--color-text-muted); }}
-.sg-note {{ max-inline-size: 40em; color: var(--color-text); }}
+.sg-note {{ max-inline-size: var(--measure-read); font-family: var(--font-text); font-weight: var(--weight-text); font-size: var(--size-read); line-height: var(--leading-read); letter-spacing: 0; font-variant-numeric: var(--num-text); color: var(--color-text); text-wrap: pretty; }}
 .sg-sws {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-4); padding: 0; list-style: none; }}
 .sg-sw {{ display: grid; grid-template-columns: var(--space-8) 1fr; column-gap: var(--space-3); align-items: center; }}
 .sg-chip {{ grid-row: span 3; block-size: var(--space-8); border: var(--hairline) solid var(--color-ground); }}
 .sg-sw__name {{ color: var(--color-text-strong); }}
-.sg-sw__hex, .sg-sw__note {{ font-size: var(--size-small); color: var(--color-text-muted); }}
+.sg-sw__hex, .sg-sw__note {{ font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-panels {{ display: grid; gap: var(--space-5); }}
 .sg-panel {{ background: var(--color-bg); color: var(--color-text); border: var(--hairline) solid var(--color-ground); padding: var(--space-5); }}
 .sg-tag {{ color: var(--color-text-muted); margin-block-end: var(--space-4); }}
@@ -193,10 +193,10 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-panel__text {{ display: flex; flex-direction: column; align-items: center; text-align: center; }}
 .sg-panel .lockup {{ font-size: 2rem; }}
 .sg-controls {{ display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-5); margin-block-start: var(--space-5); }}
-.sg-foot {{ margin-block-start: var(--space-4); font-size: var(--size-small); color: var(--color-text-muted); }}
+.sg-foot {{ margin-block-start: var(--space-4); font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-entrance {{ flex: none; block-size: 26rem; max-block-size: none; margin: 0; overflow: clip; }}
 .sg-opens {{ display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }}
-.sg-open {{ margin: 0; padding: var(--space-5); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-small); }}
+.sg-open {{ margin: 0; padding: var(--space-5); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-ui); }}
 .sg-open .sg-entrance {{ block-size: 20rem; margin-block-end: var(--space-3); }}
 .sg-open .leaf--l {{ transform: rotateY(var(--open-l)); }}
 .sg-open .leaf--r {{ transform: rotateY(calc(var(--open-r) * -1)); }}
@@ -206,13 +206,13 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-form {{ padding: var(--space-5); color: var(--color-text); }}
 .sg-form .form {{ margin: 0; }}
 @media (min-width: 56.25em) {{ .sg-panel__grid {{ grid-template-columns: 1fr 1fr; }} .sg-panels {{ grid-template-columns: 1fr; }} }}
-.sg table {{ inline-size: 100%; border-collapse: collapse; font-size: var(--size-small); }}
+.sg table {{ inline-size: 100%; border-collapse: collapse; font-size: var(--size-ui); }}
 .sg th, .sg td {{ text-align: start; padding: var(--space-2) var(--space-3) var(--space-2) 0; border-block-end: var(--hairline) solid var(--color-surface); vertical-align: top; }}
-.sg th {{ font-weight: 600; color: var(--color-text-strong); }}
-.sg-num {{ font-variant-numeric: tabular-nums; color: var(--color-text-strong); }}
+.sg th {{ font-weight: var(--weight-ui); color: var(--color-text-strong); }}
+.sg-num {{ font-variant-numeric: lining-nums; color: var(--color-text-strong); }}
 .sg-scroll {{ overflow-x: auto; }}
 .sg-type li {{ display: grid; gap: var(--space-1); padding-block: var(--space-4); border-block-end: var(--hairline) solid var(--color-surface); }}
-.sg-type small {{ font-size: var(--size-small); color: var(--color-text-muted); }}
+.sg-type small {{ font-size: var(--size-ui); color: var(--color-text-muted); }}
 .sg-type ul, .sg-space, .sg-rules {{ padding: 0; list-style: none; }}
 .sg-space li {{ display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-1); }}
 .sg-bar {{ block-size: var(--space-3); background: var(--color-text-muted); }}
@@ -262,9 +262,13 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__name">A Brazileira</span></span><small>Cinzel 600 · <code>--size-wordmark</code> 28 a 56px · tracking 0.045em · só no logótipo</small></li>
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__kind">Boutique Hotel</span></span><small>Cinzel 700 · 0.5em do wordmark · tracking 0.12em</small></li>
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__place">Torres Vedras</span></span><small>Cinzel 400 · 0.4em · tracking 0.3em · latão</small></li>
-<li><span style="font-size:var(--size-lede);line-height:var(--leading-lede);color:var(--color-text)">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Cormorant Garamond 500 · <code>--size-lede</code> 20 a 28px · altura de linha 1.32</small></li>
-<li><span>Dia · Noite · PT · EN · Abre brevemente.</span><small>Cormorant Garamond 500 · <code>--size-ui</code> 16px · frase normal, sem espaçamento</small></li>
-<li><span style="font-size:var(--size-small);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Cormorant Garamond 500 · <code>--size-small</code> 15px</small></li>
+<li><span class="lista__title" style="text-align:start">Lista de espera</span><small>Alegreya 400 · <code>--size-title</code> 26 a 34px · altura de linha 1.18 · tracking –0.01em · títulos de secção e de página</small></li>
+<li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Alegreya 400 · <code>--size-lede</code> 18px (320) a 19px (390) a 26px · linha 1em + 7.2px (19/26, 26/33) · tracking –0.005em · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
+<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>Alegreya 400 · <code>--size-read</code> 18/28px · algarismos de texto · medida 26.5em (até 68 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
+<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>Alegreya Sans 500 · <code>--size-cta</code> 16px no telemóvel, 18px a partir de 900px · tracking 0.018em / 0.015em · a ação e o botão</small></li>
+<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>Alegreya Sans 500 · <code>--size-ui</code> 16px · tracking 0.018em · frase normal; PT e EN com 0.06em · o estado mais calmo que a ação: latão, mais perto da frase</small></li>
+<li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>Alegreya 400 · <code>--size-ui</code> 16/24px · o consentimento (o rótulo «Email» e as mensagens em Alegreya Sans 16px)</small></li>
+<li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Alegreya Sans 500 · <code>--size-ui</code> 16/24px · algarismos alinhados</small></li>
 </ul></div>
 
 <h2>Espaço (base 4px)</h2>
@@ -290,7 +294,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
-<li>Maiúsculas espaçadas só dentro do logótipo. Interface em frase normal, Cormorant 500, 15 a 16px.</li>
+<li>Maiúsculas espaçadas só dentro do logótipo. Frases em Alegreya 400; interface em Alegreya Sans 500, frase normal, 16 a 18px. Quatro tamanhos de texto fora do logótipo, nada abaixo de 16px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
 <li>Fundos planos: Papel de dia, Noite (nogueira) à noite. O único gradiente é a luz dentro do desenho, à noite.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>
 <li>Sem itálicos decorativos, pontos de exclamação, emoji ou palavras de virtude.</li>

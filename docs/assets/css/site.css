@@ -19,15 +19,22 @@ body {
   grid-template-rows: auto 1fr auto;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-text);
-  font-weight: var(--weight-text);
+  font-family: var(--font-ui);              /* the interface voice; sentences switch to the serif roles */
+  font-weight: var(--weight-ui);
   font-size: var(--size-ui);
   line-height: var(--leading-ui);
+  letter-spacing: var(--track-ui);
   font-kerning: normal;
   font-variant-ligatures: common-ligatures;
+  font-variant-numeric: var(--num-ui);      /* © 2026: lining figures in the interface */
+  font-synthesis: none;                     /* one file per family: never a fake bold or slant */
+  -webkit-font-smoothing: var(--smoothing);
+  -moz-osx-font-smoothing: var(--smoothing-moz);
   overflow-x: clip;
 }
 h1, h2 { font-size: inherit; font-weight: inherit; }
+q:lang(pt) { quotes: "\00AB" "\00BB" "\201C" "\201D"; }
+q:lang(en) { quotes: "\201C" "\201D" "\2018" "\2019"; }
 svg { display: block; }
 ::selection { background: var(--color-selection); color: var(--color-text-strong); }
 
@@ -83,7 +90,7 @@ svg { display: block; }
 .controls--lang { margin-inline-start: auto; }
 .controls__sep { color: var(--color-text-muted); user-select: none; }
 
-/* one control style for every switch: sentence case, no tracking */
+/* one control style for every switch: sentence case, the interface tracking (Alegreya Sans 500 at 16px) */
 .ctl {
   display: inline-flex;
   align-items: center;
@@ -96,11 +103,12 @@ svg { display: block; }
   background: none;
   color: var(--color-text-muted);
   font: inherit;
+  letter-spacing: var(--track-ui);   /* buttons do not inherit it */
   text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: color var(--dur-ui) ease;
+  transition: color var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
 }
 /* current / pressed: stronger ink and an underline, so state is never colour alone */
 .ctl[aria-current="page"],
@@ -113,7 +121,10 @@ svg { display: block; }
 @media (hover: hover) and (pointer: fine) {
   .ctl:hover { color: var(--color-text-strong); }
 }
-.ctl:active { color: var(--color-text); }
+.ctl:active { color: var(--color-text); transform: scale(0.97); }   /* the same press as the action and the button */
+@media (prefers-reduced-motion: reduce) { .ctl:active { transform: none; } }
+/* PT and EN are capitals: the same 16px, spaced so they sit at the weight of Dia and Noite */
+.ctl[hreflang] { letter-spacing: var(--track-caps); }
 
 /* ---- Stage -------------------------------------------------------------------- */
 .stage {
@@ -145,6 +156,7 @@ svg { display: block; }
   font-weight: 600;
   line-height: var(--leading-lockup);
   text-transform: uppercase;
+  letter-spacing: 0;
   color: var(--color-text-strong);
 }
 .lockup__emblem {
@@ -175,50 +187,65 @@ svg { display: block; }
 }
 
 /* ---- Message ------------------------------------------------------------------ */
+/* the sentence the house says: Alegreya, the largest text after the logo */
 .lede {
   max-inline-size: var(--measure-lede);
   margin-block-start: var(--space-5);
+  font-family: var(--font-lede);
+  font-weight: var(--weight-text);
   font-size: var(--size-lede);
   line-height: var(--leading-lede);
+  letter-spacing: var(--track-lede);
+  font-variant-numeric: var(--num-text);
   color: var(--color-text);
   text-wrap: balance;
 }
+/* 320-359px phones, Portuguese: one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada /
+   para receber hóspedes.»). A plain wrap at 14.4em lands on those breaks with 3% to spare either side, so the web
+   font and its fallback break alike (balance would pick a different split for each). From 360px: two balanced lines. */
+@media (min-width: 20em) and (max-width: 22.49em), (orientation: landscape) and (max-height: 31.25em) and (max-width: 42.49em) {
+  .lede:lang(pt) { max-inline-size: 14.4em; text-wrap: wrap; }   /* also the narrow column of small landscape phones */
+}
+/* the status is a postscript to the sentence: close under it, brass, interface size. The action stands apart
+   (more space above, strong ink, underline), so the two never compete; weight never separates them */
 .status {
-  margin-block-start: var(--space-3);
+  margin-block-start: var(--space-2);
+  font-family: var(--font-status);
   color: var(--color-accent-text);
 }
 
 /* ---- The one action: a text link-button to the waiting list -------------------- */
-.cta-row { margin-block-start: var(--space-2); }
+.cta-row { margin-block-start: var(--space-4); }
 .cta {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--target);
   padding-inline: var(--space-2);
   color: var(--color-text-strong);
+  font-family: var(--font-cta);
   font-size: var(--size-cta);
+  letter-spacing: var(--track-cta);
   text-decoration: underline;
   text-decoration-thickness: var(--hairline);
-  text-underline-offset: 0.3em;
+  text-underline-offset: 0.28em;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: color var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) {
-  .cta:hover { color: var(--color-text); }
+  transition: color var(--dur-ui) ease, text-decoration-color var(--dur-ui) ease, transform var(--dur-press) var(--ease-out);
 }
 .cta:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) { .cta:active { transform: none; } }
 
 /* ---- Footer ------------------------------------------------------------------- */
 .foot {
+  font-family: var(--font-foot);
   background: var(--color-bg);
   padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
   padding-inline:
     max(var(--gutter), env(safe-area-inset-left))
     max(var(--gutter), env(safe-area-inset-right));
   text-align: center;
-  font-size: var(--size-small);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
   color: var(--color-text-muted);
 }
 .foot__link {
@@ -231,13 +258,19 @@ svg { display: block; }
   text-decoration-thickness: var(--hairline);
   text-underline-offset: 0.3em;
 }
-@media (hover: hover) and (pointer: fine) {
-  .foot__link:hover { color: var(--color-text-strong); }
-}
 /* narrow screens: the link takes its own line instead of wrapping after a dangling separator */
 @media (max-width: 29.99em) {
   .foot__sep { display: none; }
   .foot__link { display: flex; justify-content: center; inline-size: fit-content; margin-inline: auto; margin-block-end: calc(var(--space-3) * -1); }
+}
+/* each piece of the footer line has a fallback matched to its own width, so a late font moves nothing */
+.foot__name { font-family: var(--font-foot-name); }
+.foot__place { font-family: var(--font-foot-place); }
+.foot__dot, .foot__sep, .status--links .controls__sep { font-family: var(--font-sep); }
+/* phones: name and town on two lines whatever the font, so the swap never re-wraps the footer */
+@media (max-width: 29.99em) {
+  .foot__dot { display: none; }
+  .foot__place { display: block; }
 }
 
 /* ==== The entrance ================================================================ */
@@ -475,8 +508,8 @@ svg { display: block; }
   display: flex;
   justify-content: center;
   padding-block: var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
-  line-height: var(--leading-ui);
-  font-size: var(--size-small);
+  line-height: var(--leading-text);
+  font-size: var(--size-ui);
 }
 /* a quiet scroll cue under the floor line: static, no loop; fades out as soon as the sequence starts */
 .porta__cue {
@@ -521,7 +554,7 @@ svg { display: block; }
 .porta__probe { position: absolute; inset-block-start: 0; inline-size: 0; block-size: 100vh; block-size: 100svh; visibility: hidden; }
 
 /* ==== Waiting list ======================================================================= */
-.surface-hall { background: var(--color-bg); }
+.surface-hall { background: var(--color-bg); -webkit-font-smoothing: var(--smoothing); -moz-osx-font-smoothing: var(--smoothing-moz); }
 .lista {
   position: relative;
   color: var(--color-text);
@@ -554,26 +587,42 @@ svg { display: block; }
   z-index: -1;
   background: var(--color-bg);
 }
-.lista__title {
+.lista__title,
+.notice__title {
+  font-family: var(--font-title);
+  font-weight: var(--weight-text);
   font-size: var(--size-title);
-  line-height: 1.1;
+  line-height: var(--leading-title);
+  letter-spacing: var(--track-title);
+  font-variant-numeric: var(--num-text);
   color: var(--color-text-strong);
-  text-align: center;
+  text-wrap: balance;
 }
-.lista__lede {
-  margin-block-start: var(--space-3);
+.lista__title { text-align: center; }
+.lista__lede,
+.notice__intro {
+  font-family: var(--font-list);
+  font-weight: var(--weight-text);
   font-size: var(--size-lede);
   line-height: var(--leading-lede);
+  letter-spacing: var(--track-lede);
+  font-variant-numeric: var(--num-text);
+}
+.lista__lede {
+  max-inline-size: var(--measure-lede);     /* two balanced lines at every width, in either font */
+  margin-block-start: var(--space-3);
+  margin-inline: auto;
   text-align: center;
   text-wrap: balance;
 }
-.lista__noscript { margin-block-start: var(--space-5); font-size: var(--size-cta); line-height: var(--leading-read); text-align: center; }
+.lista__noscript { margin-block-start: var(--space-5); font-family: var(--font-text); font-weight: var(--weight-text); font-size: var(--size-read); line-height: var(--leading-read); letter-spacing: var(--track-read); font-variant-numeric: var(--num-text); text-align: center; text-wrap: pretty; }
 .form { margin-block-start: var(--space-7); }
 
 .field__label {
   display: block;
   margin-block-end: var(--space-2);
-  font-size: var(--size-cta);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
   color: var(--color-text-strong);
 }
 .field__input {
@@ -587,8 +636,15 @@ svg { display: block; }
   background: var(--color-field);
   color: var(--color-text-strong);
   font: inherit;
-  font-size: var(--size-cta);   /* 18px: never below 16px, so iOS does not zoom on focus */
+  /* what the guest writes: Alegreya 400 (the hand of the house's book, never the Medium interface weight),
+     18px so iOS does not zoom on focus, lining figures for addresses */
+  font-family: var(--font-text);
+  font-weight: var(--weight-text);
+  font-size: var(--size-read);
+  letter-spacing: var(--track-read);
+  font-variant-numeric: lining-nums;
   appearance: none;
+  transition: border-color var(--dur-ui) ease;
 }
 .field__input:focus-visible { outline-offset: 2px; }
 .field__input[aria-invalid="true"],
@@ -598,7 +654,8 @@ svg { display: block; }
 }
 .field__msg {
   margin-block-start: var(--space-2);
-  font-size: var(--size-small);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
   color: var(--color-error);
 }
 .field__msg:not([hidden]) { animation: msg-in var(--dur-state) var(--ease-out); }
@@ -620,9 +677,14 @@ svg { display: block; }
   align-items: flex-start;
   gap: var(--space-3);
   min-block-size: var(--target);
-  padding-block: calc((var(--target) - 1.5rem) / 2) 0;
-  font-size: var(--size-cta);
-  line-height: 1.35;
+  padding-block: calc((var(--target) - 1.5rem) / 2) 0;   /* the 24px box and the first 24px line share a centre */
+  font-family: var(--font-consent);
+  font-weight: var(--weight-text);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
+  letter-spacing: var(--track-read);
+  font-variant-numeric: var(--num-text);
+  text-wrap: pretty;
   cursor: pointer;
 }
 .check__box {
@@ -653,15 +715,14 @@ svg { display: block; }
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
 }
-.check__text { padding-block-start: 0.05em; }
+.check__text { min-inline-size: 0; }
+.check__more { display: block; }                      /* «Ler a nota de privacidade.» on its own line */
+.check__text .link-inline { white-space: nowrap; }   /* «nota de privacidade» reads and taps as one unit */
 .link-inline {
   color: var(--color-text-strong);
   text-decoration: underline;
   text-decoration-thickness: var(--hairline);
   text-underline-offset: 0.2em;
-}
-@media (hover: hover) and (pointer: fine) {
-  .link-inline:hover { color: var(--color-text); }
 }
 .form__hp {
   position: absolute;
@@ -671,6 +732,7 @@ svg { display: block; }
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.form__hp > * { display: block; }   /* the trap field never sits after its label's text, whatever the font */
 
 /* the button: the label swap never changes its size (both labels share one grid cell) */
 .button {
@@ -686,6 +748,8 @@ svg { display: block; }
   color: var(--color-on-strong);
   font: inherit;
   font-size: var(--size-cta);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--track-cta);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -707,10 +771,11 @@ svg { display: block; }
 
 .form__msg {
   margin-block-start: var(--space-4);
-  font-size: var(--size-cta);
-  line-height: var(--leading-lede);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
   color: var(--color-text-strong);
   text-align: center;
+  text-wrap: balance;
 }
 .form__msg:empty { display: none; }
 .form__msg:focus { outline: none; }
@@ -726,7 +791,12 @@ svg { display: block; }
 }
 .form[data-state="done"] .form__msg {
   margin-block-start: 0;
+  font-family: var(--font-lede);
+  font-weight: var(--weight-text);
   font-size: var(--size-lede);
+  line-height: var(--leading-lede);
+  letter-spacing: var(--track-lede);
+  font-variant-numeric: var(--num-text);
   animation: done-in var(--dur-success) var(--ease-out);
 }
 /* without JavaScript the form cannot send: the controls are drawn as unavailable with tokens, not dimmed */
@@ -765,23 +835,49 @@ svg { display: block; }
   padding-inline:
     max(var(--gutter), env(safe-area-inset-left))
     max(var(--gutter), env(safe-area-inset-right));
+  font-family: var(--font-read);
+  font-weight: var(--weight-text);
   font-size: var(--size-read);
   line-height: var(--leading-read);
+  letter-spacing: var(--track-read);
+  font-variant-numeric: var(--num-text);    /* old-style figures in the reading text: art. 6.º, 24 meses */
 }
 .notice__home { display: flex; justify-content: center; text-decoration: none; }
 .lockup--small { font-size: 1.5rem; }          /* 24px wordmark: the minimum size of the lockup */
-.notice__title {
-  margin-block-start: var(--space-8);
-  font-size: var(--size-title);
-  line-height: 1.1;
+.notice__title { margin-block-start: var(--space-8); max-inline-size: var(--measure-title); }
+.notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
+.notice__item { margin-block-start: var(--space-6); }
+/* section names are signposts, not titles: the interface voice, strong ink */
+.notice__item h2 {
+  font-family: var(--font-ui);
+  font-weight: var(--weight-ui);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
+  letter-spacing: var(--track-ui);
+  font-variant-numeric: var(--num-ui);
   color: var(--color-text-strong);
 }
-.notice__intro { margin-block-start: var(--space-4); font-size: var(--size-lede); line-height: var(--leading-lede); }
-.notice__item { margin-block-start: var(--space-6); }
-.notice__item h2 { font-size: var(--size-cta); font-weight: 600; line-height: var(--leading-ui); color: var(--color-text-strong); }
-.notice__item p { margin-block-start: var(--space-2); max-inline-size: 36em; }
-.notice__updated { margin-block-start: var(--space-7); color: var(--color-text-muted); }
+/* a legal text is read word by word: no hyphenation at any width; text-wrap: pretty handles the rag */
+.notice__item p {
+  margin-block-start: var(--space-1);
+  max-inline-size: var(--measure-read);
+  -webkit-hyphens: manual;
+  hyphens: manual;
+  text-wrap: pretty;
+  hanging-punctuation: first allow-end last;
+}
+.notice__updated {
+  margin-block-start: var(--space-7);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-ui);
+  font-size: var(--size-ui);
+  line-height: var(--leading-text);
+  letter-spacing: var(--track-ui);
+  font-variant-numeric: var(--num-ui);
+  color: var(--color-text-muted);
+}
 .notice__back { margin-block-start: var(--space-3); margin-inline-start: calc(var(--space-2) * -1); }
+.notice__back .link { font-size: var(--size-cta); letter-spacing: var(--track-cta); font-variant-numeric: var(--num-ui); }
 .page-notice .link-inline { color: var(--color-text-strong); }
 
 /* ==== Split: text | entrance ============================================================ */
@@ -803,7 +899,8 @@ svg { display: block; }
     padding-block-end: var(--space-8);
   }
   .lede { margin-block-start: var(--space-7); }
-  .status { margin-block-start: var(--space-4); }
+  .status { margin-block-start: var(--space-3); }
+  .cta-row { margin-block-start: var(--space-5); }
   .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; }
   .scene { inset-inline-start: 0; }
 }
@@ -814,8 +911,8 @@ svg { display: block; }
   .stage { padding-block-start: var(--space-2); column-gap: var(--space-6); }
   .lockup { font-size: clamp(1.25rem, 5.6svh, 1.75rem); }
   .intro { padding-block-end: var(--space-4); }
-  .lede { margin-block-start: var(--space-4); font-size: clamp(1.0625rem, 4.6svh, 1.25rem); }
-  .status { margin-block-start: var(--space-2); }
+  .lede { margin-block-start: var(--space-4); font-size: var(--size-read); }
+  .status { margin-block-start: var(--space-1); }
   .entrance { min-block-size: 16rem; }
   .cta-row { margin-block-start: 0; }
   .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); }
@@ -829,7 +926,7 @@ svg { display: block; }
   .status { margin-block-start: var(--space-2); }
   .intro { margin-block-end: var(--space-3); }
   .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
-  .cta-row { margin-block-start: 0; }
+  .cta-row { margin-block-start: var(--space-2); }   /* the action still stands apart from the status */
   .porta__band { padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom)); }
 }
 
@@ -886,11 +983,27 @@ svg { display: block; }
   align-items: center;
   min-block-size: var(--target);
   padding-inline: var(--space-2);
+  font-family: var(--font-back);
+  font-weight: var(--weight-ui);
   color: var(--color-text-strong);
   text-decoration: underline;
   text-decoration-thickness: var(--hairline);
   text-underline-offset: 0.3em;
 }
+
+/* ---- Links: one hover for every text link ----------------------------------------
+   The underline is the affordance. Where a pointer can hover, it rests in the link's own ink at 45%
+   (--color-link-line) and takes the full ink on hover, with the text at its strongest: 150ms, colour only,
+   nothing moves. Touch screens keep the full underline (they never see the hover). */
+.link, .foot__link, .link-inline, .porta__cue { transition: color var(--dur-ui) ease, text-decoration-color var(--dur-ui) ease; }
 @media (hover: hover) and (pointer: fine) {
-  .link:hover { color: var(--color-text); }
+  .cta, .link, .foot__link, .link-inline { text-decoration-color: var(--color-link-line); }
+  .cta:hover, .link:hover, .foot__link:hover, .link-inline:hover, .porta__cue:hover {
+    color: var(--color-text-strong);
+    text-decoration-color: currentColor;
+  }
+  /* fields: the line darkens under the pointer (the focus ring stays the focus state); never on an invalid
+     field or a form that cannot send (no JS) */
+  .form__set:not(:disabled) .field__input:hover:not([aria-invalid="true"]),
+  .form__set:not(:disabled) .check__input:not([aria-invalid="true"]) + .check__label:hover .check__box { border-color: var(--color-text-strong); }
 }

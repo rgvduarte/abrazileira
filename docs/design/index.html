@@ -8,24 +8,24 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/tokens.css?v=0fb4853712">
-<link rel="stylesheet" href="../assets/css/site.css?v=16d8d93349">
+<link rel="stylesheet" href="../assets/css/tokens.css?v=288b10399d">
+<link rel="stylesheet" href="../assets/css/site.css?v=a124242b0c">
 <style>
 body { display: block; font-size: var(--size-ui); }
 .sg { max-inline-size: var(--container); margin-inline: auto; padding: var(--space-7) max(var(--gutter), env(safe-area-inset-left)) var(--space-9); }
-.sg h1, .sg h2 { margin: 0; font-weight: var(--weight-text); color: var(--color-text-strong); }
+.sg h1, .sg h2 { margin: 0; font-family: var(--font-title); font-weight: var(--weight-text); letter-spacing: var(--track-lede); color: var(--color-text-strong); }
 .sg h1 { font-size: var(--size-lede); }
 .sg h2 { font-size: var(--size-lede); margin-block: var(--space-8) var(--space-4); padding-block-start: var(--space-4); border-block-start: var(--hairline) solid var(--color-ground); }
 :where(.sg) p, :where(.sg) ul { margin: 0; }
 .sg-intro { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }
 .sg-intro .lockup { font-size: 1.5rem; }
 .sg-intro p + p { margin-block-start: var(--space-2); color: var(--color-text-muted); }
-.sg-note { max-inline-size: 40em; color: var(--color-text); }
+.sg-note { max-inline-size: var(--measure-read); font-family: var(--font-text); font-weight: var(--weight-text); font-size: var(--size-read); line-height: var(--leading-read); letter-spacing: 0; font-variant-numeric: var(--num-text); color: var(--color-text); text-wrap: pretty; }
 .sg-sws { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-4); padding: 0; list-style: none; }
 .sg-sw { display: grid; grid-template-columns: var(--space-8) 1fr; column-gap: var(--space-3); align-items: center; }
 .sg-chip { grid-row: span 3; block-size: var(--space-8); border: var(--hairline) solid var(--color-ground); }
 .sg-sw__name { color: var(--color-text-strong); }
-.sg-sw__hex, .sg-sw__note { font-size: var(--size-small); color: var(--color-text-muted); }
+.sg-sw__hex, .sg-sw__note { font-size: var(--size-ui); color: var(--color-text-muted); }
 .sg-panels { display: grid; gap: var(--space-5); }
 .sg-panel { background: var(--color-bg); color: var(--color-text); border: var(--hairline) solid var(--color-ground); padding: var(--space-5); }
 .sg-tag { color: var(--color-text-muted); margin-block-end: var(--space-4); }
@@ -33,10 +33,10 @@ body { display: block; font-size: var(--size-ui); }
 .sg-panel__text { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .sg-panel .lockup { font-size: 2rem; }
 .sg-controls { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-5); margin-block-start: var(--space-5); }
-.sg-foot { margin-block-start: var(--space-4); font-size: var(--size-small); color: var(--color-text-muted); }
+.sg-foot { margin-block-start: var(--space-4); font-size: var(--size-ui); color: var(--color-text-muted); }
 .sg-entrance { flex: none; block-size: 26rem; max-block-size: none; margin: 0; overflow: clip; }
 .sg-opens { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
-.sg-open { margin: 0; padding: var(--space-5); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-small); }
+.sg-open { margin: 0; padding: var(--space-5); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-ui); }
 .sg-open .sg-entrance { block-size: 20rem; margin-block-end: var(--space-3); }
 .sg-open .leaf--l { transform: rotateY(var(--open-l)); }
 .sg-open .leaf--r { transform: rotateY(calc(var(--open-r) * -1)); }
@@ -46,13 +46,13 @@ body { display: block; font-size: var(--size-ui); }
 .sg-form { padding: var(--space-5); color: var(--color-text); }
 .sg-form .form { margin: 0; }
 @media (min-width: 56.25em) { .sg-panel__grid { grid-template-columns: 1fr 1fr; } .sg-panels { grid-template-columns: 1fr; } }
-.sg table { inline-size: 100%; border-collapse: collapse; font-size: var(--size-small); }
+.sg table { inline-size: 100%; border-collapse: collapse; font-size: var(--size-ui); }
 .sg th, .sg td { text-align: start; padding: var(--space-2) var(--space-3) var(--space-2) 0; border-block-end: var(--hairline) solid var(--color-surface); vertical-align: top; }
-.sg th { font-weight: 600; color: var(--color-text-strong); }
-.sg-num { font-variant-numeric: tabular-nums; color: var(--color-text-strong); }
+.sg th { font-weight: var(--weight-ui); color: var(--color-text-strong); }
+.sg-num { font-variant-numeric: lining-nums; color: var(--color-text-strong); }
 .sg-scroll { overflow-x: auto; }
 .sg-type li { display: grid; gap: var(--space-1); padding-block: var(--space-4); border-block-end: var(--hairline) solid var(--color-surface); }
-.sg-type small { font-size: var(--size-small); color: var(--color-text-muted); }
+.sg-type small { font-size: var(--size-ui); color: var(--color-text-muted); }
 .sg-type ul, .sg-space, .sg-rules { padding: 0; list-style: none; }
 .sg-space li { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-1); }
 .sg-bar { block-size: var(--space-3); background: var(--color-text-muted); }
@@ -573,7 +573,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-dia0" type="checkbox" name="consent" required>
-<label class="check__label" for="consent-dia0"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-dia0"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-dia0" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-dia0">Não preencher este campo</label><input id="website-dia0" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -590,7 +590,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-dia1" type="checkbox" aria-invalid="true" aria-describedby="consent-msg-dia1" name="consent" required>
-<label class="check__label" for="consent-dia1"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-dia1"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-dia1">Confirme que aceita receber emails.</p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-dia1">Não preencher este campo</label><input id="website-dia1" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -607,7 +607,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-dia2" type="checkbox" checked name="consent" required>
-<label class="check__label" for="consent-dia2"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-dia2"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-dia2" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-dia2">Não preencher este campo</label><input id="website-dia2" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -624,7 +624,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-dia3" type="checkbox" name="consent" required>
-<label class="check__label" for="consent-dia3"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-dia3"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-dia3" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-dia3">Não preencher este campo</label><input id="website-dia3" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -641,7 +641,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-dia4" type="checkbox" checked name="consent" required>
-<label class="check__label" for="consent-dia4"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-dia4"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-dia4" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-dia4">Não preencher este campo</label><input id="website-dia4" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -659,7 +659,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-noite0" type="checkbox" name="consent" required>
-<label class="check__label" for="consent-noite0"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-noite0"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-noite0" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-noite0">Não preencher este campo</label><input id="website-noite0" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -676,7 +676,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-noite1" type="checkbox" aria-invalid="true" aria-describedby="consent-msg-noite1" name="consent" required>
-<label class="check__label" for="consent-noite1"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-noite1"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-noite1">Confirme que aceita receber emails.</p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-noite1">Não preencher este campo</label><input id="website-noite1" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -693,7 +693,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-noite2" type="checkbox" checked name="consent" required>
-<label class="check__label" for="consent-noite2"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-noite2"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-noite2" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-noite2">Não preencher este campo</label><input id="website-noite2" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -710,7 +710,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-noite3" type="checkbox" name="consent" required>
-<label class="check__label" for="consent-noite3"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-noite3"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-noite3" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-noite3">Não preencher este campo</label><input id="website-noite3" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -727,7 +727,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </div>
 <div class="check">
 <input class="check__input" id="consent-noite4" type="checkbox" checked name="consent" required>
-<label class="check__label" for="consent-noite4"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></label>
+<label class="check__label" for="consent-noite4"><span class="check__box" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg></span><span class="check__text">Aceito receber emails de A&nbsp;Brazileira sobre a abertura. <span class="check__more">Ler a <a class="link-inline" href="privacidade/">nota de privacidade</a>.</span></span></label>
 <p class="field__msg" id="consent-msg-noite4" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website-noite4">Não preencher este campo</label><input id="website-noite4" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -744,8 +744,8 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 <tr><td>Dia</td><td>Texto · lede</td><td><code>--nogueira</code> #5F3819</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">9.03:1</td><td>texto</td></tr>
 <tr><td>Dia</td><td>Texto discreto · controlos, rodapé</td><td><code>--castanho</code> #804F1E</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">6.11:1</td><td>texto</td></tr>
 <tr><td>Dia</td><td>Latão-texto · Torres Vedras, estado</td><td><code>--latao-texto</code> #83602C</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">5.08:1</td><td>texto</td></tr>
-<tr><td>Dia</td><td>Emblema</td><td><code>--latao-marca</code> #A57638</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">3.56:1</td><td>gráfico ≥ 3:1</td></tr>
-<tr><td>Dia</td><td>Foco · linha do chão</td><td><code>--nogueira</code> #5F3819</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">9.03:1</td><td>não-texto ≥ 3:1</td></tr>
+<tr><td>Dia</td><td>Emblema</td><td><code>--latao-marca</code> #A57638</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">3.56:1</td><td>gráfico mín. 3:1</td></tr>
+<tr><td>Dia</td><td>Foco · linha do chão</td><td><code>--nogueira</code> #5F3819</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">9.03:1</td><td>não-texto mín. 3:1</td></tr>
 <tr><td>Noite</td><td>Texto · wordmark, lede</td><td><code>--linho</code> #F3E6D6</td><td><code>--noite</code> #1C120B</td><td class="sg-num">14.99:1</td><td>texto</td></tr>
 <tr><td>Noite</td><td>Texto discreto · controlos, rodapé</td><td><code>--linho-escuro</code> #C2AE96</td><td><code>--noite</code> #1C120B</td><td class="sg-num">8.58:1</td><td>texto</td></tr>
 <tr><td>Noite</td><td>Latão · Torres Vedras, estado, emblema, foco</td><td><code>--latao</code> #DB9E42</td><td><code>--noite</code> #1C120B</td><td class="sg-num">7.87:1</td><td>texto</td></tr>
@@ -753,16 +753,16 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 <tr><td>Sala (lista)</td><td>Texto · hall-dia</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-dia</code> #F2DEC4</td><td class="sg-num">7.75:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Rodapé · hall-dia</td><td><code>--castanho</code> #804F1E</td><td><code>--hall-dia</code> #F2DEC4</td><td class="sg-num">5.24:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Erro · hall-dia</td><td><code>--barro</code> #9E3B1E</td><td><code>--hall-dia</code> #F2DEC4</td><td class="sg-num">5.17:1</td><td>texto</td></tr>
-<tr><td>Sala (lista)</td><td>Borda do campo, foco · hall-dia</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-dia</code> #F2DEC4</td><td class="sg-num">7.75:1</td><td>não-texto ≥ 3:1</td></tr>
+<tr><td>Sala (lista)</td><td>Borda do campo, foco · hall-dia</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-dia</code> #F2DEC4</td><td class="sg-num">7.75:1</td><td>não-texto mín. 3:1</td></tr>
 <tr><td>Sala (lista)</td><td>Título, rótulos, ligações · hall-noite</td><td><code>--tinta</code> #2E1E14</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">13.18:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Texto · hall-noite</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">8.37:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Rodapé · hall-noite</td><td><code>--castanho</code> #804F1E</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">5.66:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Erro · hall-noite</td><td><code>--barro</code> #9E3B1E</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">5.58:1</td><td>texto</td></tr>
-<tr><td>Sala (lista)</td><td>Borda do campo, foco · hall-noite</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">8.37:1</td><td>não-texto ≥ 3:1</td></tr>
+<tr><td>Sala (lista)</td><td>Borda do campo, foco · hall-noite</td><td><code>--nogueira</code> #5F3819</td><td><code>--hall-noite</code> #FCE7BC</td><td class="sg-num">8.37:1</td><td>não-texto mín. 3:1</td></tr>
 <tr><td>Sala (lista)</td><td>Texto do botão</td><td><code>--papel</code> #F9F0E9</td><td><code>--tinta</code> #2E1E14</td><td class="sg-num">14.23:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Texto no campo · Dia</td><td><code>--tinta</code> #2E1E14</td><td><code>--papel</code> #F9F0E9</td><td class="sg-num">14.23:1</td><td>texto</td></tr>
 <tr><td>Sala (lista)</td><td>Texto no campo · Noite</td><td><code>--tinta</code> #2E1E14</td><td><code>--luz-nucleo</code> #FFF2D6</td><td class="sg-num">14.42:1</td><td>texto</td></tr>
-<tr><td>Sala (lista)</td><td>Borda do campo · Noite</td><td><code>--nogueira</code> #5F3819</td><td><code>--luz-nucleo</code> #FFF2D6</td><td class="sg-num">9.16:1</td><td>não-texto ≥ 3:1</td></tr>
+<tr><td>Sala (lista)</td><td>Borda do campo · Noite</td><td><code>--nogueira</code> #5F3819</td><td><code>--luz-nucleo</code> #FFF2D6</td><td class="sg-num">9.16:1</td><td>não-texto mín. 3:1</td></tr>
 </tbody></table></div>
 
 <h2>Tipografia</h2>
@@ -770,9 +770,13 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__name">A Brazileira</span></span><small>Cinzel 600 · <code>--size-wordmark</code> 28 a 56px · tracking 0.045em · só no logótipo</small></li>
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__kind">Boutique Hotel</span></span><small>Cinzel 700 · 0.5em do wordmark · tracking 0.12em</small></li>
 <li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__place">Torres Vedras</span></span><small>Cinzel 400 · 0.4em · tracking 0.3em · latão</small></li>
-<li><span style="font-size:var(--size-lede);line-height:var(--leading-lede);color:var(--color-text)">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Cormorant Garamond 500 · <code>--size-lede</code> 20 a 28px · altura de linha 1.32</small></li>
-<li><span>Dia · Noite · PT · EN · Abre brevemente.</span><small>Cormorant Garamond 500 · <code>--size-ui</code> 16px · frase normal, sem espaçamento</small></li>
-<li><span style="font-size:var(--size-small);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Cormorant Garamond 500 · <code>--size-small</code> 15px</small></li>
+<li><span class="lista__title" style="text-align:start">Lista de espera</span><small>Alegreya 400 · <code>--size-title</code> 26 a 34px · altura de linha 1.18 · tracking –0.01em · títulos de secção e de página</small></li>
+<li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>Alegreya 400 · <code>--size-lede</code> 18px (320) a 19px (390) a 26px · linha 1em + 7.2px (19/26, 26/33) · tracking –0.005em · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
+<li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>Alegreya 400 · <code>--size-read</code> 18/28px · algarismos de texto · medida 26.5em (até 68 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
+<li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>Alegreya Sans 500 · <code>--size-cta</code> 16px no telemóvel, 18px a partir de 900px · tracking 0.018em / 0.015em · a ação e o botão</small></li>
+<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>Alegreya Sans 500 · <code>--size-ui</code> 16px · tracking 0.018em · frase normal; PT e EN com 0.06em · o estado mais calmo que a ação: latão, mais perto da frase</small></li>
+<li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>Alegreya 400 · <code>--size-ui</code> 16/24px · o consentimento (o rótulo «Email» e as mensagens em Alegreya Sans 16px)</small></li>
+<li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>Alegreya Sans 500 · <code>--size-ui</code> 16/24px · algarismos alinhados</small></li>
 </ul></div>
 
 <h2>Espaço (base 4px)</h2>
@@ -793,15 +797,15 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 <div class="sg-scroll"><table>
 <thead><tr><th>Elemento</th><th>Papel</th><th>Intervalo de p</th><th>Movimento</th><th>Curva</th></tr></thead>
 <tbody>
-<tr><td>Texto (lockup, frase, estado, ação)</td><td>Apoio, sai</td><td class="sg-num">0 → 0.16</td><td>opacidade 1 → 0, sobe 16px</td><td>--curve-copy (0.33, 1, 0.68, 1)</td></tr>
-<tr><td>Indicador de deslizar</td><td>Decoração</td><td class="sg-num">0 → 0.05</td><td>opacidade 1 → 0</td><td>--curve-copy</td></tr>
-<tr><td>Folhas da porta</td><td>Principal, desde o primeiro píxel</td><td class="sg-num">0 → 0.42</td><td>esquerda +47° (41° → 88°), direita +61° (27° → 88°)</td><td>--curve-door (0.3, 0.55, 0.35, 1)</td></tr>
-<tr><td>Sala iluminada, luz nos degraus (Noite)</td><td>Apoio, levada pelas folhas</td><td class="sg-num">0 → 0.42</td><td>opacidade 0 → 1 (o valor das folhas)</td><td>--curve-door</td></tr>
-<tr><td>Câmara: centrar a porta</td><td>Principal</td><td class="sg-num">0 → 0.36</td><td>translação em linha reta até ao centro do ecrã</td><td>--curve-pan (0.35, 0.4, 0.3, 1)</td></tr>
-<tr><td>Câmara: entrar</td><td>Principal</td><td class="sg-num">0.04 → 0.90</td><td>escala geométrica 1 → S: a abertura cobre todo o ecrã em qualquer proporção</td><td>--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)</td></tr>
-<tr><td>A sala torna-se a cor da lista</td><td>Apoio, passagem</td><td class="sg-num">0.60 → 0.86</td><td>camada lisa --color-hall dentro da porta, opacidade 0 → 1</td><td>--curve-fade (0.45, 0, 0.55, 1)</td></tr>
-<tr><td>Luz em todo o palco</td><td>Apoio</td><td class="sg-num">0.86 → 0.92</td><td>a mesma cor sobre a mesma cor (cobre as folhas de perfil)</td><td>--curve-fade</td></tr>
-<tr><td>Lista de espera</td><td>Chegada</td><td class="sg-num">título entra no ecrã a p ≈ 0.82</td><td>título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms</td><td>--ease-out</td></tr>
+<tr><td>Texto (lockup, frase, estado, ação)</td><td>Apoio, sai</td><td class="sg-num">0 a 0.16</td><td>opacidade 1 a 0, sobe 16px</td><td>--curve-copy (0.33, 1, 0.68, 1)</td></tr>
+<tr><td>Indicador de deslizar</td><td>Decoração</td><td class="sg-num">0 a 0.05</td><td>opacidade 1 a 0</td><td>--curve-copy</td></tr>
+<tr><td>Folhas da porta</td><td>Principal, desde o primeiro píxel</td><td class="sg-num">0 a 0.42</td><td>esquerda +47° (41° a 88°), direita +61° (27° a 88°)</td><td>--curve-door (0.3, 0.55, 0.35, 1)</td></tr>
+<tr><td>Sala iluminada, luz nos degraus (Noite)</td><td>Apoio, levada pelas folhas</td><td class="sg-num">0 a 0.42</td><td>opacidade 0 a 1 (o valor das folhas)</td><td>--curve-door</td></tr>
+<tr><td>Câmara: centrar a porta</td><td>Principal</td><td class="sg-num">0 a 0.36</td><td>translação em linha reta até ao centro do ecrã</td><td>--curve-pan (0.35, 0.4, 0.3, 1)</td></tr>
+<tr><td>Câmara: entrar</td><td>Principal</td><td class="sg-num">0.04 a 0.90</td><td>escala geométrica 1 a S: a abertura cobre todo o ecrã em qualquer proporção</td><td>--curve-zoom (0.5, 0.05, 0.3, 1) sobre log(escala)</td></tr>
+<tr><td>A sala torna-se a cor da lista</td><td>Apoio, passagem</td><td class="sg-num">0.60 a 0.86</td><td>camada lisa --color-hall dentro da porta, opacidade 0 a 1</td><td>--curve-fade (0.45, 0, 0.55, 1)</td></tr>
+<tr><td>Luz em todo o palco</td><td>Apoio</td><td class="sg-num">0.86 a 0.92</td><td>a mesma cor sobre a mesma cor (cobre as folhas de perfil)</td><td>--curve-fade</td></tr>
+<tr><td>Lista de espera</td><td>Chegada</td><td class="sg-num">título entra no ecrã por volta de p = 0.82</td><td>título e frase: opacidade + 12px, 560ms; formulário +100ms, 480ms</td><td>--ease-out</td></tr>
 </tbody></table></div>
 <ul class="sg-rules">
 <li><code>--dur-door</code> 1100ms · <code>--ease-door</code> · ao carregar, as portas ficam entreabertas uma vez (41° e 27°).</li>
@@ -814,7 +818,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
-<li>Maiúsculas espaçadas só dentro do logótipo. Interface em frase normal, Cormorant 500, 15 a 16px.</li>
+<li>Maiúsculas espaçadas só dentro do logótipo. Frases em Alegreya 400; interface em Alegreya Sans 500, frase normal, 16 a 18px. Quatro tamanhos de texto fora do logótipo, nada abaixo de 16px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
 <li>Fundos planos: Papel de dia, Noite (nogueira) à noite. O único gradiente é a luz dentro do desenho, à noite.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>
 <li>Sem itálicos decorativos, pontos de exclamação, emoji ou palavras de virtude.</li>

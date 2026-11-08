@@ -154,9 +154,40 @@ T = {
         privacy="Privacy",
     ),
 }
-FOOT = "© 2026 A&nbsp;Brazileira · Torres Vedras, Portugal"
-THEME_HEAD = ('<script>try{var t=localStorage.getItem("ab-tema");'
-              'if(t==="dia"||t==="noite")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>')
+def nb(s):
+    """Typographic ties for running text (never titles or metadata): the name and the town never split across a
+    line, and a one-letter word (a, e, o, à, é; I in English) never hangs at the end of a line, so «e avisamos»
+    and «a ser» start the next line together."""
+    s = s.replace("A Brazileira", "A\u00a0Brazileira").replace("Torres Vedras", "Torres\u00a0Vedras")
+    s = s.replace("© 2026", "©\u00a02026")
+    s = re.sub(r"\b(art\.|n\.º|Article) (?=\d)", "\\1\u00a0", s)  # art. 6.º, n.º 1, Article 6(1)(a)
+    s = re.sub(r"(?<=\d) (?=[a-zà-ÿ])", "\u00a0", s)                  # 24 meses, 24 months
+    return re.sub(r"(?<![\w\u00c0-\u017f(])([aeoAEOIàé]) (?=[\w{])", "\\1\u00a0", s)
+
+
+for _k in ("pt", "en"):
+    for _f in ("lede", "list_p", "consent", "msg_ok", "msg_error", "noscript"):
+        T[_k][_f] = nb(T[_k][_f])
+# the last phrase of the sentence holds together: on 320-359px phones the lede sets one phrase a line
+# («Uma casa antiga de Torres Vedras / está a ser restaurada / para receber hóspedes.», site.css)
+T["pt"]["lede"] = T["pt"]["lede"].replace("para receber hóspedes", "para\u00a0receber\u00a0hóspedes")
+
+# the town is its own span: on phones it takes a second line by rule, not by a near miss in width
+FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
+        '<span class="foot__place">' + nb("Torres Vedras, Portugal") + "</span>")
+# Dia / Noite before the first paint: the visitor's choice if there is one; otherwise the sky over Torres Vedras
+# (39.09 N, 9.26 W) at this moment: Dia while the sun is above the horizon (altitude > -0.833 deg, the standard
+# sunrise/sunset), Noite otherwise. The sun's position is a low-precision solar ephemeris (about 1 minute against
+# published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn the lights on at sunset.
+# data-sol marks a theme the sky chose (never stored). Without JavaScript the page follows the system theme.
+THEME_HEAD = ('<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}catch(e){}'
+              'r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,'
+              'L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,'
+              'c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),'
+              'h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;'
+              'return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};'
+              'if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}'
+              'r.setAttribute("data-theme",t)})(document.documentElement)</script>')
 CHEVRON = ('<svg viewBox="0 0 16 10" aria-hidden="true" focusable="false">'
            '<path d="M1.5 1.5 8 8l6.5-6.5"/></svg>')
 TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
@@ -207,7 +238,8 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <link rel="apple-touch-icon" href="{p}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="{p}site.webmanifest">
 <link rel="preload" href="{p}assets/fonts/cinzel-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{p}assets/fonts/cormorant-garamond-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/alegreya-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/alegreya-sans-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{p}assets/css/tokens.css">
 <link rel="stylesheet" href="{p}assets/css/site.css">
 <script src="{p}assets/js/site.js" defer></script>"""
@@ -235,6 +267,9 @@ def footer(privacy_href, label, extra="", current=False):
 def waitlist(t):
     link = f'<a class="link-inline" href="{t["privacy_href"]}">{t["consent_link"]}</a>'
     mail = f'<a class="link-inline" href="mailto:{CONTACT}">{CONTACT}</a>'
+    # the agreement, then the pointer to the notice on a line of its own: the link reads and taps as one unit
+    agree, more = t["consent"].format(link=link).split(". ", 1)
+    consent = f'{agree}. <span class="check__more">{more}</span>'
     return f"""<section id="lista" class="lista surface-hall" aria-labelledby="lista-titulo" data-motion="list">
 <div class="lista__inner" data-reveal>
 <h2 id="lista-titulo" class="lista__title">{t['list_h']}</h2>
@@ -249,7 +284,7 @@ def waitlist(t):
 </div>
 <div class="check">
 <input class="check__input" id="consent" type="checkbox" name="consent" required>
-<label class="check__label" for="consent"><span class="check__box" aria-hidden="true">{TICK}</span><span class="check__text">{t['consent'].format(link=link)}</span></label>
+<label class="check__label" for="consent"><span class="check__box" aria-hidden="true">{TICK}</span><span class="check__text">{consent}</span></label>
 <p class="field__msg" id="consent-msg" hidden></p>
 </div>
 <div class="form__hp" aria-hidden="true"><label for="website">{t['hp']}</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
@@ -353,7 +388,9 @@ PRIVACY = {
 
 def page_privacy(k):
     t = T[k]
-    c = PRIVACY[k]
+    c = dict(PRIVACY[k])
+    c["intro"], c["updated"] = nb(c["intro"]), nb(c["updated"])
+    c["sections"] = [(h, nb(b)) for h, b in c["sections"]]
     p = "../" if k == "pt" else "../../"
     mail = f'<a class="link-inline" href="mailto:{CONTACT}">{CONTACT}</a>'
     cnpd = '<a class="link-inline" href="https://www.cnpd.pt/" hreflang="pt-PT">www.cnpd.pt</a>'
@@ -484,7 +521,8 @@ def main():
     write(os.path.join(DOCS, "assets/css/site.css"), read(os.path.join(SRC, "site.css")))
     write(os.path.join(DOCS, "assets/js/site.js"), read(os.path.join(SRC, "site.js")))
     for f in ["cinzel-latin-400-normal.woff2", "cinzel-latin-600-normal.woff2", "cinzel-latin-700-normal.woff2",
-              "cormorant-garamond-latin-wght-normal.woff2", "OFL-cinzel.txt", "OFL-cormorant-garamond.txt"]:
+              "alegreya-latin-400-normal.woff2", "alegreya-sans-latin-500-normal.woff2",
+              "OFL-cinzel.txt", "OFL-alegreya.txt", "OFL-alegreya-sans.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
     for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "og.png"]:
         copy("img/" + f, "assets/img/" + f)
