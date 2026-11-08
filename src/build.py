@@ -86,8 +86,8 @@ def scene_markup(idp="ab"):
             f'{o["back_defs"]}\n{o["back"]}</svg>')
     front = (f'<svg class="scene__art" viewBox="{vb}" preserveAspectRatio="xMidYMax meet" focusable="false">'
              f'{o["defs"]}\n{o["body"]}</svg>')
-    hall = '<div class="hall"><div class="hall__dawn"></div><div class="hall__light"><div class="hall__floor"></div></div></div>'
-    spill = f'<div class="spill" style="clip-path:polygon({clip})"></div>'
+    hall = f'<div class="hall"><div class="hall__dawn"></div><div class="hall__light">{o["hall"]}</div></div>'
+    spill = f'<div class="spill" style="clip-path:polygon({clip})">{sp["svg"]}</div>'
     leaves = (f'<div class="door"><div class="leaf leaf--l"><div class="leaf__face">{scene.leaf_svg("l")}</div></div>'
               f'<div class="leaf leaf--r"><div class="leaf__face">{scene.leaf_svg("r")}</div></div></div>')
     # data-door: the opening (cx cy w h) as fractions of the scene box, read once by site.js for the camera

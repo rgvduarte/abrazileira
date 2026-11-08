@@ -141,46 +141,60 @@
   --color-surface: var(--areia);
   --color-hall: color-mix(in srgb, var(--latao) 22%, var(--papel));   /* the lit hall: waiting-list surface */
 
-  /* ==== 3. Illustration · Dia (sun from the upper left) ===================== */
-  --i-line: var(--nogueira);
-  --i-fine: color-mix(in srgb, var(--nogueira) 62%, var(--pedra));
-  --i-stone: var(--pedra);
-  --i-stone-lit: var(--areia);
-  --i-stone-shade: color-mix(in srgb, var(--pedra) 70%, var(--castanho));
-  --i-tread: var(--areia);
-  --i-riser: var(--pedra);
-  --i-wood: var(--castanho);
-  --i-wood-lit: color-mix(in srgb, var(--castanho) 74%, var(--latao));
-  --i-wood-shade: var(--nogueira);
-  --i-wood-line: var(--tinta);
-  --i-glass: var(--areia);
-  --i-room: color-mix(in srgb, var(--tinta) 86%, var(--nogueira));
-  --i-room-floor: color-mix(in srgb, var(--tinta) 62%, var(--nogueira));
-  --i-room-tile: color-mix(in srgb, var(--azulejo) 52%, var(--tinta));
-  --i-brass: var(--latao);
-  --i-lamp: var(--castanho);       /* pendant in the unlit hall */
+  /* ==== 3. Illustration · Dia: sepia ink and earth washes on paper (sun from the upper left) ==== */
+  --i-ink: color-mix(in srgb, var(--tinta) 84%, var(--nogueira));
+  --i-ink-bar: var(--i-ink);
+  --i-ink-wood: var(--tinta);
+  --i-ink-leaf: color-mix(in srgb, var(--tinta) 72%, var(--oliva));
+  --i-ink-hall: color-mix(in srgb, var(--nogueira) 82%, var(--castanho));
   --i-iron: var(--tinta);
-  --i-lantern-glass: var(--areia);
-  --i-lantern-glass-shade: var(--pedra);
-  --i-pot: var(--areia);
-  --i-pot-shade: var(--pedra);
-  --i-soil: var(--nogueira);
-  --i-trunk: color-mix(in srgb, var(--nogueira) 58%, var(--pedra));
-  --i-leaf-a: var(--oliva);
-  --i-leaf-b: color-mix(in srgb, var(--azulejo) 58%, var(--pedra));
-  --i-leaf-c: color-mix(in srgb, var(--oliva) 66%, var(--nogueira));   /* leaves in shade */
-  --i-reveal-glow: color-mix(in srgb, var(--latao) 30%, var(--noite));
-  --i-cast: var(--nogueira);       /* cast shadow on the plaster, sun from the upper left */
+  --ink-o: 0.92;
+  --ink-o2: 0.84;
+  --ink-oh: 0.62;
+  --ink-ox: 0.5;
+  --ink-of: 0.72;
+  --ink-ograin: 0.42;
+  --w-wall: var(--areia);                                              --wo-wall: 0.62;
+  --w-stone: color-mix(in srgb, var(--pedra) 80%, var(--latao));       --wo-stone: 0.55;
+  --w-stone2: color-mix(in srgb, var(--pedra) 55%, var(--castanho));   --wo-stone2: 0.16;
+  --w-shade: color-mix(in srgb, var(--castanho) 50%, var(--pedra));    --wo-shade: 0.3;
+  --w-wood: var(--castanho);                                           --wo-wood: 0.8;
+  --w-wood2: var(--nogueira);                                          --wo-wood2: 0.32;
+  --w-wood-dk: var(--nogueira);                                        --wo-wood-dk: 0.5;
+  --w-glass: color-mix(in srgb, var(--azulejo) 30%, var(--pedra));     --wo-glass: 0.42;
+  --w-step: var(--areia);                                              --wo-step: 0.85;
+  --w-riser: var(--pedra);                                             --wo-riser: 0.78;
+  --w-pot: color-mix(in srgb, var(--castanho) 62%, var(--latao));      --wo-pot: 0.58;
+  --w-potdk: var(--castanho);                                          --wo-potdk: 0.42;
+  --w-soil: var(--nogueira);                                           --wo-soil: 0.8;
+  --w-leaf1: var(--oliva);
+  --w-leaf2: color-mix(in srgb, var(--azulejo) 70%, var(--oliva));
+  --w-leaf3: color-mix(in srgb, var(--oliva) 55%, var(--nogueira));
+  --wo-leaf: 0.6;
+  --wo-mass: 0.3;
+  --w-trunk: color-mix(in srgb, var(--nogueira) 62%, var(--pedra));   --wo-trunk: 0.6;
+  --w-lglass: var(--areia);
+  --w-lglass2: var(--pedra);
+  --w-lamp: var(--castanho);
+  --w-room: color-mix(in srgb, var(--nogueira) 72%, var(--tinta));     --wo-room: 0.8;
+  --i-room-base: var(--papel);
+  --w-hfloor: var(--pedra);                                            --wo-hfloor: 0.4;
+  --w-htile: color-mix(in srgb, var(--nogueira) 40%, var(--pedra));    --wo-htile: 0.3;
+  --w-hdado: var(--azulejo);                                           --wo-hdado: 0.2;
+  --w-hdeep: color-mix(in srgb, var(--latao) 40%, var(--castanho));   --wo-hdeep: 0.3;
+  --wo-hwin: 0.9;
+  --wo-hpool: 0;
+  --i-brass: var(--latao);
+  --i-wood-shade: var(--nogueira);
   --light-core: var(--luz-nucleo);
   --light-mid: var(--luz);
   --light-edge: var(--luz-borda);
   --o-night: 0;              /* lamplight layers */
+  --o-day: 1;                /* sun shadows, reflections */
   --o-turn: 0.22;            /* a leaf turned away from the sun reads darker */
-  --o-cast: 0.12;            /* cast shadows exist only by day */
   /* the hall once the doors open (HTML layers between the two svgs) */
-  --i-hall-dawn: color-mix(in srgb, var(--latao) 55%, var(--castanho));  /* daylight reaching the walnut hall */
+  --i-hall-dawn: transparent;                                           /* the drawn hall is warm sepia, never grey: no bridge colour needed */
   --i-hall-light: var(--color-hall);                                    /* lime-washed hall in daylight */
-  --i-hall-floor: color-mix(in srgb, var(--color-hall) 80%, var(--castanho));
   --i-spill: none;                                                      /* no lamplight by day */
 }
 
@@ -224,40 +238,56 @@
     --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
     --color-hall: color-mix(in srgb, var(--luz-nucleo) 72%, var(--luz));   /* lamplight: waiting-list surface */
 
-    --i-line: color-mix(in srgb, var(--pedra) 40%, var(--noite));
-    --i-fine: color-mix(in srgb, var(--pedra) 24%, var(--noite));
-    --i-stone: color-mix(in srgb, var(--pedra) 9%, var(--noite));
-    --i-stone-lit: color-mix(in srgb, var(--pedra) 12%, var(--noite));
-    --i-stone-shade: color-mix(in srgb, var(--pedra) 5%, var(--noite));
-    --i-tread: color-mix(in srgb, var(--pedra) 13%, var(--noite));
-    --i-riser: color-mix(in srgb, var(--pedra) 8%, var(--noite));
-    --i-wood: color-mix(in srgb, var(--castanho) 26%, var(--noite));
-    --i-wood-lit: color-mix(in srgb, var(--castanho) 34%, var(--noite));
-    --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));
-    --i-wood-line: color-mix(in srgb, var(--pedra) 30%, var(--noite));
-    --i-glass: color-mix(in srgb, var(--latao) 45%, var(--noite));
-    --i-room: color-mix(in srgb, var(--latao) 55%, var(--noite));
-    --i-room-floor: color-mix(in srgb, var(--latao) 55%, var(--noite));
-    --i-room-tile: color-mix(in srgb, var(--azulejo) 70%, var(--latao));
+    /* the same drawing on the walnut night paper: light ink, dark earth washes, glazes of lamplight */
+    --i-ink: color-mix(in srgb, var(--pedra) 58%, var(--noite));
+    --i-ink-bar: color-mix(in srgb, var(--tinta) 60%, var(--noite));
+    --i-ink-wood: color-mix(in srgb, var(--pedra) 46%, var(--noite));
+    --i-ink-leaf: color-mix(in srgb, var(--pedra) 44%, var(--noite));
+    --i-ink-hall: color-mix(in srgb, var(--luz-borda) 62%, var(--nogueira));
+    --i-iron: color-mix(in srgb, var(--tinta) 55%, var(--noite));
+    --ink-o: 0.9;
+    --ink-o2: 0.8;
+    --ink-oh: 0.55;
+    --ink-ox: 0.42;
+    --ink-of: 0.66;
+    --ink-ograin: 0.35;
+    --w-wall: var(--pedra);           --wo-wall: 0.035;
+    --w-stone: var(--pedra);          --wo-stone: 0.1;
+    --w-stone2: var(--pedra);         --wo-stone2: 0.04;
+    --w-shade: var(--noite);          --wo-shade: 0;
+    --w-wood: var(--castanho);        --wo-wood: 0.34;
+    --w-wood2: var(--noite);          --wo-wood2: 0.35;
+    --w-wood-dk: var(--noite);        --wo-wood-dk: 0.45;
+    --w-glass: var(--latao);          --wo-glass: 0.4;
+    --w-step: var(--pedra);           --wo-step: 0.1;
+    --w-riser: var(--pedra);          --wo-riser: 0.05;
+    --w-pot: var(--castanho);         --wo-pot: 0.32;
+    --w-potdk: var(--noite);          --wo-potdk: 0.4;
+    --w-soil: var(--noite);           --wo-soil: 0.8;
+    --w-leaf1: var(--oliva);
+    --w-leaf2: var(--azulejo);
+    --w-leaf3: color-mix(in srgb, var(--oliva) 60%, var(--noite));
+    --wo-leaf: 0.5;
+    --wo-mass: 0.12;
+    --w-trunk: var(--pedra);          --wo-trunk: 0.12;
+    --w-lglass: var(--luz-nucleo);
+    --w-lglass2: var(--luz);
+    --w-lamp: var(--nogueira);
+    --w-room: var(--noite);           --wo-room: 0;
+    --i-room-base: color-mix(in srgb, var(--luz-borda) 34%, var(--noite));
+    --w-hfloor: var(--luz-borda);     --wo-hfloor: 0.32;
+    --w-htile: var(--nogueira);       --wo-htile: 0.18;
+    --w-hdado: var(--azulejo);        --wo-hdado: 0.16;
+    --w-hdeep: var(--nogueira);       --wo-hdeep: 0.32;
+    --wo-hwin: 0;
+    --wo-hpool: 0;
     --i-brass: var(--latao);
-    --i-lamp: var(--latao);
-    --i-iron: color-mix(in srgb, var(--pedra) 26%, var(--noite));
-    --i-lantern-glass: var(--luz);
-    --i-lantern-glass-shade: var(--luz);
-    --i-pot: color-mix(in srgb, var(--pedra) 10%, var(--noite));
-    --i-pot-shade: color-mix(in srgb, var(--pedra) 5%, var(--noite));
-    --i-soil: var(--noite);
-    --i-trunk: color-mix(in srgb, var(--pedra) 30%, var(--noite));
-    --i-leaf-a: color-mix(in srgb, var(--oliva) 52%, var(--noite));
-    --i-leaf-b: color-mix(in srgb, var(--azulejo) 52%, var(--noite));
-    --i-leaf-c: color-mix(in srgb, var(--oliva) 34%, var(--noite));
+    --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));
     --o-night: 1;
+    --o-day: 0;
     --o-turn: 0;
-    --o-cast: 0;
     --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
     --i-hall-dawn: transparent;
-    --i-hall-floor: transparent;
-    --i-spill: radial-gradient(farthest-side at 50% 0%, color-mix(in srgb, var(--luz) 70%, transparent), color-mix(in srgb, var(--luz) 28%, transparent) 55%, transparent);
   }
 }
 [data-theme="noite"] {
@@ -274,38 +304,54 @@
   --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
   --color-hall: color-mix(in srgb, var(--luz-nucleo) 72%, var(--luz));   /* lamplight: waiting-list surface */
 
-  --i-line: color-mix(in srgb, var(--pedra) 40%, var(--noite));
-  --i-fine: color-mix(in srgb, var(--pedra) 24%, var(--noite));
-  --i-stone: color-mix(in srgb, var(--pedra) 9%, var(--noite));
-  --i-stone-lit: color-mix(in srgb, var(--pedra) 12%, var(--noite));
-  --i-stone-shade: color-mix(in srgb, var(--pedra) 5%, var(--noite));
-  --i-tread: color-mix(in srgb, var(--pedra) 13%, var(--noite));
-  --i-riser: color-mix(in srgb, var(--pedra) 8%, var(--noite));
-  --i-wood: color-mix(in srgb, var(--castanho) 26%, var(--noite));
-  --i-wood-lit: color-mix(in srgb, var(--castanho) 34%, var(--noite));
-  --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));
-  --i-wood-line: color-mix(in srgb, var(--pedra) 30%, var(--noite));
-  --i-glass: color-mix(in srgb, var(--latao) 45%, var(--noite));
-  --i-room: color-mix(in srgb, var(--latao) 55%, var(--noite));
-  --i-room-floor: color-mix(in srgb, var(--latao) 55%, var(--noite));
-  --i-room-tile: color-mix(in srgb, var(--azulejo) 70%, var(--latao));
+  /* the same drawing on the walnut night paper: light ink, dark earth washes, glazes of lamplight */
+  --i-ink: color-mix(in srgb, var(--pedra) 58%, var(--noite));
+  --i-ink-bar: color-mix(in srgb, var(--tinta) 60%, var(--noite));
+  --i-ink-wood: color-mix(in srgb, var(--pedra) 46%, var(--noite));
+  --i-ink-leaf: color-mix(in srgb, var(--pedra) 44%, var(--noite));
+  --i-ink-hall: color-mix(in srgb, var(--luz-borda) 62%, var(--nogueira));
+  --i-iron: color-mix(in srgb, var(--tinta) 55%, var(--noite));
+  --ink-o: 0.9;
+  --ink-o2: 0.8;
+  --ink-oh: 0.55;
+  --ink-ox: 0.42;
+  --ink-of: 0.66;
+  --ink-ograin: 0.35;
+  --w-wall: var(--pedra);           --wo-wall: 0.035;
+  --w-stone: var(--pedra);          --wo-stone: 0.1;
+  --w-stone2: var(--pedra);         --wo-stone2: 0.04;
+  --w-shade: var(--noite);          --wo-shade: 0;
+  --w-wood: var(--castanho);        --wo-wood: 0.34;
+  --w-wood2: var(--noite);          --wo-wood2: 0.35;
+  --w-wood-dk: var(--noite);        --wo-wood-dk: 0.45;
+  --w-glass: var(--latao);          --wo-glass: 0.4;
+  --w-step: var(--pedra);           --wo-step: 0.1;
+  --w-riser: var(--pedra);          --wo-riser: 0.05;
+  --w-pot: var(--castanho);         --wo-pot: 0.32;
+  --w-potdk: var(--noite);          --wo-potdk: 0.4;
+  --w-soil: var(--noite);           --wo-soil: 0.8;
+  --w-leaf1: var(--oliva);
+  --w-leaf2: var(--azulejo);
+  --w-leaf3: color-mix(in srgb, var(--oliva) 60%, var(--noite));
+  --wo-leaf: 0.5;
+  --wo-mass: 0.12;
+  --w-trunk: var(--pedra);          --wo-trunk: 0.12;
+  --w-lglass: var(--luz-nucleo);
+  --w-lglass2: var(--luz);
+  --w-lamp: var(--nogueira);
+  --w-room: var(--noite);           --wo-room: 0;
+  --i-room-base: color-mix(in srgb, var(--luz-borda) 34%, var(--noite));
+  --w-hfloor: var(--luz-borda);     --wo-hfloor: 0.32;
+  --w-htile: var(--nogueira);       --wo-htile: 0.18;
+  --w-hdado: var(--azulejo);        --wo-hdado: 0.16;
+  --w-hdeep: var(--nogueira);       --wo-hdeep: 0.32;
+  --wo-hwin: 0;
+  --wo-hpool: 0;
   --i-brass: var(--latao);
-  --i-lamp: var(--latao);
-  --i-iron: color-mix(in srgb, var(--pedra) 26%, var(--noite));
-  --i-lantern-glass: var(--luz);
-  --i-lantern-glass-shade: var(--luz);
-  --i-pot: color-mix(in srgb, var(--pedra) 10%, var(--noite));
-  --i-pot-shade: color-mix(in srgb, var(--pedra) 5%, var(--noite));
-  --i-soil: var(--noite);
-  --i-trunk: color-mix(in srgb, var(--pedra) 30%, var(--noite));
-  --i-leaf-a: color-mix(in srgb, var(--oliva) 52%, var(--noite));
-  --i-leaf-b: color-mix(in srgb, var(--azulejo) 52%, var(--noite));
-  --i-leaf-c: color-mix(in srgb, var(--oliva) 34%, var(--noite));
+  --i-wood-shade: color-mix(in srgb, var(--castanho) 14%, var(--noite));
   --o-night: 1;
+  --o-day: 0;
   --o-turn: 0;
-  --o-cast: 0;
   --i-hall-light: radial-gradient(farthest-corner at 50% 38%, var(--color-hall) 0%, var(--color-hall) 34%, var(--luz) 78%, var(--luz-borda) 100%);
   --i-hall-dawn: transparent;
-  --i-hall-floor: transparent;
-  --i-spill: radial-gradient(farthest-side at 50% 0%, color-mix(in srgb, var(--luz) 70%, transparent), color-mix(in srgb, var(--luz) 28%, transparent) 55%, transparent);
 }

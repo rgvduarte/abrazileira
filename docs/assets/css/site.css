@@ -260,7 +260,7 @@ svg { display: block; }
      symmetrically around the door: --scene-axis (generated) = door axis as a fraction of the
      drawing width; --scene-reach = drawing width / (2 x widest half around the axis), measured
      so the outermost olive leaves may reach into the gutter. */
-  --scene-reach: 0.85886;
+  --scene-reach: 0.8543;
 }
 .scene {
   --scene-w: min(calc(100cqw * var(--scene-reach)), calc(100cqh * var(--scene-ratio)));
@@ -309,61 +309,97 @@ svg { display: block; }
   opacity: 0;
 }
 
-/* line system: two weights, round joins, constant on screen */
-.i-line, .i-fine, .i-bar, .i-twig, .i-brass-line {
+/* ---- The drawing (caderno): ink and washes -------------------------------------------
+   Ink: stroked paths whose width scales with the drawing (a pen line seen closer is wider), so the
+   camera's walk-in reads like leaning into the sketchbook. --ink-k thins the pen on large drawings.
+   Washes: filled paths at a glaze opacity; the same colour on a thin rim darkens the edge as
+   pigment pools at the edge of a wet wash. Colours and opacities: tokens.css (Dia / Noite). */
+.scene { --ink-k: 1; --ink-u: 1; }
+@container (min-width: 30rem) { .scene { --ink-k: 0.86; } }
+@container (min-width: 44rem) { .scene { --ink-k: 0.74; } }
+.leaf svg { --ink-u: 1.174; }          /* leaf units are 0.852 scene units */
+.k {
   fill: none;
+  stroke: var(--i-ink);
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  stroke-width: calc(1.15px * var(--ink-k) * var(--ink-u));
+  stroke-opacity: var(--ink-o);
 }
-.i-line { stroke: var(--i-line); stroke-width: var(--line-w); }
-.i-fine, .i-bar { stroke: var(--i-fine); stroke-width: var(--line-w-fine); }
-.i-bar { stroke: var(--i-wood-line); }
-.i-twig { stroke: var(--i-trunk); stroke-width: var(--line-w-fine); }
-.i-brass-line { stroke: var(--i-brass); stroke-width: var(--line-w-fine); }
-.leaf .i-line, .i-lantern .i-line { stroke: var(--i-wood-line); }
-.leaf .i-fine { stroke: var(--i-wood-line); }
-
-/* flat fills */
-.i-stone { fill: var(--i-stone); }
-.i-lit { fill: var(--i-stone-lit); }
-.i-shade { fill: var(--i-stone-shade); }
-.i-tread { fill: var(--i-tread); }
-.i-riser { fill: var(--i-riser); }
-.i-wood { fill: var(--i-wood); }
-.i-wood-lit { fill: var(--i-wood-lit); }
-.i-wood-shade { fill: var(--i-wood-shade); }
-.i-glass { fill: var(--i-glass); }
-.i-room { fill: var(--i-room); }
-.i-room-floor { fill: var(--i-room-floor); }
-.i-room-tile { fill: var(--i-room-tile); }
-.i-brass { fill: var(--i-brass); }
-.i-lamp { fill: var(--i-lamp); }
-.i-iron { fill: var(--i-iron); }
-.i-lglass { fill: var(--i-lantern-glass); }
-.i-lglass--r { fill: var(--i-lantern-glass-shade); }
-.i-pot { fill: var(--i-pot); }
-.i-pot-shade { fill: var(--i-pot-shade); }
-.i-soil { fill: var(--i-soil); }
-.i-trunk { fill: var(--i-trunk); }
-.i-leaf-a { fill: var(--i-leaf-a); }
-.i-leaf-b { fill: var(--i-leaf-b); }
-.i-leaf-c { fill: var(--i-leaf-c); }
-.i-reveal-glow { fill: var(--i-reveal-glow); }
-.i-cast { fill: var(--i-cast); opacity: var(--o-cast); }
-.i-bulb { fill: var(--light-core); }
-.i-leaf-turn { fill: var(--i-wood-shade); opacity: var(--o-turn); }
-.i-leaf-edge { fill: var(--light-mid); opacity: var(--o-night); }
-
-/* lamplight: content of the drawing, present only at night */
-.i-night { opacity: var(--o-night); }
+.k-2 { stroke-width: calc(0.82px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-o2); }
+.k-h { stroke-width: calc(0.52px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-oh); }
+.k-x { stroke-width: calc(0.48px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-ox); }
+.k-f { stroke-width: calc(0.55px * var(--ink-k) * var(--ink-u)); stroke-opacity: var(--ink-of); }
+.k-leaf { stroke: var(--i-ink-leaf); stroke-width: calc(0.5px * var(--ink-k)); stroke-opacity: var(--ink-of); }
+.k-iron { stroke: var(--i-ink-bar); stroke-width: calc(0.7px * var(--ink-k)); stroke-opacity: 1; }
+.k-bar { stroke: var(--i-ink-bar); }
+.k-wood { stroke: var(--i-ink-wood); }
+.k-grain { stroke-opacity: var(--ink-ograin); }
+.k-hall { stroke: var(--i-ink-hall); stroke-width: calc(0.62px * var(--ink-k)); stroke-opacity: 0.9; }
+.k-hf { stroke-width: calc(0.45px * var(--ink-k)); stroke-opacity: 0.7; }
+.k-hh { stroke-width: calc(0.4px * var(--ink-k)); stroke-opacity: 0.6; }
+.k-hm { stroke-width: calc(0.35px * var(--ink-k)); stroke-opacity: 0.55; }
+.k-fill { fill: var(--i-iron); }
+.w {
+  fill: var(--wc);
+  fill-opacity: var(--wo);
+  stroke: var(--wc);
+  stroke-opacity: calc(var(--wo) * 0.55);
+  stroke-width: calc(1.1px * var(--ink-u));
+  stroke-linejoin: round;
+}
+.w-wall { --wc: var(--w-wall); --wo: var(--wo-wall); }
+.w-stone { --wc: var(--w-stone); --wo: var(--wo-stone); }
+.w-stone2 { --wc: var(--w-stone2); --wo: var(--wo-stone2); }
+.w-shade { --wc: var(--w-shade); --wo: var(--wo-shade); }
+.w-wood { --wc: var(--w-wood); --wo: var(--wo-wood); }
+.w-wood2 { --wc: var(--w-wood2); --wo: var(--wo-wood2); }
+.w-wood-dk { --wc: var(--w-wood-dk); --wo: var(--wo-wood-dk); }
+.w-glass { --wc: var(--w-glass); --wo: var(--wo-glass); }
+.w-step { --wc: var(--w-step); --wo: var(--wo-step); }
+.w-riser { --wc: var(--w-riser); --wo: var(--wo-riser); }
+.w-pot { --wc: var(--w-pot); --wo: var(--wo-pot); }
+.w-potdk { --wc: var(--w-potdk); --wo: var(--wo-potdk); }
+.w-paper { --wc: var(--color-bg); --wo: 0.8; stroke: none; }
+.w-soil { --wc: var(--w-soil); --wo: var(--wo-soil); }
+.w-leaf { stroke: none; }
+.w-leaf1 { --wc: var(--w-leaf1); --wo: var(--wo-leaf); }
+.w-leaf2 { --wc: var(--w-leaf2); --wo: var(--wo-leaf); }
+.w-leaf3 { --wc: var(--w-leaf3); --wo: var(--wo-leaf); }
+.w-mass1 { --wc: var(--w-leaf1); --wo: var(--wo-mass); stroke: none; }
+.w-mass2 { --wc: var(--w-leaf2); --wo: var(--wo-mass); stroke: none; }
+.w-mass3 { --wc: var(--w-leaf3); --wo: var(--wo-mass); }
+.w-trunk { --wc: var(--w-trunk); --wo: var(--wo-trunk); }
+.w-brass { --wc: var(--i-brass); --wo: 0.85; }
+.w-lglass { --wc: var(--w-lglass); --wo: 0.92; }
+.w-lglass2 { --wc: var(--w-lglass2); --wo: 0.92; }
+.w-lamp { --wc: var(--w-lamp); --wo: 0.85; }
+.w-room { --wc: var(--w-room); --wo: var(--wo-room); }
+.w-room-base { fill: var(--i-room-base); }
+.w-hfloor { --wc: var(--w-hfloor); --wo: var(--wo-hfloor); }
+.w-htile { --wc: var(--w-htile); --wo: var(--wo-htile); stroke: none; }
+.w-hdado { --wc: var(--w-hdado); --wo: var(--wo-hdado); }
+.w-hdeep { --wc: var(--w-hdeep); --wo: var(--wo-hdeep); }
+.w-hwin { --wc: var(--light-core); --wo: var(--wo-hwin); }
+.w-hpool { --wc: var(--light-core); --wo: var(--wo-hpool); }
+.w-l0 { --wc: var(--light-mid); --wo: 0.12; }
+.w-l1 { --wc: var(--light-mid); --wo: 0.2; }
+.w-l2 { --wc: var(--light-mid); --wo: 0.32; }
+.w-l3 { --wc: var(--light-core); --wo: 0.62; }
+.lf-base { fill: var(--color-bg); }
+.lg { stroke: var(--light-mid); stroke-opacity: 0.07; stroke-width: 1px; }
+.lg-flat { stroke: none; }
 .s-core { stop-color: var(--light-core); }
 .s-mid { stop-color: var(--light-mid); }
 .s-edge { stop-color: var(--light-edge); }
-.s-o6 { stop-opacity: 0.6; }
-.s-o4 { stop-opacity: 0.4; }
-.s-o1 { stop-opacity: 0.1; }
-.s-o0 { stop-opacity: 0; }
+.hall__art, .spill__art { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: hidden; }
+.spill__art { overflow: visible; }
+.i-leaf-turn { fill: var(--i-wood-shade); opacity: var(--o-turn); }
+.i-leaf-edge { fill: var(--light-mid); opacity: var(--o-night); }
+
+/* lamplight: content of the drawing, present only at night; sun shadows only by day */
+.i-night { opacity: var(--o-night); }
+.i-day { opacity: var(--o-day); }
 
 /* the double door: two leaves hinged on the frame, in the drawing's own perspective */
 .door {
@@ -402,6 +438,8 @@ svg { display: block; }
       fill var(--dur-theme) var(--ease-out),
       stroke var(--dur-theme) var(--ease-out),
       stop-color var(--dur-theme) var(--ease-out),
+      fill-opacity var(--dur-theme) var(--ease-out),
+      stroke-opacity var(--dur-theme) var(--ease-out),
       opacity var(--dur-theme) var(--ease-out) !important;
   }
   ::view-transition-old(root),
@@ -761,13 +799,11 @@ svg { display: block; }
 @media (forced-colors: active) {
   .lockup__emblem, .lockup__place, .status { color: CanvasText; }
   .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
-  .scene__art :where(path, circle, ellipse),
-  .leaf :where(path) { fill: Canvas; }
-  .i-line, .i-fine, .i-bar, .i-twig, .i-brass-line,
-  .leaf .i-line, .leaf .i-fine, .i-lantern .i-line { fill: none; stroke: CanvasText; }
-  .scene__art :where(.i-leaf-a, .i-leaf-b, .i-leaf-c, .i-trunk, .i-iron, .i-lamp),
-  .leaf .i-brass { fill: CanvasText; }
-  .i-night, .i-cast, .i-leaf-turn, .i-leaf-edge, .hall, .spill { display: none; }
+  /* forced colours: the line drawing alone, washes and light removed */
+  .w, .i-leaf-turn, .i-leaf-edge, .i-night, .hall, .spill { display: none; }
+  .lf-base, .w-room-base { fill: Canvas; }
+  .k { stroke: CanvasText; }
+  .k-fill { fill: CanvasText; }
   .scene::after { background: CanvasText; }
   .check__box { border-color: CanvasText; }
   .check__input:checked + .check__label .check__box { background: Highlight; }

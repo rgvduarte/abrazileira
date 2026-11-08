@@ -145,10 +145,11 @@
       var sh = Math.max(vh, stage.clientHeight + stick);   /* the large viewport: also stable */
       cam.dx = vw / 2 - cx;
       cam.dy = vh / 2 - stick - cy;
-      /* portrait: the opening ends up covering the screen; landscape: it fills the height
-         (up to 1.5x) and the flood does the rest, so the hall and its lamp stay in view */
+      /* the camera walks through: the opening ends up covering the whole screen in every
+         orientation, so the last frames are the hall itself and the flood only ever fades
+         lamplight over lamplight (never over the dark stone: no grey mid-tones) */
       var sw = vw / (door[2] * W), shh = sh / (door[3] * H);
-      cam.s = Math.max(shh * 1.1, Math.min(sw * 1.04, shh * 1.5));
+      cam.s = Math.max(sw, shh) * 1.04;
       var r = wrap.getBoundingClientRect();
       top = r.top + window.pageYOffset;
       run = Math.max(1, wrap.offsetHeight - window.innerHeight);
