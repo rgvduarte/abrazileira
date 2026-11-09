@@ -3,8 +3,8 @@
 // Usage: node src/tests/cta.test.js docs
 // Per viewport (390 x 844 touch, 1440 x 900 mouse):
 //   click, Enter, Space, scroll cue: the scroll moves only forwards over many frames (no jump), the scene plays
-//     (scale strictly between 1 and S on the way), the flight lasts 1.1-1.3 s, it lands with the list title and
-//     the email field in view and the focus in the email field;
+//     (scale strictly between 1 and S on the way), the flight lasts 0.9-1.1 s (--dur-flight 1000ms since 9 Nov),
+//     it lands with the list title and the email field in view and the focus in the email field;
 //   interrupted by a wheel turn, a touch, a key press or a pointer press mid-flight: the flight stops at once,
 //     nothing moves the page afterwards and the focus is not moved;
 //   Tab from the action: lands on the email with the list in view, without replaying the sequence;
@@ -20,8 +20,9 @@
 // --color-hall from the moment the screen becomes one colour (p = flat), at the middle of the list's rise, at p = 1 and
 // with the seam (where the stage releases) on screen: no second colour, no edge left; and on short portrait phones
 // (320 x 568, 375 x 553) the photograph's foot (the steps) is inside the first screen and the scroll cue is never
-// sliced by the screen's edge.
-setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 600000);
+// sliced by the screen's edge. The hand-off again on the 3D path (?3d=force, walked in by wheel) at 390 x 844, 844 x 390
+// and 1440 x 900; fast flicks (1500-3500 px/s) at 390 x 844 and 844 x 390 never cut the walk-in ahead in one frame.
+setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 1200000);
 const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
 const [, , dir] = process.argv;
 const REC = () => {   // every rAF frame: [t, scrollY, scene scale, intro opacity]
@@ -122,20 +123,68 @@ const STATE = () => {
       await c.close();
     }
   }
-  // the colour hand-off, in both themes and on every aspect ratio: the whole frame is --color-hall (list content and
-  // footer text excepted) from the moment the screen is one colour (p = flat) to the end, and with the seam on screen
-  for (const [n, w, h] of [["m390", 390, 844], ["m430", 430, 932], ["m375", 375, 667], ["se320", 320, 568], ["land", 844, 390], ["tab", 768, 1024], ["d1440", 1440, 900], ["d1920", 1920, 1080], ["wide", 2560, 1080]]) for (const theme of ["dia", "noite"]) {
-    const mobile = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile && h > w, hasTouch: mobile });
-    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, theme);
+  // fast flicks (review, door finish): the jump rule is the scroll's own change in a frame, never its distance from r,
+  // so a fast flick (1500-3500 px/s, a mouse-driven gesture) never cuts the walk-in ahead in one frame. Every frame after
+  // the driver wrote it: the largest step of r is at most 0.15 (or the scroll's own largest step in a frame, where that is
+// more), and r never jumps to p with a step over 0.1 beyond the scroll's own.
+  for (const [n, w, h] of [["m390", 390, 844], ["land", 844, 390]]) for (const sp of [1500, 2500, 3500]) {
+    const mobile = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, isMobile: mobile && h > w, hasTouch: mobile });
+    await c.addInitScript(() => { try { localStorage.setItem("ab-tema", "dia"); } catch (e) {} });
     const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1200);
+    const g = await pg.evaluate(() => document.documentElement.__porta.geo());
+    await pg.evaluate(() => { window.__rf = []; const d = document.createElement("div"); d.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;pointer-events:none;opacity:0"; document.body.appendChild(d);
+      new ResizeObserver(() => { const g = document.documentElement.__porta.geo(); __rf.push([scrollY, g.r, g.p]); }).observe(d);
+      let k = 0; const L = () => { d.style.width = (1 + (k++ % 2)) + "px"; if (__rf.length < 1500) requestAnimationFrame(L); }; requestAnimationFrame(L); });
+    const cdp = await c.newCDPSession(pg);
+    await cdp.send("Input.synthesizeScrollGesture", { x: Math.round(w / 2), y: Math.round(h * 0.8), yDistance: -Math.round(g.pin + g.run * 0.9), speed: sp, gestureSourceType: "mouse", preventFling: true });
+    await pg.waitForTimeout(1200);
+    const rf = await pg.evaluate(() => __rf);
+    let step = 0, dp = 0, snaps = [];
+    for (let i = 1; i < rf.length; i++) { const dr = Math.abs(rf[i][1] - rf[i - 1][1]); if (dr > step) step = dr; dp = Math.max(dp, Math.abs(rf[i][2] - rf[i - 1][2]));
+      if (rf[i][1] === rf[i][2] && dr > 0.1 && dr > Math.abs(rf[i][2] - rf[i - 1][2]) + 0.02) snaps.push([+rf[i - 1][1].toFixed(3), +rf[i][1].toFixed(3)]); }
+    const reached = Math.max(...rf.map((f) => f[2]));
+    /* r never steps more than 0.15 in a frame, or more than the scroll itself did in its largest frame where that is
+       more (844 x 390 at 3500 px/s: the run is 371 px, the scroll moves about 0.16 of it a frame) */
+    report(rf.length > 20 && reached > 0.8 && step <= Math.max(0.15, dp + 0.005) && !snaps.length, n, "flick " + sp + " px/s: the walk-in follows, never cut ahead", JSON.stringify({ frames: rf.length, reached: +reached.toFixed(3), maxStep: +step.toFixed(3), scrollMaxStep: +dp.toFixed(3), snaps }));
+    await c.close();
+  }
+  // the colour hand-off, in both themes and on every aspect ratio: the whole frame is --color-hall (list content and
+  // footer text excepted) from the moment the screen is one colour (p = flat) to the end, and with the seam on screen.
+  // Then the same on the 3D path (?3d=force; review, door finish), walked in by wheel so the canvas has drawn before the
+  // flat colour, at 390 x 844, 844 x 390 and 1440 x 900, Dia and Noite, each frame read once r has caught up with p;
+  // under the flat colour the canvas and the photograph's layers are both hidden.
+  const b3 = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+  const HAND = [["m390", 390, 844], ["m430", 430, 932], ["m375", 375, 667], ["se320", 320, 568], ["land", 844, 390], ["tab", 768, 1024], ["d1440", 1440, 900], ["d1920", 1920, 1080], ["wide", 2560, 1080]].map((v) => v.concat([""]))
+    .concat([["m390", 390, 844, "?3d=force"], ["land", 844, 390, "?3d=force"], ["d1440", 1440, 900, "?3d=force"]]);
+  for (const [n, w, h, q] of HAND) for (const theme of ["dia", "noite"]) {
+    const mobile = w < 900, c = await (q ? b3 : b).newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile && h > w, hasTouch: mobile });
+    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, theme);
+    const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base + q, { waitUntil: "networkidle" }); await pg.waitForTimeout(1200);
     const g = await pg.evaluate(() => { const d = document.createElement("div"), P = document.documentElement.__porta.geo();
       d.style.cssText = "position:absolute;width:1px;height:1px;background:var(--color-hall)"; document.querySelector(".lista").appendChild(d);
       const tok = getComputedStyle(d).backgroundColor.match(/\d+/g).slice(0, 3).map(Number); d.remove();
       return { pin: P.pin, run: P.run, flat: P.flat, rise: (P.list[0] + P.list[1]) / 2, tok }; });
+    let walk = null;
+    if (q) {
+      await pg.waitForFunction(() => document.documentElement.__porta.geo().d3 === "on", null, { timeout: 60000 }).catch(() => {});
+      await pg.mouse.move(w / 2, h / 2);
+      let shown = false;
+      for (let k = 0; k < 200; k++) {
+        await pg.mouse.wheel(0, 40); await pg.waitForTimeout(30);
+        const s = await pg.evaluate(() => { const P = document.documentElement.__porta.geo(); return { p: P.p, shown: P.d3shown }; });
+        if (s.shown && s.p < g.flat) shown = true;
+        if (s.p >= g.flat + 0.01) break;
+      }
+      await pg.waitForFunction(() => { const P = document.documentElement.__porta.geo(); return P.r === P.p; }, null, { timeout: 8000 }).catch(() => {});
+      walk = await pg.evaluate(() => { const c = document.querySelector(".porta__3d"), P = document.documentElement.__porta.geo();
+        return { d3: P.d3, canvas: c ? getComputedStyle(c).visibility : "none", scene: getComputedStyle(document.querySelector(".scene")).visibility }; });
+      walk.shownBeforeFlat = shown;
+    }
     const bad = []; let n0 = 0;
     for (const [label, p] of [["flat", g.flat + 0.002], ["rise", g.rise], ["p100", 1], ["seam", null]]) {
       const y = p === null ? 1e6 : Math.round(g.pin + p * g.run);
       await pg.evaluate((y) => scrollTo(0, y), y); await pg.waitForTimeout(900);
+      if (q) await pg.waitForFunction(() => { const P = document.documentElement.__porta.geo(); return P.r === P.p; }, null, { timeout: 8000 }).catch(() => {});
       const skip = await pg.evaluate(() => [...document.querySelectorAll(".lista__inner > *, .foot p")].filter((e) => +getComputedStyle(e).opacity > 0).map((e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 4, r.right + 4, r.bottom + 4]; }));
       const im = png.decode(await pg.screenshot());
       for (let yy = 0; yy < h; yy++) for (let x = 0; x < w; x++) {
@@ -143,9 +192,11 @@ const STATE = () => {
         n0++; const v = im.px(x, yy); if (v[0] !== g.tok[0] || v[1] !== g.tok[1] || v[2] !== g.tok[2]) bad.push(label + "@" + x + "," + yy + "=" + v.join(","));
       }
     }
-    report(!bad.length, n, "handoff", theme, JSON.stringify({ token: g.tok.join(","), pixels: n0, off: bad.length, first: bad.slice(0, 4) }));
+    const w3 = !q || (walk.d3 === "on" && walk.shownBeforeFlat && walk.canvas === "hidden" && walk.scene === "hidden");
+    report(!bad.length && w3, n, "handoff" + (q ? " 3D" : ""), theme, JSON.stringify({ token: g.tok.join(","), pixels: n0, off: bad.length, first: bad.slice(0, 4), ...(q ? { walk } : {}) }));
     await c.close();
   }
+  await b3.close();
   // short portrait phones: the first screen holds the whole photograph down to its steps, and the cue is whole or absent
   for (const [n, w, h] of [["se320", 320, 568], ["se375", 375, 553], ["m375", 375, 667], ["m390s", 390, 664]]) for (const page of ["", "en/"]) {
     const c = await b.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true }); const pg = await c.newPage(); await serve.offline(pg);

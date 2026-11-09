@@ -11,10 +11,16 @@
 // LIMIT is 0.6: the review asked 0.5; headless Chromium's software raster, resampling semi-transparent pixels in
 // 8-bit premultiplied values, darkens the fade by up to 1 level per channel when the file is drawn smaller than its
 // size (a flat ramp at 720 -> 680 px; 0 at its own size), and that reaches 0.53 at 375 x 667 by night (it was 1.79).
+// By night the limit is LIMIT x 1.85 (1.11): the 9 Nov hotfix brightened every Noite layer 1.85x (tools/noite_gain.py,
+// photo.json › noiteGain), so whatever the photograph adds inside its box grows 1.85x in levels, and the night facade,
+// re-encoded at its old byte size, carries compression-block steps in its fade (at 1440 x 900 one 33px inside the top
+// edge: 0.41 before the gain, 0.60 after; the live hotfix build reads the same; at the box edge itself under 0.25).
+// The same tolerance in the photograph's ungained levels; still caught by night: a 1px ring of 3% black (2.8), a
+// 16px soft one of 5% (1.8).
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 900000);
 const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
 const [, , dir] = process.argv;
-const LIMIT = 0.6;
+const LIMIT = 0.6, GAIN = 1.85, lim = (theme) => theme === "noite" ? LIMIT * GAIN : LIMIT;
 const VP = [[375, 667, 2], [390, 844, 3], [430, 932, 3], [768, 1024, 2], [1440, 900, 1], [1920, 1080, 1], [2560, 1440, 1]];
 function lum(im) {
   const L = new Float32Array(im.w * im.h);
@@ -36,7 +42,7 @@ function hpmax(p) {
 (async () => {
   const { srv, base } = await serve(dir);
   const b = await chromium.launch();
-  let fails = 0, worst = 0;
+  let fails = 0; const worst = { dia: 0, noite: 0 };
   for (const [w, h, dpr] of VP) for (const theme of ["dia", "noite"]) {
     const mob = w < 900 && w < h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mob, hasTouch: mob });
@@ -59,14 +65,14 @@ function hpmax(p) {
       const b0 = Math.max(0, Math.floor(y0 + 0.08 * fh)), b1 = Math.min(H, Math.floor(y0 + 0.6 * fh)), b2 = Math.min(H, Math.floor(y0 + 0.33 * fh));
       if (x0 > 0 && x0 < W - R && b1 - b0 > 40) res.left = hpmax(prof(x0, b0, b1, false));
       if (x1 > R && x1 < W && b2 - b0 > 40) res.right = hpmax(prof(x1, b0, b2, false));
-      const m = Math.max(0, ...Object.values(res)); worst = Math.max(worst, m);
-      const ok = m <= LIMIT; if (!ok) fails++;
-      console.log(`${ok ? "PASS" : "FAIL"} ${w}x${h}@${dpr} ${theme} ${f ? "walk-in" : "rest"} straight-edge step ${m.toFixed(2)} ` + JSON.stringify(Object.fromEntries(Object.entries(res).map(([k, v]) => [k, +v.toFixed(2)]))));
+      const m = Math.max(0, ...Object.values(res)); worst[theme] = Math.max(worst[theme], m);
+      const ok = m <= lim(theme); if (!ok) fails++;
+      console.log(`${ok ? "PASS" : "FAIL"} ${w}x${h}@${dpr} ${theme} ${f ? "walk-in" : "rest"} straight-edge step ${m.toFixed(2)} (limit ${lim(theme).toFixed(2)}) ` + JSON.stringify(Object.fromEntries(Object.entries(res).map(([k, v]) => [k, +v.toFixed(2)]))));
     }
     await ctx.close();
   }
   await b.close(); srv.close();
-  console.log(`worst ${worst.toFixed(2)} (limit ${LIMIT})`);
+  console.log(`worst: Dia ${worst.dia.toFixed(2)} (limit ${LIMIT}), Noite ${worst.noite.toFixed(2)} (limit ${(LIMIT * GAIN).toFixed(2)})`);
   console.log(fails ? `edge: ${fails} failure(s)` : "edge ok");
   process.exit(fails ? 1 : 0);
 })();

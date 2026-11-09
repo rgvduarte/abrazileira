@@ -409,8 +409,8 @@
       1037,
       700
      ],
-     "avif": 22759,
-     "webp": 34606
+     "avif": 19888,
+     "webp": 30002
     },
     {
      "w": 1600,
@@ -418,8 +418,8 @@
       1536,
       1037
      ],
-     "avif": 42512,
-     "webp": 61396
+     "avif": 35923,
+     "webp": 52844
     }
    ]
   }
@@ -582,6 +582,144 @@
      "avif": 202747,
      "webp": 356492
     }
+   ],
+   "rows": [
+    [
+     0.93774,
+     [
+      247.0,
+      229.0,
+      215.0
+     ]
+    ],
+    [
+     0.94336,
+     [
+      236.6,
+      219.6,
+      204.0
+     ]
+    ],
+    [
+     0.94898,
+     [
+      177.0,
+      160.4,
+      142.4
+     ]
+    ],
+    [
+     0.95742,
+     [
+      198.8,
+      183.2,
+      167.2
+     ]
+    ],
+    [
+     0.96585,
+     [
+      213.2,
+      198.8,
+      183.4
+     ]
+    ],
+    [
+     0.97991,
+     [
+      215.8,
+      202.0,
+      188.8
+     ]
+    ],
+    [
+     0.99396,
+     [
+      216.8,
+      203.4,
+      191.2
+     ]
+    ],
+    [
+     1.02208,
+     [
+      219.0,
+      205.8,
+      193.2
+     ]
+    ],
+    [
+     1.05019,
+     [
+      218.8,
+      205.6,
+      193.2
+     ]
+    ],
+    [
+     1.10642,
+     [
+      217.6,
+      204.8,
+      192.2
+     ]
+    ],
+    [
+     1.16264,
+     [
+      219.6,
+      206.8,
+      194.0
+     ]
+    ],
+    [
+     1.21887,
+     [
+      218.6,
+      205.6,
+      192.6
+     ]
+    ],
+    [
+     1.27509,
+     [
+      217.6,
+      204.2,
+      191.6
+     ]
+    ],
+    [
+     1.33132,
+     [
+      217.8,
+      204.2,
+      192.0
+     ]
+    ],
+    [
+     1.38755,
+     [
+      219.0,
+      205.8,
+      193.6
+     ]
+    ],
+    [
+     1.44377,
+     [
+      218.6,
+      205.6,
+      193.2
+     ]
+    ],
+    [
+     1.5,
+     [
+      218.0,
+      204.0,
+      192.0
+     ]
+    ]
    ]
   },
   "noite": {
@@ -1043,9 +1181,148 @@
      "avif": 96909,
      "webp": 105870
     }
+   ],
+   "rows": [
+    [
+     0.93774,
+     [
+      53.7,
+      37.0,
+      29.6
+     ]
+    ],
+    [
+     0.94336,
+     [
+      46.6,
+      31.8,
+      21.8
+     ]
+    ],
+    [
+     0.94898,
+     [
+      38.5,
+      23.7,
+      11.1
+     ]
+    ],
+    [
+     0.95742,
+     [
+      45.5,
+      30.7,
+      17.0
+     ]
+    ],
+    [
+     0.96585,
+     [
+      57.0,
+      42.2,
+      25.9
+     ]
+    ],
+    [
+     0.97991,
+     [
+      67.7,
+      52.5,
+      35.1
+     ]
+    ],
+    [
+     0.99396,
+     [
+      71.4,
+      56.6,
+      38.9
+     ]
+    ],
+    [
+     1.02208,
+     [
+      70.3,
+      56.2,
+      40.7
+     ]
+    ],
+    [
+     1.05019,
+     [
+      70.3,
+      55.9,
+      39.2
+     ]
+    ],
+    [
+     1.10642,
+     [
+      69.2,
+      55.1,
+      38.5
+     ]
+    ],
+    [
+     1.16264,
+     [
+      67.7,
+      53.3,
+      37.0
+     ]
+    ],
+    [
+     1.21887,
+     [
+      62.9,
+      50.0,
+      35.5
+     ]
+    ],
+    [
+     1.27509,
+     [
+      57.4,
+      48.1,
+      33.3
+     ]
+    ],
+    [
+     1.33132,
+     [
+      55.5,
+      46.2,
+      31.8
+     ]
+    ],
+    [
+     1.38755,
+     [
+      53.7,
+      44.4,
+      29.6
+     ]
+    ],
+    [
+     1.44377,
+     [
+      51.8,
+      42.6,
+      28.9
+     ]
+    ],
+    [
+     1.5,
+     [
+      51.8,
+      40.7,
+      27.8
+     ]
+    ]
    ]
   },
-  "note3": "strip3 (fix r1): the paving three scene widths wide, [A | B | C], A the 1-width strip (the photograph's paving under the facade), B and C quilted from A and its mirror with no verbatim continuation (final2/work/fix-r1/py/ground3.py); used where a screen shows more than one scene width (tablets, landscape, desktops). `w` is per scene width."
+  "note3": "strip3 (fix r1): the paving three scene widths wide, [A | B | C], A the 1-width strip (the photograph's paving under the facade), B and C quilted from A and its mirror with no verbatim continuation (final2/work/fix-r1/py/ground3.py); used where a screen shows more than one scene width (tablets, landscape, desktops). `w` is per scene width.",
+  "noteRows": "rows (fix r2): the strip's mean colour by row (y, rgb), so the band under the strip is the paving's tone until the strip file arrives (final2/work/fix-r2/py/street_rows.py)"
  },
  "fade": {
   "note": "the facade layer's outer fade (fix r1, final2/work/fix-r1/py/facade_export.py): on the top and the sides it begins 0-30% of `max` in and ends 70-100% of `max` in (shares of the facade's width; `maxH` is `max` as a share of its height), both lines wandering along each side; `min` is its narrowest width; the bottom over `bottom` (a share of the height). The LQIP is inset by `max` so it never shows through the fade.",
@@ -1056,6 +1333,9 @@
  },
  "noiteGain": {
   "k": 1.85,
-  "note": "Noite brightened x K in sRGB (client, 9 Nov: «à noite está demasiado escura»); hotfix tools/noite_gain.py"
+  "note": "Noite brightened x K in sRGB (client, 9 Nov: «à noite está demasiado escura»); hotfix tools/noite_gain.py; street.noite.rows (fix r2) scaled at the merge"
+ },
+ "spill3": {
+  "note": "Noite lamplight on the steps re-solved with lateral and depth fall-off from the doorway, riser bounce and nosing highlight (door finish; final3-work/photo/spill3.py); not part of the noiteGain"
  }
 }

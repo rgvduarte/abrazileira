@@ -130,6 +130,12 @@ for _k in ("pt", "en"):
 # breaks after the comma: the object holds together.
 T["pt"]["lede"] = T["pt"]["lede"].replace("abrimos as portas", "abrimos\u00a0as\u00a0portas")
 T["en"]["lede"] = T["en"]["lede"].replace("we open our doors", "we\u00a0open\u00a0our\u00a0doors")
+# English breaks by rule too (review r2): the list sentence at its clause, as the Portuguese does («Leave your email
+# and / we will let you know when we open.», never «we will / let you know»), and the consent's object stays whole
+# («… from A Brazileira / about the opening.», never a two-word runt after a dangling «about»). «and» is not tied:
+# that would push the list sentence to three lines on desktops.
+T["en"]["list_p"] = T["en"]["list_p"].replace("we will let you know", "we\u00a0will\u00a0let\u00a0you\u00a0know")
+T["en"]["consent"] = T["en"]["consent"].replace("about the opening", "about\u00a0the\u00a0opening")
 
 # the town is its own span: on phones it takes a second line by rule, not by a near miss in width
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'

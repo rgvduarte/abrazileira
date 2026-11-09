@@ -9,7 +9,7 @@
    ========================================================================== */
 
 /* ---- Fonts: self-hosted, OFL (licences in ../fonts/) --------------------
-   The client's identity pitch, three voices: the wordmark (the building's 1930s lettering read as a Roman with
+   The client's identity pitch, three voices: the wordmark (the building's lettering read as a Roman with
    an ornamental B and kicked R's), spaced Roman capitals for labels, and a classical book serif for everything said.
    The wordmark is not a font: it is the pitch's own lettering, drawn as a vector (assets/img/wordmark.svg, inlined
    by build.py), so no face is loaded for it. */
@@ -33,41 +33,79 @@
    then checked against the web font at about 200 widths from 320 to 2560px: a late font never re-wraps a line or
    moves a text start by 3px or more, so CLS stays 0 with the fonts held back. Ascent and descent are the web
    font's (EB Garamond 1.007 / 0.298, Cinzel 0.976 / 0.372), divided by the size-adjust. (The wordmark is drawn,
-   so it has no fallback: it is there with the HTML.) Regenerate after a copy change (the values follow the strings, not just the face). */
+   so it has no fallback: it is there with the HTML.) Regenerate after a copy change (the values follow the strings, not just the face).
+   Each role has a twin, «… noto», after it in its stack: Android has none of the Times faces (there «Times New Roman»
+   is only an alias of the system serif, Noto Serif, about 18% wider than EB Garamond), so without it the Portuguese
+   sentence set in two lines until the font came, then one (review r2: CLS 0.04-0.07 on 360-412px phones). Its
+   size-adjust is the Times value times the role's own Liberation / Noto width ratio (final2/work/fix-r2/tools:
+   noto_ratio.js, noto_faces.py). A screen with Times never reaches it. */
 /*FB-START*/
 @font-face { font-family: "Garamond fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.15%; ascent-override: 108.11%; descent-override: 31.99%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.92%; ascent-override: 127.60%; descent-override: 37.76%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.69%; ascent-override: 107.48%; descent-override: 31.81%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 79.44%; ascent-override: 126.76%; descent-override: 37.51%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond consent fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 92.45%; ascent-override: 108.92%; descent-override: 32.23%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond consent fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 77.71%; ascent-override: 129.58%; descent-override: 38.35%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond consent fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.60%; ascent-override: 107.59%; descent-override: 31.84%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond consent fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.96%; ascent-override: 127.53%; descent-override: 37.74%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond lede fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.41%; ascent-override: 106.66%; descent-override: 31.56%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lede fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 79.12%; ascent-override: 127.28%; descent-override: 37.67%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond lede fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.01%; ascent-override: 107.12%; descent-override: 31.70%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lede fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.64%; ascent-override: 128.05%; descent-override: 37.89%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond list fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.14%; ascent-override: 108.12%; descent-override: 31.99%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond list fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.66%; ascent-override: 128.02%; descent-override: 37.89%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond list fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 91.31%; ascent-override: 110.28%; descent-override: 32.64%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond list fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 77.22%; ascent-override: 130.41%; descent-override: 38.59%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond intro fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 92.33%; ascent-override: 109.07%; descent-override: 32.28%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond intro fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 77.61%; ascent-override: 129.75%; descent-override: 38.40%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond intro fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.31%; ascent-override: 107.92%; descent-override: 31.94%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond intro fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.33%; ascent-override: 128.55%; descent-override: 38.04%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond title fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.28%; ascent-override: 106.81%; descent-override: 31.61%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond title fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 79.41%; ascent-override: 126.81%; descent-override: 37.53%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond UI fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.94%; ascent-override: 102.82%; descent-override: 30.43%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond UI fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 82.98%; ascent-override: 121.35%; descent-override: 35.91%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond cta fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.33%; ascent-override: 103.46%; descent-override: 30.62%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond cta fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 80.64%; ascent-override: 124.88%; descent-override: 36.96%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond cta fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 98.09%; ascent-override: 102.66%; descent-override: 30.38%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond cta fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 83.83%; ascent-override: 120.13%; descent-override: 35.55%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond foot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 96.87%; ascent-override: 103.95%; descent-override: 30.76%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond foot fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 80.58%; ascent-override: 124.97%; descent-override: 36.98%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond foot fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 94.75%; ascent-override: 106.28%; descent-override: 31.45%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond foot fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 80.53%; ascent-override: 125.05%; descent-override: 37.01%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond name fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 95.62%; ascent-override: 105.31%; descent-override: 31.17%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond name fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 83.41%; ascent-override: 120.73%; descent-override: 35.73%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond place fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.91%; ascent-override: 102.85%; descent-override: 30.44%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond place fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 82.63%; ascent-override: 121.87%; descent-override: 36.07%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond sep fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 77.52%; ascent-override: 129.90%; descent-override: 38.44%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond sep fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 83.88%; ascent-override: 120.06%; descent-override: 35.53%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond dot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 65.90%; ascent-override: 152.81%; descent-override: 45.22%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond dot fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 87.81%; ascent-override: 114.68%; descent-override: 33.94%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond back fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.58%; ascent-override: 103.20%; descent-override: 30.54%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond back fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 83.37%; ascent-override: 120.78%; descent-override: 35.74%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond back fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.14%; ascent-override: 103.66%; descent-override: 30.68%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond back fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 83.22%; ascent-override: 121.00%; descent-override: 35.81%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond status fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 98.06%; ascent-override: 102.70%; descent-override: 30.39%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond status fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 82.17%; ascent-override: 122.54%; descent-override: 36.26%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond status fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 99.73%; ascent-override: 100.97%; descent-override: 29.88%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond status fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 85.56%; ascent-override: 117.70%; descent-override: 34.83%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond theme fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.54%; ascent-override: 99.17%; descent-override: 29.35%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond theme fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 89.76%; ascent-override: 112.19%; descent-override: 33.20%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond theme fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.04%; ascent-override: 99.66%; descent-override: 29.49%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond theme fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 89.90%; ascent-override: 112.02%; descent-override: 33.15%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 102.05%; ascent-override: 95.64%; descent-override: 36.45%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 101.61%; ascent-override: 96.05%; descent-override: 36.61%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel list fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 97.37%; ascent-override: 100.24%; descent-override: 38.20%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel list fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 96.14%; ascent-override: 101.52%; descent-override: 38.69%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel list fallback en"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 101.77%; ascent-override: 95.90%; descent-override: 36.55%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel list fallback en noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 98.97%; ascent-override: 98.61%; descent-override: 37.59%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel lockup fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 103.15%; ascent-override: 94.62%; descent-override: 36.06%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel lockup fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 101.94%; ascent-override: 95.74%; descent-override: 36.49%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel place fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 98.60%; ascent-override: 98.99%; descent-override: 37.73%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel place fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 98.93%; ascent-override: 98.66%; descent-override: 37.60%; line-gap-override: 0%; }
 @font-face { font-family: "Cinzel dot fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 80.49%; ascent-override: 121.26%; descent-override: 46.22%; line-gap-override: 0%; }
+@font-face { font-family: "Cinzel dot fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 82.99%; ascent-override: 117.60%; descent-override: 44.82%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond lang fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 104.67%; ascent-override: 96.21%; descent-override: 28.47%; line-gap-override: 0%; }
+@font-face { font-family: "Garamond lang fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 100.99%; ascent-override: 99.72%; descent-override: 29.51%; line-gap-override: 0%; }
 /*FB-END*/
 
 :root {
@@ -109,30 +147,30 @@
      is everything said: 400 for sentences, titles, the privacy notice, the consent and the email a guest types;
      500 for the interface (controls, status, the action, labels, messages, the button, the footer). One book face
      at two weights, so the page reads like the pitch's specimen: Roman capitals over a Garamond. */
-  --font-label: "Cinzel", "Cinzel fallback", "Times New Roman", serif;                          /* spaced capitals (left-aligned) */
-  --font-label-lockup: "Cinzel", "Cinzel lockup fallback", "Times New Roman", serif;            /* Boutique Hotel (· Torres Vedras) */
-  --font-label-dot: "Cinzel", "Cinzel dot fallback", "Times New Roman", serif;                  /* its « · » */
-  --font-label-place: "Cinzel", "Cinzel place fallback", "Times New Roman", serif;              /* its TORRES VEDRAS */
-  --font-label-list: "Cinzel", "Cinzel list fallback", "Times New Roman", serif;                /* the waiting list's name */
-  --font-text: "EB Garamond", "Garamond fallback", "Times New Roman", serif;                     /* the field, the sun note, the no-JS note */
-  --font-read: "EB Garamond Text", "Garamond fallback", "Times New Roman", serif;                /* the privacy notice */
-  --font-lede: "EB Garamond", "Garamond lede fallback", "Times New Roman", serif;                /* the sentence */
-  --font-title: "EB Garamond", "Garamond title fallback", "Times New Roman", serif;              /* the page title (privacy) */
-  --font-ui: "EB Garamond", "Garamond UI fallback", "Times New Roman", serif;                    /* the interface (500) */
+  --font-label: "Cinzel", "Cinzel fallback", "Cinzel fallback noto", "Times New Roman", serif;                          /* spaced capitals (left-aligned) */
+  --font-label-lockup: "Cinzel", "Cinzel lockup fallback", "Cinzel lockup fallback noto", "Times New Roman", serif;            /* Boutique Hotel (· Torres Vedras) */
+  --font-label-dot: "Cinzel", "Cinzel dot fallback", "Cinzel dot fallback noto", "Times New Roman", serif;                  /* its « · » */
+  --font-label-place: "Cinzel", "Cinzel place fallback", "Cinzel place fallback noto", "Times New Roman", serif;              /* its TORRES VEDRAS */
+  --font-label-list: "Cinzel", "Cinzel list fallback", "Cinzel list fallback noto", "Times New Roman", serif;                /* the waiting list's name */
+  --font-text: "EB Garamond", "Garamond fallback", "Garamond fallback noto", "Times New Roman", serif;                     /* the field, the sun note, the no-JS note */
+  --font-read: "EB Garamond Text", "Garamond fallback", "Garamond fallback noto", "Times New Roman", serif;                /* the privacy notice */
+  --font-lede: "EB Garamond", "Garamond lede fallback", "Garamond lede fallback noto", "Times New Roman", serif;                /* the sentence */
+  --font-title: "EB Garamond", "Garamond title fallback", "Garamond title fallback noto", "Times New Roman", serif;              /* the page title (privacy) */
+  --font-ui: "EB Garamond", "Garamond UI fallback", "Garamond UI fallback noto", "Times New Roman", serif;                    /* the interface (500) */
   /* the same faces; these stacks differ only by a fallback matched to their own sentences (see @font-face) */
-  --font-list: "EB Garamond", "Garamond list fallback", "Times New Roman", serif;                /* the waiting-list sentence */
-  --font-intro: "EB Garamond", "Garamond intro fallback", "Times New Roman", serif;              /* the privacy intro */
-  --font-consent: "EB Garamond", "Garamond consent fallback", "Times New Roman", serif;          /* the consent line */
-  --font-cta: "EB Garamond", "Garamond cta fallback", "Times New Roman", serif;                  /* the action */
-  --font-status: "EB Garamond", "Garamond status fallback", "Times New Roman", serif;            /* Abrimos brevemente. */
-  --font-foot: "EB Garamond", "Garamond foot fallback", "Times New Roman", serif;                /* the footer line */
-  --font-foot-name: "EB Garamond", "Garamond name fallback", "Times New Roman", serif;           /* © 2026 A Brazileira */
-  --font-foot-place: "EB Garamond", "Garamond place fallback", "Times New Roman", serif;         /* Torres Vedras, Portugal */
-  --font-sep: "EB Garamond", "Garamond sep fallback", "Times New Roman", serif;                  /* « · » between links */
-  --font-dot: "EB Garamond", "Garamond dot fallback", "Times New Roman", serif;                  /* «·» between controls */
-  --font-lang: "EB Garamond", "Garamond lang fallback", "Times New Roman", serif;                /* PT · EN */
-  --font-back: "EB Garamond", "Garamond back fallback", "Times New Roman", serif;                /* Voltar ao início */
-  --font-theme: "EB Garamond", "Garamond theme fallback", "Times New Roman", serif;              /* Dia · Noite: their width holds the sun note still */
+  --font-list: "EB Garamond", "Garamond list fallback", "Garamond list fallback noto", "Times New Roman", serif;                /* the waiting-list sentence */
+  --font-intro: "EB Garamond", "Garamond intro fallback", "Garamond intro fallback noto", "Times New Roman", serif;              /* the privacy intro */
+  --font-consent: "EB Garamond", "Garamond consent fallback", "Garamond consent fallback noto", "Times New Roman", serif;          /* the consent line */
+  --font-cta: "EB Garamond", "Garamond cta fallback", "Garamond cta fallback noto", "Times New Roman", serif;                  /* the action */
+  --font-status: "EB Garamond", "Garamond status fallback", "Garamond status fallback noto", "Times New Roman", serif;            /* Abrimos brevemente. */
+  --font-foot: "EB Garamond", "Garamond foot fallback", "Garamond foot fallback noto", "Times New Roman", serif;                /* the footer line */
+  --font-foot-name: "EB Garamond", "Garamond name fallback", "Garamond name fallback noto", "Times New Roman", serif;           /* © 2026 A Brazileira */
+  --font-foot-place: "EB Garamond", "Garamond place fallback", "Garamond place fallback noto", "Times New Roman", serif;         /* Torres Vedras, Portugal */
+  --font-sep: "EB Garamond", "Garamond sep fallback", "Garamond sep fallback noto", "Times New Roman", serif;                  /* « · » between links */
+  --font-dot: "EB Garamond", "Garamond dot fallback", "Garamond dot fallback noto", "Times New Roman", serif;                  /* «·» between controls */
+  --font-lang: "EB Garamond", "Garamond lang fallback", "Garamond lang fallback noto", "Times New Roman", serif;                /* PT · EN */
+  --font-back: "EB Garamond", "Garamond back fallback", "Garamond back fallback noto", "Times New Roman", serif;                /* Voltar ao início */
+  --font-theme: "EB Garamond", "Garamond theme fallback", "Garamond theme fallback noto", "Times New Roman", serif;              /* Dia · Noite: their width holds the sun note still */
   --weight-text: 400;        /* EB Garamond Regular: what the house says  */
   --weight-ui: 500;          /* EB Garamond Medium: the interface         */
   --weight-label: 400;       /* the only Cinzel file (capitals)           */
@@ -235,6 +273,7 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* entrances, exits, presses, messages */
   --dur-ui: 150ms;           /* hover colour (with the ease keyword)    */
   --dur-theme: 400ms;        /* Dia <-> Noite cross-fade (the visitor's choice) */
+  --dur-handback: 180ms;     /* the 3D entrance, its last frame frozen, dissolves into the CSS one (its live safeguard, site.js) */
   --dur-sky: 1400ms;         /* ... when the sun changes it on its own: slower, gentler */
   --ease-sky: cubic-bezier(0.45, 0, 0.55, 1);
   --dur-press: 160ms;        /* button and link press: scale(0.97)      */
@@ -261,14 +300,13 @@
   --z-skip: 100;
 
   /* ---- Breakpoints (reference; custom properties cannot drive @media; DESIGN.md › Responsive behavior) ----
-     stack   below 56.25em (900px), portrait: lockup, text, entrance at the foot
-     split   min-width 56.25em (900px), or landscape from 37.5em (600px): text | entrance
+     stack   portrait (taller than wide) at any width; below 56.25em (900px) unless landscape: lockup, text, entrance at the foot
+     split   min-width 56.25em (900px) and min-aspect-ratio 1/1, or landscape from 35em (560px): text | entrance
      short   landscape, max-height 31.25em (500px): compact split, lockup 24-28px
      tight   portrait, max-height 42.5em (680px): tighter rhythm, smaller emblem
      cta     min-width 56.25em: the action 19px; min-width 75em (1200px): 21px
-     label   min-width 56.25em and min-height 37.5em (600px): the lockup's label on one line (home)
+     label   min-width 56.25em and min-height 31.26em (500px): the lockup's label on one line (home), if it fits
      foot    max-width 29.99em (480px): the footer on three lines
-     lede    20em-22.49em (320-359px): the Portuguese lede one phrase a line
      note    min-width 37.5em (600px): the sun note is visible (below: screen readers only)
      wide    min-width 120em (1920px): root 112.5%; 160em (2560px): 131.25%      */
 
@@ -276,18 +314,18 @@
 
 /* English sentences: the same stacks with fallbacks sized to the English strings. */
 [lang|="en"] {
-  --font-text: "EB Garamond", "Garamond fallback en", "Times New Roman", serif;
-  --font-read: "EB Garamond Text", "Garamond fallback en", "Times New Roman", serif;
-  --font-back: "EB Garamond", "Garamond back fallback en", "Times New Roman", serif;
-  --font-lede: "EB Garamond", "Garamond lede fallback en", "Times New Roman", serif;
-  --font-list: "EB Garamond", "Garamond list fallback en", "Times New Roman", serif;
-  --font-intro: "EB Garamond", "Garamond intro fallback en", "Times New Roman", serif;
-  --font-cta: "EB Garamond", "Garamond cta fallback en", "Times New Roman", serif;
-  --font-status: "EB Garamond", "Garamond status fallback en", "Times New Roman", serif;
-  --font-foot: "EB Garamond", "Garamond foot fallback en", "Times New Roman", serif;
-  --font-label-list: "Cinzel", "Cinzel list fallback en", "Times New Roman", serif;
-  --font-consent: "EB Garamond", "Garamond consent fallback en", "Times New Roman", serif;
-  --font-theme: "EB Garamond", "Garamond theme fallback en", "Times New Roman", serif;
+  --font-text: "EB Garamond", "Garamond fallback en", "Garamond fallback en noto", "Times New Roman", serif;
+  --font-read: "EB Garamond Text", "Garamond fallback en", "Garamond fallback en noto", "Times New Roman", serif;
+  --font-back: "EB Garamond", "Garamond back fallback en", "Garamond back fallback en noto", "Times New Roman", serif;
+  --font-lede: "EB Garamond", "Garamond lede fallback en", "Garamond lede fallback en noto", "Times New Roman", serif;
+  --font-list: "EB Garamond", "Garamond list fallback en", "Garamond list fallback en noto", "Times New Roman", serif;
+  --font-intro: "EB Garamond", "Garamond intro fallback en", "Garamond intro fallback en noto", "Times New Roman", serif;
+  --font-cta: "EB Garamond", "Garamond cta fallback en", "Garamond cta fallback en noto", "Times New Roman", serif;
+  --font-status: "EB Garamond", "Garamond status fallback en", "Garamond status fallback en noto", "Times New Roman", serif;
+  --font-foot: "EB Garamond", "Garamond foot fallback en", "Garamond foot fallback en noto", "Times New Roman", serif;
+  --font-label-list: "Cinzel", "Cinzel list fallback en", "Cinzel list fallback en noto", "Times New Roman", serif;
+  --font-consent: "EB Garamond", "Garamond consent fallback en", "Garamond consent fallback en noto", "Times New Roman", serif;
+  --font-theme: "EB Garamond", "Garamond theme fallback en", "Garamond theme fallback en noto", "Times New Roman", serif;
 }
 
 /* ==== 2 + 3 · Dia (default). [data-theme] also scopes a theme to any element

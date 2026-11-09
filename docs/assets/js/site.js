@@ -192,7 +192,7 @@ G = JSON.parse(scene.getAttribute("data-geo") || "{}"),
 css = getComputedStyle(root),
 num = function (n, d) { var v = parseFloat(css.getPropertyValue(n)); return isNaN(v) ? d : v; },
 OPEN = num("--open-door", G.open || 84) * Math.PI / 180, COS = 1 - Math.cos(OPEN),
-TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35,
+TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35, LAGMAX = 0.25,
 cam = { dx: 0, dy: 0, k: 0, s: 8, kp: G.k || 0.8 }, pin = 0, run = 1,
 probe = document.createElement("div"),
 cue = $(".porta__cue"),
@@ -284,6 +284,14 @@ if (p >= KX[3]) return Math.exp(KY[3]);
 var i = p < KX[1] ? 0 : p < KX[2] ? 1 : 2, h = KX[i + 1] - KX[i], t = (p - KX[i]) / h, t2 = t * t, t3 = t2 * t;
 return Math.exp((2 * t3 - 3 * t2 + 1) * KY[i] + (t3 - 2 * t2 + t) * h * KM[i] + (-2 * t3 + 3 * t2) * KY[i + 1] + (t3 - t2) * h * KM[i + 1]);
 }
+function aim() {
+if (!cue) return;
+var x = scene.offsetLeft + G.hp[0] * scene.offsetWidth, q;
+for (q = scene.offsetParent; q && q !== stage; q = q.offsetParent) x += q.offsetLeft;
+x -= cue.offsetLeft + cue.offsetWidth / 2;
+for (q = cue.offsetParent; q && q !== stage; q = q.offsetParent) x -= q.offsetLeft;
+cue.style.setProperty("--cue-dx", Math.round(x) + "px");
+}
 function measure() {
 var fw = stage.clientWidth, focused = !!(list && document.activeElement && document.activeElement !== list && list.contains(document.activeElement));
 if (focused && held.w === fw && held.run > 0) wrap.style.setProperty("--porta-run", held.run + "px");
@@ -353,10 +361,27 @@ scene.style.transform = low ? "none" : camAt(r);
 plate.style.transform = "scale(" + Math.pow(scaleAt(r), cam.kp - 1).toFixed(5) + ")";
 draw3d(r, p);
 }
-var d3 = null, d3on = false, d3arm = false, d3st = "off", d3try = 0, pre = null, cap3 = /[?&]3d=force\b/.test(location.search) ? true : null;
-try { var c3 = sessionStorage.getItem("ab-3d"); if (cap3 === null && (c3 === "1" || c3 === "0")) cap3 = c3 === "1"; } catch (e) {}
+var Q = location.search, F3 = /[?&]3d=force(&|$)/.test(Q), T3 = !F3 && /[?&]3d(=1)?(&|$)/.test(Q),
+IOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (/^Mac/.test(navigator.platform || "") && navigator.maxTouchPoints > 1),
+gq = /[?&]guard(?:=(\d+)(?:,(\d+))?)?(?:&|$)/.exec(Q),
+GUARD = { on: !!gq || (!F3 && !T3), med: gq && gq[1] ? +gq[1] : 25, max: gq && gq[2] ? +gq[2] : 120 },
+SOFT = /swiftshader|llvmpipe|softpipe|software|basic render/i,
+WEAK = /mali-(4\d\d|t[678]\d\d|g31)\b|adreno \(tm\) ([1-4]\d\d|50\d)\b|powervr (sgx|rogue ge8[0-3]\d\d)|\bgma ?\d|hd graphics (2000|3000)\b|videocore|vivante|tegra [234]\b/i,
+d3 = null, d3on = false, d3arm = false, d3st = "off", d3why = "", d3try = 0, pre = null, gpu = "", visAt = -1e9, awayAt = -1e9,
+cad = 0, gd = null, fnow = 0, cur = null, fading = 0, FADE = num("--dur-handback", 180);
+function asc(a, b) { return a - b; }
+function mem(v) {
+try {
+if (v === undefined) return F3 || T3 ? "" : sessionStorage.getItem("ab-3d") || "";
+if (!F3 && !T3) sessionStorage.setItem("ab-3d", v);
+} catch (e) {}
+return "";
+}
 var moved = 0;
-function quiet() { return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT); }
+function quiet() {
+var sc = navigator.scheduling;
+return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT) && !(sc && sc.isInputPending && sc.isInputPending());
+}
 function whenQuiet(f) {
 var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
 (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
@@ -366,23 +391,63 @@ function view3d(r, ez) {
 var c = camV(r), u = E.door(clamp((r - DOOR[0]) / (DOOR[1] - DOOR[0]))),
 v = { cw: stage.clientWidth, ch: stage.clientHeight, rect: box3, tx: c[0], ty: c[1], u: u, spill: (1 - Math.cos(OPEN * u)) / COS };
 v.s = scaleAt(r);
-v.zc = Math.pow(v.s, -DOLLY);
+v.zc = Math.pow(Math.min(v.s, scaleAt(DOOR[1])), -DOLLY);
+v.zh = Math.pow(v.s, -DOLLY);
 return v;
 }
-function show3d(yes) {
-if (yes === d3on) return;
-d3on = yes;
-d3.canvas.style.visibility = yes ? "visible" : "";
-scene.style.visibility = yes ? "hidden" : "";
+var d3m = 0;
+function show3d(m) {
+m = +m;
+if (m === d3m) return;
+d3m = m;
+d3on = m === 1;
+d3.canvas.style.visibility = m === 1 ? "visible" : "";
+scene.style.visibility = m && !fading ? "hidden" : "";
 }
 function draw3d(r, p) {
-if (!d3 || !box3) return;
+if (!d3 || !box3 || fading) return;
 var flat = Math.max(r, p - LAG) >= COVER_AT, ok;
 if (!d3arm) { if (r > 0 && !flat) return; d3arm = true; }
+if (flat && r > 0 && d3m && d3.ok) { show3d(2); return; }
 ok = r > 0 && !flat && d3.draw(view3d(r));
+if (!d3) return;
 if (!ok && d3on && r > 0 && !flat && !decoded()) return;
-if (!ok && d3on && flat && scaleAt(r) > STEP) { low = 3; lowT = performance.now(); scene.style.transform = "none"; }
-show3d(ok);
+if (!ok && d3m && flat && scaleAt(r) > STEP) { low = 3; lowT = performance.now(); scene.style.transform = "none"; }
+show3d(ok ? 1 : 0);
+if (ok && gd) gd.drew = true;
+}
+function watch3d() {
+if (!gd || gd.done || !fnow) return;
+var drew = gd.drew;
+gd.drew = false;
+if (!d3on) { gd.prev = 0; gd.last = false; return; }
+if (gd.skip > 0) gd.skip--;
+else if (gd.prev && gd.last && fnow > gd.prev) {
+var d = fnow - gd.prev, s, lim;
+gd.t.push(d);
+gd.sum += d;
+if (d > gd.worst) gd.worst = d;
+if (GUARD.on && d > GUARD.max) { handBack("a frame of " + Math.round(d) + " ms (limit " + GUARD.max + ")", true); return; }
+if (gd.sum >= 1000) {
+s = gd.t.slice().sort(asc);
+gd.med = s[s.length >> 1];
+gd.done = true;
+lim = Math.max(GUARD.med, 1.5 * (cad || 16.7));
+if (GUARD.on && gd.med > lim) { handBack("median frame " + gd.med.toFixed(1) + " ms (limit " + Math.round(lim) + ")", true); return; }
+}
+}
+gd.prev = fnow;
+gd.last = drew;
+}
+function cadence() {
+var ts = [], t0 = 0;
+function f(t) {
+if (t0) ts.push(t - t0);
+t0 = t;
+if (ts.length < 12 && !document.hidden) window.requestAnimationFrame(f);
+else if (ts.length > 4) { ts.sort(asc); cad = Math.min(34, Math.max(6, ts[ts.length >> 1])); }
+}
+window.requestAnimationFrame(f);
 }
 var hold = null;
 function decoded() {
@@ -395,31 +460,67 @@ Promise.all(ps).then(function () { window.requestAnimationFrame(function () { h.
 }
 return hold.done || performance.now() - hold.t0 > 300;
 }
-function lost3d(why) {
-if (d3) { show3d(false); try { d3.destroy(); } catch (e) {} }
-d3 = null;
-d3st = why || "lost";
+function lost3d(st, why) {
+var m = cur || d3;
+if (d3) show3d(0);
+d3 = cur = null;
+fading = 0;
+if (m) setTimeout(function () { try { m.destroy(); } catch (e) {} }, 60);
+d3st = st;
+if (why) d3why = why;
 wrap.classList.remove("porta--3d");
-if (why !== "off") ERR.push("3d: " + d3st);
+ERR.push("3d: " + st + (why ? " (" + why + ")" : ""));
 }
-function want3d() {
-var c = navigator.connection;
-return on && d3st === "off" && /[?&]3d\b/.test(location.search) && !/[?&](sem3d|semporta)\b/.test(location.search) && !(c && (c.saveData || /2g/.test(c.effectiveType || "")))
-&& "noModule" in HTMLScriptElement.prototype && !!window.WebGL2RenderingContext && !!wrap.getAttribute("data-3d");
+function handBack(why, soft) {
+mem("0|" + why);
+if (gd) gd.done = true;
+if (!soft || !d3 || !d3on || fading) { lost3d("handed back", why); queue(); return; }
+d3st = "handing back";
+d3why = why;
+fading = performance.now();
+scene.style.visibility = "";
+d3.canvas.style.transition = "opacity " + FADE + "ms linear";
+d3.canvas.style.opacity = "0";
+setTimeout(function () { if (fading) { lost3d("handed back", why); queue(); } }, FADE + 50);
 }
-function cap3d() {
-if (cap3 !== null) return cap3;
-var ok = false;
+function refuse(why) { d3st = "refused"; d3why = why; }
+function gate() {
+var c = navigator.connection, m, dm = navigator.deviceMemory, hc = navigator.hardwareConcurrency;
+if (still.matches) return "reduced motion";
+if (/[?&]semporta\b/.test(Q)) return "?semporta";
+if (/[?&]sem3d\b/.test(Q)) return "?sem3d";
+if (!on) return "the sequence is off";
+if (c && c.saveData) return "data saver";
+if (c && /2g/.test(c.effectiveType || "")) return "2G link (" + c.effectiveType + ")";
+if (!("noModule" in HTMLScriptElement.prototype)) return "no ES modules";
+if (!window.WebGL2RenderingContext) return "no WebGL 2";
+if (!wrap.getAttribute("data-3d")) return "no 3D module on this page";
+if (F3 || T3) return "";
+m = mem();
+if (m.charAt(0) === "0") return "earlier in this session: " + m.slice(2);
+if (dm && dm < 2) return "weak device (deviceMemory " + dm + " GB)";
+if (!IOS && hc && hc < 4) return "weak device (" + hc + " cores)";
+return "";
+}
+function gpu3d() {
+var m = mem(), cv, gl = null, x, lose, mt, why = "";
+if (m.charAt(0) === "1") { gpu = m.slice(2); return ""; }
+try { cv = document.createElement("canvas"); gl = cv.getContext("webgl2", { failIfMajorPerformanceCaveat: true, antialias: false, depth: false }); } catch (e) {}
+if (!gl) why = "no GPU-backed WebGL 2 context (failIfMajorPerformanceCaveat)";
+else {
 try {
-var cv = document.createElement("canvas"), gl = cv.getContext("webgl2", { failIfMajorPerformanceCaveat: true });
-if (gl) {
-var x = gl.getExtension("WEBGL_debug_renderer_info"), lose = gl.getExtension("WEBGL_lose_context");
-ok = !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(gl.getParameter(x ? x.UNMASKED_RENDERER_WEBGL : gl.RENDERER)));
+x = gl.getExtension("WEBGL_debug_renderer_info");
+lose = gl.getExtension("WEBGL_lose_context");
+gpu = String(gl.getParameter(x ? x.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+mt = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+if (SOFT.test(gpu)) why = "software renderer (" + gpu + ")";
+else if (mt < 4096) why = "MAX_TEXTURE_SIZE " + mt;
+else if (!T3 && WEAK.test(gpu)) why = "weak GPU (" + gpu + ")";
 if (lose) lose.loseContext();
+} catch (e) { why = "probe: " + (e && e.message || e); }
 }
-} catch (e) { ok = false; }
-try { sessionStorage.setItem("ab-3d", ok ? "1" : "0"); } catch (e) {}
-return (cap3 = ok);
+mem(why ? "0|" + why : "1|" + gpu);
+return why;
 }
 function pre3d() {
 if (pre) return pre;
@@ -431,51 +532,91 @@ if (u) ps.push(new Promise(function (ok) { var l = document.createElement("link"
 return (pre = Promise.all(ps));
 }
 function load3d() {
-if (!want3d()) return;
-if (!cap3d()) { d3st = "refused"; return; }
+if (d3st !== "off") return;
+var why = gate();
+if (!why && !F3) why = gpu3d();
+if (why) { refuse(why); return; }
 d3st = "loading";
+d3why = (F3 ? "?3d=force" : T3 ? "?3d (testing)" : "passed the gate") + (gpu ? ": " + gpu : "");
+if (!cad) cadence();
 pre3d().then(function () {
 whenQuiet(function () {
 if (d3st !== "loading") return;
 if (root.__door3d) return mount3d();
-window.addEventListener("door3d", mount3d, { once: true });
-var s = document.createElement("script");
-s.type = "module";
+window.addEventListener("door3d", function () { whenQuiet(mount3d); }, { once: true });
+var s = document.createElement("script"), t0;
 s.src = wrap.getAttribute("data-3d");
-s.onerror = function () { lost3d("module failed"); };
+s.type = "module";
+s.onerror = function () { lost3d("refused", "the module failed to load"); };
+function bad(why) {
+window.removeEventListener("error", onErr);
+clearTimeout(t0);
+if (d3st !== "loading" || root.__door3d) return;
+mem("0|module: " + why);
+lost3d("refused", "module: " + why);
+}
+function onErr(e) { if (/door3d|three/.test(e && e.filename || "")) bad(String(e.message || "error").slice(0, 80)); }
+window.addEventListener("error", onErr);
+t0 = setTimeout(function () { bad("not evaluated within 10 s"); }, 10000);
+window.addEventListener("door3d", function () { window.removeEventListener("error", onErr); clearTimeout(t0); }, { once: true });
 document.head.appendChild(s);
 });
 });
 }
 function mount3d() {
+if (d3st !== "loading") return;
 try {
-var m = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: /[?&]3d=force\b/.test(location.search),
+var m = cur = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: F3,
+maxDpr: 3,
 big: function () { return Math.round(scene.offsetWidth * 3) + "px"; },
 quiet: quiet,
 views: function (ez) { return box3 ? [view3d(0.3, ez), view3d(0.05, ez)] : []; },
-onLost: function () { lost3d("context lost"); queue(); setTimeout(revive3d, 3000); },
-onTheme: function () { d3arm = false; queue(); } });
+onLost: function () {
+if (m !== cur) return;
+if (document.hidden || awayAt > visAt || performance.now() - visAt < 3000) {
+lost3d("context lost", "lost in the background: rebuilt when shown");
+queue();
+setTimeout(revive3d, 3000);
+} else handBack("context lost while shown");
+},
+onError: function (e) { if (m === cur) handBack("exception: " + String(e && e.message || e).slice(0, 80)); },
+onTheme: function () { if (m === cur) { d3arm = false; queue(); } } });
 m.ready.then(function () {
-if (d3st !== "loading") { m.destroy(); return; }
+if (m !== cur || d3st !== "loading") { m.destroy(); return; }
 d3 = m;
 d3st = "on";
 d3arm = false;
+gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, worst: 0, med: 0, done: false };
 wrap.classList.add("porta--3d");
 queue();
-}, function (e) { m.destroy(); lost3d("textures: " + e); });
+}, function (e) {
+if (m !== cur) { m.destroy(); return; }
+var msg = String(e && e.message || e).slice(0, 120);
+if (!(e && e.stage === "textures")) mem("0|mount: " + msg);
+lost3d("refused", "mount: " + msg);
+});
 } catch (err) {
-var msg = String(err && err.message || err);
-if (/context/i.test(msg)) { d3st = "refused"; wrap.classList.remove("porta--3d"); } else lost3d("mount: " + msg);
+var msg = String(err && err.message || err).slice(0, 120);
+cur = null;
+mem("0|mount: context: " + msg);
+if (/context/i.test(msg)) { refuse("mount: context: " + msg); wrap.classList.remove("porta--3d"); } else lost3d("refused", "mount: context: " + msg);
 }
 }
 function revive3d() {
+if (d3 && d3.lost()) lost3d("context lost", "lost in the background: rebuilt when shown");
 if (d3st !== "context lost" || d3try >= 2 || document.hidden) return;
 d3try++;
 d3st = "off";
 whenQuiet(load3d);
 }
-document.addEventListener("visibilitychange", revive3d);
-window.addEventListener("pageshow", revive3d);
+function back3d(e) {
+if (gd) { gd.prev = 0; gd.skip = 2; }
+if (e.type === "pagehide" || (e.type === "visibilitychange" && document.hidden)) { awayAt = performance.now(); return; }
+if (e.type === "pageshow" ? e.persisted : !document.hidden) { visAt = performance.now(); revive3d(); }
+}
+document.addEventListener("visibilitychange", back3d);
+window.addEventListener("pageshow", back3d);
+window.addEventListener("pagehide", back3d);
 var LAYERS = [[facade, "transform"], [scene, "transform"], [plate, "transform"], [leafL, "transform"], [leafR, "transform"],
 [shadeL, "opacity"], [shadeR, "opacity"], [$(".ph--spill"), "opacity"], [intro, "transform, opacity"],
 [$(".porta__cue"), "opacity"], [$(".porta__flood"), "opacity"]],
@@ -530,11 +671,15 @@ function tickInner(now) {
 raf = 0;
 moved = performance.now();
 if (!on) return;
+fnow = now;
 var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
 last = now;
 if (!rq && !fl) endOff = g.p >= 1 ? g.y - pin - run : -1;
-if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;
-else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
+if (shown < 0 || seen < 0 || Math.abs(g.p - seen) > JUMP) r = g.p;
+else {
+r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
+r = Math.min(Math.max(r, g.p - LAGMAX), g.p + LAGMAX);
+}
 if (Math.abs(g.p - r) < EPS) r = g.p;
 if (r !== shown || g.p !== seen || low) {
 if (r > 0) {
@@ -552,10 +697,13 @@ shown = r;
 seen = g.p;
 crisp(r);
 } else if (lift) crisp(r);
+watch3d();
+fnow = 0;
 if (g.y !== lastY) { lastY = g.y; calm = 0; } else calm++;
 if (r !== g.p || calm < 8 || low) raf = window.requestAnimationFrame(tick);
 else {
 last = 0;
+if (gd) gd.prev = 0;
 clearTimeout(idle);
 if (shown <= 0) idle = setTimeout(settle, 300);
 else if (shown < KX[2]) idle = setTimeout(rest, 250);
@@ -634,7 +782,7 @@ kick();
 return true;
 }
 function prime() {
-if (d3st === "off" && cap3 === true && want3d()) pre3d();
+if (d3st === "loading") pre3d();
 if (!on || promoted || shown > 0) return;
 promote(true);
 clearTimeout(idle);
@@ -648,6 +796,7 @@ for (var i = 0; i < WARM; i++) LAYERS[i][0].style.willChange = LAYERS[i][1];
 function refresh() { try { refreshInner(); } catch (err) { bail("refresh", err); } }
 function refreshInner() {
 rq = 0;
+aim();
 if (!on) return;
 var was = endOff, w0 = mw, h0 = mh;
 measure();
@@ -658,10 +807,10 @@ if (shown >= 0) render(shown, seen < 0 ? shown : seen);
 calm = 0;
 kick();
 }
-function queue() { if (on && !rq) rq = window.requestAnimationFrame(refresh); }
+function queue() { if (!rq) rq = window.requestAnimationFrame(refresh); }
 function off() {
 land();
-if (d3) show3d(false);
+if (d3) show3d(0);
 on = false;
 if (raf) window.cancelAnimationFrame(raf);
 raf = 0;
@@ -677,6 +826,7 @@ seen = -1;
 }
 function set() {
 off();
+aim();
 if (still.matches || /[?&]semporta\b/.test(location.search)) {
 root.classList.remove("porta-on");
 root.setAttribute("data-sequence", "static");
@@ -688,6 +838,7 @@ on = true;
 measure();
 window.addEventListener("scroll", kick, { passive: true });
 kick();
+if (d3st === "refused" && d3why === "reduced motion") { d3st = "off"; whenQuiet(load3d); }
 }
 window.addEventListener("wheel", prime, { passive: true });
 wrap.addEventListener("pointerdown", function (e) { if (e.target.closest && e.target.closest('a[href="#lista"]')) prime(); }, { passive: true });
@@ -708,14 +859,15 @@ if (keyed && on && target().p > 0.01) window.scrollTo(0, pin);
 });
 try { set(); } catch (err) { bail("set", err); }
 (function () {
-var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1200); };
-function go() { setTimeout(function () { idle(function () { try { load3d(); } catch (e) { lost3d("load"); } }, { timeout: 4000 }); }, 1500); }
+var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 200); };
+function go() { idle(function () { if (raf || fl) return setTimeout(go, 200); try { load3d(); } catch (e) { refuse("load: " + (e && e.message || e)); } }, { timeout: 1500 }); }
 if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
 })();
 root.__portaBusy = function () { return on && (!!fl || !!raf); };
-root.__porta = { fly: fly, land: land, geo: function () {
+root.__porta = { fly: fly, land: land, d3probe: function () { return d3 && d3.probe ? d3.probe() : null; }, geo: function () {
 return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen,
-d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try };
+d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try, d3why: d3why, d3gpu: gpu, d3dpr: d3 ? d3.dpr() : 0,
+d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), done: gd.done, cadence: +cad.toFixed(1) } : null };
 } };
 })();
 (function () {
@@ -861,12 +1013,18 @@ box.setAttribute("aria-hidden", "true");
 box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;margin:0;padding:8px;font:11px/1.35 ui-monospace,Menlo,monospace;background:rgba(0,0,0,.8);color:#fff;border-radius:6px;pointer-events:none;white-space:pre-wrap;max-height:45vh;overflow:hidden";
 document.body.appendChild(box);
 (function f() { frames++; window.requestAnimationFrame(f); })();
+var diag3d = function () {
+var g = root.__porta && root.__porta.geo(), q = g && g.d3guard;
+if (!g) return "path=CSS (the sequence stepped aside)";
+return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") +
+(q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms cadence=" + q.cadence + "ms" + (q.done ? " (done)" : "") : "");
+};
 setInterval(function () {
 var st = document.querySelector(".porta__stage"), r = st && st.getBoundingClientRect();
 box.textContent = [navigator.userAgent,
 "y=" + Math.round(window.pageYOffset) + " ih=" + window.innerHeight + " vv=" + (window.visualViewport ? Math.round(window.visualViewport.height) : "-") + " docH=" + document.documentElement.scrollHeight,
 "seq=" + root.getAttribute("data-sequence") + " theme=" + root.getAttribute("data-theme") + " cls=" + root.className,
-"3d=" + (root.__porta && root.__porta.geo().d3) + " shown=" + (root.__porta && root.__porta.geo().d3shown),
+diag3d(),
 "stage top=" + (r ? Math.round(r.top) : "-") + " h=" + (st ? st.offsetHeight : "-") + " pos=" + (st ? getComputedStyle(st).position : "-"),
 "frames/s=" + frames * 2, "errors: " + (ERR.length ? ERR.join(" | ") : "none")].join("\n");
 frames = 0;

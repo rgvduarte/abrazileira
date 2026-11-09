@@ -7,14 +7,21 @@
 // camera/leaves/plate/shade/flood at rest. During every scenario: opacity stays within [0, 1], scale within [1, S].
 // Fast flicks (F): the title is back within 100ms of reaching the top, and a fling down never shows the list panel's
 // edge over a stage that is not yet flat hall colour.
-setTimeout(()=>{console.log('TIMEOUT');process.exit(2)},900000);
+// The 3D path (review, door finish): each viewport runs again with ?3d=force (one theme each; R3D_ALL=1 for both), the 3D
+// on before it starts; each rest check waits for r = p = 0 and no inline style (15 s at most: SwiftShader is slow) and
+// also asks for the canvas hidden, the photograph shown and the 3D still on; during every scenario no frame shows neither
+// the canvas nor the photograph under a stage that is not yet flat colour.
+setTimeout(()=>{console.log('TIMEOUT');process.exit(2)},2400000);
 const {chromium}=require('playwright'),serve=require('./serve.js');
 const [,,dir]=process.argv;
 const VPS=(process.env.VPS||'m390:390:844,d1440:1440:900').split(',').map(s=>s.split(':'));
 (async()=>{const {srv,base}=await serve(dir);const b=await chromium.launch();let pass=0,fail=0;const results=[];
-for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
-  const mobile=+w<900;
-  const c=await b.newContext({viewport:{width:+w,height:+h},colorScheme:scheme,isMobile:mobile,hasTouch:mobile});
+const b3=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+const RUNS=[];for(const [n,w,h] of VPS){for(const scheme of ['light','dark'])RUNS.push([n,w,h,scheme,'']);}
+VPS.forEach(([n,w,h],i)=>{for(const scheme of ['light','dark'])if(process.env.R3D_ALL==='1'||scheme===(i%2?'dark':'light'))RUNS.push([n,w,h,scheme,'?3d=force']);});
+for(const [n0,w,h,scheme,Q] of RUNS){
+  const mobile=+w<900,n=n0+(Q?'-3d':'');
+  const c=await (Q?b3:b).newContext({viewport:{width:+w,height:+h},colorScheme:scheme,isMobile:mobile,hasTouch:mobile});
   // the default theme follows the sky over Torres Vedras, not the system: choose it, so both themes are covered whatever the hour
   await c.addInitScript(t=>{try{localStorage.setItem('ab-tema',t)}catch(e){}},scheme==='dark'?'noite':'dia');
   await c.addInitScript(()=>{ // fake scroll position hook (rubber-band emulation) + invariant monitor
@@ -23,17 +30,21 @@ for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
     window.__fakeY=null;
     Object.defineProperty(window,'pageYOffset',{configurable:true,get(){return window.__fakeY!==null?window.__fakeY:d.get.call(window)}});
     Object.defineProperty(window,'scrollY',{configurable:true,get(){return window.__fakeY!==null?window.__fakeY:dy.get.call(window)}});
-    window.__bad=[];const mon=()=>{const i=document.querySelector('.intro'),s=document.querySelector('.scene');if(i&&s){const o=+getComputedStyle(i).opacity,m=new DOMMatrix(getComputedStyle(s).transform);if(!(o>=0&&o<=1))__bad.push('opacity '+o);if(m.a<0.999)__bad.push('scale '+m.a);if(window.__S&&m.a>window.__S*1.001)__bad.push('scale>S '+m.a)}requestAnimationFrame(mon)};requestAnimationFrame(mon);
+    window.__bad=[];const mon=()=>{const i=document.querySelector('.intro'),s=document.querySelector('.scene');if(i&&s){const o=+getComputedStyle(i).opacity,m=new DOMMatrix(getComputedStyle(s).transform);if(!(o>=0&&o<=1))__bad.push('opacity '+o);if(m.a<0.999)__bad.push('scale '+m.a);if(window.__S&&m.a>window.__S*1.001)__bad.push('scale>S '+m.a);
+      const cv=document.querySelector('.porta__3d'),fl=document.querySelector('.porta__flood');if(cv&&getComputedStyle(cv).visibility!=='visible'&&getComputedStyle(s).visibility==='hidden'&&fl&&+getComputedStyle(fl).opacity<0.999)__bad.push('blank (neither canvas nor photograph)')}requestAnimationFrame(mon)};requestAnimationFrame(mon);
   });
   const pg=await c.newPage();await serve.offline(pg);const errs=[];pg.on('pageerror',e=>errs.push(String(e)));
-  await pg.goto(base,{waitUntil:'networkidle'});await pg.waitForTimeout(1500);
+  await pg.goto(base+Q,{waitUntil:'networkidle'});await pg.waitForTimeout(1500);
+  if(Q)await pg.waitForFunction(()=>document.documentElement.__porta&&document.documentElement.__porta.geo().d3==='on',null,{timeout:60000}).catch(()=>{});
   const rest0=await pg.evaluate(()=>{const l=document.querySelector('.lockup').getBoundingClientRect();return {top:l.top,left:l.left}});
   const geo=await pg.evaluate(()=>{const w=document.querySelector('.porta'),st=document.querySelector('.porta__stage');return {run:w.offsetHeight-st.offsetHeight,max:document.documentElement.scrollHeight-innerHeight}});
   const check=async(name)=>{await pg.waitForTimeout(900);
+    await pg.waitForFunction(()=>{const P=document.documentElement.__porta&&document.documentElement.__porta.geo(),i=document.querySelector('.intro');return P&&P.r===0&&P.p===0&&!/opacity|transform/.test(i.getAttribute('style')||'')},null,{timeout:15000}).catch(()=>{});
     const r=await pg.evaluate(()=>{const q=s=>document.querySelector(s),cs=e=>getComputedStyle(e);const i=q('.intro'),l=q('.lockup').getBoundingClientRect();let op=1;for(let e=q('.lockup');e;e=e.parentElement)op*=+cs(e).opacity;
       return {y:scrollY,introOpacity:cs(i).opacity,introTransform:cs(i).transform,inline:i.getAttribute('style')||'',lockupOpacity:+op.toFixed(4),lockTop:l.top,lockLeft:l.left,
-        scene:cs(q('.scene')).transform,leafL:cs(q('.leaf--l')).transform,plate:cs(q('.ph--plate')).transform,light:cs(q('.leaf__shade')).opacity,flood:cs(q('.porta__flood')).opacity,lede:cs(q('.lede')).opacity,bad:window.__bad.splice(0)}});
-    const ok=r.y<=0&&r.introOpacity==='1'&&r.introTransform==='none'&&!/opacity|transform/.test(r.inline)&&r.lockupOpacity===1&&Math.abs(r.lockTop-rest0.top)<0.5&&Math.abs(r.lockLeft-rest0.left)<0.5&&r.scene==='none'&&r.leafL==='none'&&r.plate==='none'&&r.light==='0'&&r.flood==='0'&&r.bad.length===0;
+        scene:cs(q('.scene')).transform,leafL:cs(q('.leaf--l')).transform,plate:cs(q('.ph--plate')).transform,light:cs(q('.leaf__shade')).opacity,flood:cs(q('.porta__flood')).opacity,lede:cs(q('.lede')).opacity,bad:window.__bad.splice(0),
+        canvas:q('.porta__3d')?cs(q('.porta__3d')).visibility:'none',sceneVis:cs(q('.scene')).visibility,d3:document.documentElement.__porta?document.documentElement.__porta.geo().d3:'-'}});
+    const ok=(!Q||(r.canvas==='hidden'&&r.sceneVis==='visible'&&r.d3==='on'))&&r.y<=0&&r.introOpacity==='1'&&r.introTransform==='none'&&!/opacity|transform/.test(r.inline)&&r.lockupOpacity===1&&Math.abs(r.lockTop-rest0.top)<0.5&&Math.abs(r.lockLeft-rest0.left)<0.5&&r.scene==='none'&&r.leafL==='none'&&r.plate==='none'&&r.light==='0'&&r.flood==='0'&&r.bad.length===0;
     (ok?pass++:fail++);results.push({vp:n,scheme,name,ok,...(ok?{}:r)});console.log(ok?'PASS':'FAIL',n,scheme,name,ok?'':JSON.stringify(r));};
   const toTop=async()=>{await pg.evaluate(()=>{window.__fakeY=null;scrollTo(0,0)})};
   await pg.evaluate(()=>{const s=document.querySelector('.scene');window.__S=999});
@@ -95,4 +106,4 @@ for(const [n,w,h] of VPS) for(const scheme of ['light','dark']){
   await check('F2 rest after the fling, wheel back up');
   if(errs.length){fail++;console.log('FAIL errors',errs)}
   await c.close();}
-console.log(`reverse-scroll regression: ${pass} passed, ${fail} failed`);await b.close();srv.close();process.exit(fail?1:0);})();
+console.log(`reverse-scroll regression: ${pass} passed, ${fail} failed`);await b.close();await b3.close();srv.close();process.exit(fail?1:0);})();

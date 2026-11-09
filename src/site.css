@@ -189,10 +189,10 @@ svg { display: block; }
 
 /* ---- Lockup (h1): the crest over the wordmark and its line, as on the identity pitch ------------------
    The crest is the current emblem (the pitch's shield monogram is on hold). «A Brazileira» is the pitch's own
-   lettering (the façade's 1930s letters read as a heavy flared Roman: a large A, the ornamental B, RAZILEIR in
+   lettering (the façade's letters read as a heavy flared Roman: a large A, the ornamental B, RAZILEIR in
    smaller capitals with kicked R's, a large A to close), drawn as an inline SVG in the logo's ink. Under it, close,
    in widely spaced Roman capitals: BOUTIQUE HOTEL · TORRES VEDRAS on one line where the wordmark is large (the
-   home page in the split layout, from 1024 x 700), on two lines everywhere else. Sizes are the pitch's ratios of
+   home page from 900 x 500: the split layout, and portrait tablets that wide), on two lines everywhere else. Sizes are the pitch's ratios of
    one width (--lockup-wordmark, in the lockup's em). Nothing is held at size by force: with text enlarged (200%)
    the wordmark never grows past the column (max-inline-size), the line falls back to two lines when one does not
    fit (container query) and each label line may break between its words. The name is read once, from the hidden
@@ -234,11 +234,18 @@ svg { display: block; }
 .lockup__kind, .lockup__place { display: block; margin-inline-end: calc(var(--track-label) * -1); }
 .lockup__place { font-family: var(--font-label-place); }   /* each piece has a fallback matched to its own width */
 .lockup__dot { display: none; font-family: var(--font-label-dot); color: var(--color-mark); }
-/* home, split layout from 1024 x 700: one line with « · », as on the pitch (capitals 0.019 of the wordmark's width,
-   never under 11.2px), only while it fits the text column: the lockup is the container and its em is the lockup
-   size, so enlarged text (whose 0.7rem floor grows) drops it back to two lines. The line is 29.7 of its own size
-   wide (Cinzel at 0.42em tracking): 5.47em at 0.0271 of a 6.8em wordmark, 20.8rem at the 0.7rem floor */
-@media (min-width: 64em) and (min-height: 43.75em) {
+/* home, from 900 x 500 (review r2: it was 1024 x 700, so a 1366 x 768 laptop, 657px tall in Chrome, and every split
+   screen from 900 to 1023px wide fell back to the phones' two lines at 0.32em, a 17px block competing with the
+   wordmark): one line with « · », as on the pitch (capitals 0.019 of the wordmark's width, never under 11.2px), only
+   while it fits the text column: the lockup is the container and its em is the lockup size, so enlarged text (whose
+   0.7rem floor grows) drops it back to two lines. The line is 29.7 of its own size wide (Cinzel at 0.42em tracking):
+   5.47em at 0.0271 of a 6.8em wordmark, 20.8rem at the 0.7rem floor. Where two lines remain in the split layout (900
+   to about 915px wide, enlarged text) they are never set larger than the one line would be; the short landscape
+   phones (below 500px tall) keep theirs (11-11.5px). */
+@media (min-width: 56.25em) and (min-aspect-ratio: 1/1) and (min-height: 31.26em), (orientation: landscape) and (min-width: 35em) and (min-height: 31.26em) {
+  .porta .lockup__label { font-size: min(var(--lockup-label), var(--lockup-label-line)); }
+}
+@media (min-width: 56.25em) and (min-height: 31.26em) {
   .porta .lockup { align-self: stretch; container-type: inline-size; }
   @container (min-width: 5.52em) and (min-width: 21rem) {
     .porta .lockup__label { font-size: var(--lockup-label-line); margin-inline-end: calc(var(--track-label) * -1); }
@@ -384,6 +391,14 @@ svg { display: block; }
 .ph--lqip {
   --x: var(--lqip-x); --y: var(--lqip-y); --w: var(--lqip-w); --h: var(--lqip-h);
   background: var(--photo-lqip) var(--lqip-pos) / var(--lqip-size) no-repeat;
+  /* feathered on every side, as the facade is (review r2: its hard edges, the bottom one 57 levels in 8px at
+     1440 x 900, drew a blurred rectangle on the page for the whole download); the street under it already shows
+     the paving's tone (photo.py › street_wall), so the foot fades into paving, not into wall */
+  --lqip-mask: linear-gradient(90deg, transparent, black 12%, black 88%, transparent), linear-gradient(transparent, black 9%, black 93%, transparent);
+  -webkit-mask-image: var(--lqip-mask);
+  -webkit-mask-composite: source-in;
+  mask-image: var(--lqip-mask);
+  mask-composite: intersect;
 }
 .scene.is-loaded .ph--lqip { display: none; }
 /* until the facade is in, the placeholder alone stands for the whole scene: the small doorway files (leaves, the
@@ -449,6 +464,26 @@ svg { display: block; }
     --street-tile: var(--street-size3, var(--street-size));
     --street-720: var(--street3-720); --street-1080: var(--street3-1080); --street-1600: var(--street3-1600);
     --street-720-avif: var(--street3-720-avif); --street-1080-avif: var(--street3-1080-avif); --street-1600-avif: var(--street3-1600-avif);
+  }
+}
+/* Very wide, short windows (5:2 and wider: 1600 x 400, 1920 x 450, 2560 x 600): the scene is sized by the height and
+   stands in the right-hand column, so its left edge can be more than the box's three scene widths from the window's
+   edge (review r2: a step from the wall to the page colour, the paving cut, up to 214px at 1920 x 450). There the box
+   gains a copy of itself to its left, the same height and width, so the same tiles fall on whole strip periods and
+   the wall's gradient (vertical only) runs on; no lights (they end in black, color-dodge's identity, well inside the
+   box). Only on those windows, so the camera layer is no larger anywhere else. */
+@media (min-aspect-ratio: 5/2) {
+  .ph--street::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 100%;
+    inline-size: 100%;
+    background-color: var(--street-below);
+    background-image: var(--street-strip), var(--street-wall);
+    background-repeat: repeat-x, no-repeat;
+    background-size: var(--street-tile), 100% 100%;
+    background-position: var(--street-pos), 0 0;
   }
 }
 .ph--hall { --x: var(--door-x); --y: var(--door-y); --w: var(--door-w); --h: var(--door-h); overflow: clip; }   /* the doorway */
@@ -956,7 +991,7 @@ picture.t-noite { display: var(--t-noite); }
 .page-notice .link-inline { color: var(--color-text-strong); }
 
 /* ==== Split: text | entrance ============================================================ */
-@media (min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em) {
+@media (min-width: 56.25em) and (min-aspect-ratio: 1/1), (orientation: landscape) and (min-width: 35em) {
   :root { --topbar-pad: max(var(--space-4), env(safe-area-inset-top)); }
   .stage {
     display: grid;
@@ -985,6 +1020,20 @@ picture.t-noite { display: var(--t-noite); }
      was the size and weight of the cobbles' own joints and sank into them (review r1); larger and firmer, it reads
      as a mark on the stones, not one of them (no plate behind it) */
   .porta__cue svg { inline-size: 1.25rem; stroke-width: calc(var(--stroke-cue) * 1.9); }
+  /* ... and it stands on the door's axis, where the walk-in goes (review r2: centred on the window it lined up with
+     nothing, in the gutter between the text and the door): the band takes the stage's own columns, the cue the
+     entrance's, and site.js (measure) nudges it by the photograph's asymmetry (--cue-dx: the door axis is 0.482 of
+     the photograph's width, about 12px left of the column's centre at 1440 x 900); without JavaScript it is centred
+     on the entrance's column */
+  .porta__band {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: var(--space-8);
+    padding-inline:
+      max(var(--gutter), env(safe-area-inset-left), calc((100% - var(--container)) / 2))
+      max(var(--gutter), env(safe-area-inset-right), calc((100% - var(--container)) / 2));
+  }
+  .porta__cue { grid-column: 2; justify-self: center; translate: var(--cue-dx, 0px) 0; }
   /* the top bar lines up with the composition (container) on wide screens instead of the window's edges */
   .topbar {
     padding-inline:
@@ -1001,7 +1050,7 @@ picture.t-noite { display: var(--t-noite); }
   .intro { padding-block-end: var(--space-7); }      /* the action stays on the wall, clear of the paving */
   .lede { font-size: var(--size-read); }
   .entrance { min-block-size: 16rem; }
-  .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); }
+  .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); column-gap: var(--space-6); }
 }
 
 /* Short portrait phones (320 x 568-640): tighter rhythm; the page may scroll. */

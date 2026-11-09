@@ -60,12 +60,24 @@ def _hex(c):
 
 def street_wall(theme):
     """the wall gradient: the theme's stops, then (just above the strip's end, which covers the step) the colour the
-    paving blurs into, on down the box"""
+    paving blurs into, on down the box. Under the strip (opaque, from yg0) it is the paving's own mean colour row by
+    row (photo.json › street › rows, fix r2), so until the strip file arrives the band already reads as paving, in its
+    tone, and the placeholder above it has no edge on a bare wall (review r2: «a floating, blurred photo rectangle on
+    a flat page» while the files loaded)"""
     t = ST[theme]
-    st = [f"{_hex(c)} {_sf(y):.3f}%" for y, c in t["wall"]]
+    rows = t.get("rows")
+    y0 = ST["yg0"] if rows else 9
+    wall = [(y, c) for y, c in t["wall"] if y < y0]
+    st = [f"{_hex(c)} {_sf(y):.3f}%" for y, c in wall]
     end = _sf(ST["yout"] - 0.004)
-    last = _hex(t["wall"][-1][1])
-    st += [f"{last} {end:.3f}%", f"{_hex(t['below'])} {end:.3f}%"]
+    if rows:
+        (ya, ca), (yb, cb) = wall[-1], next((w for w in t["wall"] if w[0] >= y0), t["wall"][-1])
+        k = (y0 - ya) / max(1e-9, yb - ya)
+        st.append(f"{_hex([a + (b - a) * k for a, b in zip(ca, cb)])} {_sf(y0):.3f}%")   # the wall, to the strip's top
+        st += [f"{_hex(c)} {min(_sf(y), end):.3f}%" for y, c in rows]
+    else:
+        st.append(f"{_hex(t['wall'][-1][1])} {end:.3f}%")
+    st.append(f"{_hex(t['below'])} {end:.3f}%")
     return "linear-gradient(" + ", ".join(st) + ")"
 
 
@@ -122,12 +134,16 @@ def lqip_vars():
 # slot / scene within 0.95-1.10). The facade is 0.9066 as wide as it is tall; stacked, it may rise 5% above its box
 # (so its width is 0.954 x the box's height less the clear space). Side by side from 900px: the right column
 # (6/11 of the width less the gutters and the 4rem gap), or the height under the top bar, at most 939px. Landscape
-# phones (first: a wide one is also 900px wide): as tall as the text column beside it. Portrait tablets: the room under the text, which grows with the
+# phones (first: a wide one is also 900px wide): as tall as the text column beside it. Portrait screens from 900px (stacked
+# since review r2: 1024 x 1366, 912 x 1368): the room under the text (the text block grows with the width up to the
+# lockup's cap at 1440), at most the column plus its reach (99.2vw); fitted at 912 x 1368, 1024 x 1100-1366,
+# 1440 x 1500, 1080 x 1920. Portrait tablets: the room under the text, which grows with the
 # width. Phones: the room under the text, never less than the entrance's own minimum height (40svh; 38svh and 28svh
 # on short screens, whose text is set tighter), never wider than the screen.
 SIZES = ("(orientation: landscape) and (max-height: 31.25em) min(44vw, 75vh, 19rem), "
-         "(min-width: 56.25em) min(calc(51vw - 3rem), calc((100vh - 9.3rem) * 0.9066), 939px), "
+         "(min-width: 56.25em) and (min-aspect-ratio: 1/1) min(calc(51vw - 3rem), calc((100vh - 9.3rem) * 0.9066), 939px), "
          "(orientation: landscape) min(44vw, 75vh), "
+         "(min-width: 56.25em) min(99.2vw, calc((100vh - min(28.225rem + 11.66vw, 38.72rem)) * 0.954)), "
          "(min-width: 37.5em) calc((100vh - 31.9rem - (100vw - 26.875rem) * 0.19) * 0.954), "
          "(max-width: 22.49em) and (max-height: 37.5em) min(100vw, calc((100vh - 25.8rem) * 0.954)), "
          "(max-height: 37.5em) min(100vw, max(calc((clamp(9rem, 28vh, 18rem) - 1rem) * 0.954), calc((100vh - 24.2rem) * 0.954))), "

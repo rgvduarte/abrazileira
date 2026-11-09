@@ -237,8 +237,9 @@
      the top or past the end never pushes a layer beyond its rest or end state), and moves the RENDERED
      progress towards it with an exponential follow that does not depend on the frame rate:
        r += (p - r) * (1 - exp(-dt / tau)),  tau = --scroll-tau (90ms)
-     It snaps when the gap is under 0.0005, and at once on jumps (a link, a focus move, a restored
-     position), writes transform / opacity on the moving layers only, and stops when it has settled.
+     It snaps when the gap is under 0.0005, and at once on jumps (the scroll moved more than 0.35 of the run in one
+     frame: a link, a focus move, a restored position); it never lags more than 0.25 behind (a fast fling); it writes
+     transform / opacity on the moving layers only, and stops when it has settled.
      Native scrolling is never touched: the stage pins with position: sticky; the smoothing only shapes
      what is drawn inside it. Geometry is cached and measured again on resize, visualViewport resize,
      orientation change, font load and page load, never inside the loop. At p = 0 every inline style is
@@ -254,7 +255,7 @@
       css = getComputedStyle(root),
       num = function (n, d) { var v = parseFloat(css.getPropertyValue(n)); return isNaN(v) ? d : v; },
       OPEN = num("--open-door", G.open || 84) * Math.PI / 180, COS = 1 - Math.cos(OPEN),
-      TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35,
+      TAU = num("--scroll-tau", 90), EPS = 0.0005, JUMP = 0.35, LAGMAX = 0.25,
       cam = { dx: 0, dy: 0, k: 0, s: 8, kp: G.k || 0.8 }, pin = 0, run = 1,
       probe = document.createElement("div"),
       cue = $(".porta__cue"),
@@ -309,8 +310,9 @@
          COVER the hall's light takes max(r, p - LAG): at hand speed (lag under 0.1) exactly r; after a fast
                flick the stage is flat hall colour before the list panel arrives (p = 1), never a hard edge
                rising over a photograph the smoothing has not caught up with.
-       The list (LIST) reads r, so it never shows before the light (which reads max(r, p - LAG)): its words
-       only ever rise over the flat colour. */
+       The list (LIST) reads r, so it never shows before the light (which reads max(r, p - LAG)). Its words begin at
+       r 0.645, with the light at 0.80: for the last 0.015 of progress before the screen is one colour, up to a fifth of
+       the hall still shows through under them (the title at 0.39 when the light is whole, r 0.66). */
     var DOOR = [0, 0.34], PAN = [0, 0.28], CENTRE = [0.32, 0.5], KX = [0.01, 0.34, 0.54, 0.66], LIGHT = [0.52, 0.66],
       COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
       lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
@@ -389,6 +391,16 @@
       return Math.exp((2 * t3 - 3 * t2 + 1) * KY[i] + (t3 - 2 * t2 + t) * h * KM[i] + (-2 * t3 + 3 * t2) * KY[i + 1] + (t3 - t2) * h * KM[i + 1]);
     }
 
+    /* the split layout sets the scroll cue on the door's axis (site.css › Split: --cue-dx, used there only), with the
+       sequence on or not: the hall point is on that axis. Untransformed layout, on resize only. */
+    function aim() {
+      if (!cue) return;
+      var x = scene.offsetLeft + G.hp[0] * scene.offsetWidth, q;
+      for (q = scene.offsetParent; q && q !== stage; q = q.offsetParent) x += q.offsetLeft;
+      x -= cue.offsetLeft + cue.offsetWidth / 2;
+      for (q = cue.offsetParent; q && q !== stage; q = q.offsetParent) x -= q.offsetLeft;
+      cue.style.setProperty("--cue-dx", Math.round(x) + "px");
+    }
     /* geometry: untransformed layout (offset*), read on resize only */
     function measure() {
       /* while a field of the list has the focus and only the height changed (a keyboard that resizes the page, as
@@ -487,58 +499,156 @@
       draw3d(r, p);
     }
 
-    /* The 3D entrance (door3d.js, an ES module, with its own three.js subset; DESIGN.md › The 3D entrance). OPT-IN for
-       now, for testing on real devices: only with ?3d in the address (?3d=force also skips the GPU probe below, for the
-       headless tests); without it the page is the CSS entrance and nothing of the 3D is probed or fetched. Not on the
-       critical path: it is fetched after the page has loaded and gone idle, or on the first sign of a scroll, never
-       with reduced motion, ?semporta, ?sem3d, a data saver or a 2G link, and only where ES modules and WebGL 2 exist.
-       It draws the SAME timeline from the same rendered progress r: the doors' angle, the pan, and a camera that walks
-       through the doorway (zc). While it draws (0 < r < the flat colour) its canvas covers the stage under the text and
-       the photograph's layers are hidden; at rest (r = 0) the page shows its own photograph, and under the flat colour
-       nothing is drawn. It takes over only at one of those two moments (never mid-shot), and whenever it cannot draw
-       (a theme whose textures are still loading, a lost context) the CSS entrance, which has been following r all
-       along, is simply shown again. */
-    var d3 = null, d3on = false, d3arm = false, d3st = "off", d3try = 0, pre = null, cap3 = /[?&]3d=force\b/.test(location.search) ? true : null;
-    try { var c3 = sessionStorage.getItem("ab-3d"); if (cap3 === null && (c3 === "1" || c3 === "0")) cap3 = c3 === "1"; } catch (e) {}
+    /* The 3D entrance (door3d.js, an ES module, with its own three.js subset; DESIGN.md › The 3D entrance). ON BY
+       DEFAULT wherever the device can draw it (client, 9 Nov: «Porta: desenvolve logo até ao fim, e publica no site»),
+       with the CSS entrance as the automatic fallback at every step:
+       - the gate (gate(), gpu3d()): ES modules and WebGL 2 (three.js r187 has no WebGL 1 path); not reduced motion,
+         ?semporta, ?sem3d, a data saver or a 2G link; a GPU-backed context (failIfMajorPerformanceCaveat), not a
+         software renderer, MAX_TEXTURE_SIZE >= 4096; and, only to keep clearly weak devices out (soft heuristics):
+         navigator.deviceMemory under 2 GB, fewer than 4 cores (not on iOS, where WebKit may report fewer), a GPU on
+         the WEAK list below. The GPU's answer and any hand-back are remembered for the session (sessionStorage).
+       - early, never in the way: at idle right after the load event the GPU is probed and the module and three.js
+         are fetched (module preloads: parsed, not run; the page's own photographs, the textures, are fetched at idle
+         by 2a); they are evaluated, mounted, uploaded and compiled only while the page is still (at rest or under the
+         flat colour), each step its own idle task, so a scroll never pays for them.
+       - the live safeguard (watch3d()): the frame intervals over the first second of 3D motion; a median over 25 ms
+         (or 1.5x the display's own cadence where that is slower: a 30 Hz low-power mode), any frame over 120 ms (not
+         the first after a tab switch), a context lost while the page is shown, or an exception hands back to the CSS
+         entrance at the same progress (it has followed r all along) and is remembered for the session.
+       - a context lost in the background (iOS frees a hidden page's GPU memory, and may say so only on its return)
+         is rebuilt from the cached files once the page is shown and still, twice at most.
+       ?3d forces it, for testing on a real device: no soft heuristics, no session memory, no frame-time rule (its
+       numbers still show in ?diag); the GPU probe and the context-loss / exception hand-backs stay. ?3d=force also
+       skips the GPU probe (the headless tests draw with SwiftShader). ?guard[=MED,MAX] turns the frame-time rule on
+       in any mode, with those limits in ms (tests). ?diag shows the path, the state and why.
+       It draws the SAME timeline from the same rendered progress r: the doors' angle, the pan, and the camera (s, zc, zh).
+       While it draws (0 < r < the flat colour) its canvas covers the stage under the text and the photograph's layers
+       are hidden; at rest (r = 0) the page shows its own photograph, and under the flat colour nothing is drawn. It
+       takes over only at one of those two moments (never mid-shot); whenever it cannot draw (a theme whose textures
+       are still loading) the CSS entrance, which has been following r all along, is simply shown again. */
+    var Q = location.search, F3 = /[?&]3d=force(&|$)/.test(Q), T3 = !F3 && /[?&]3d(=1)?(&|$)/.test(Q),
+      IOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (/^Mac/.test(navigator.platform || "") && navigator.maxTouchPoints > 1),
+      gq = /[?&]guard(?:=(\d+)(?:,(\d+))?)?(?:&|$)/.exec(Q),
+      GUARD = { on: !!gq || (!F3 && !T3), med: gq && gq[1] ? +gq[1] : 25, max: gq && gq[2] ? +gq[2] : 120 },
+      SOFT = /swiftshader|llvmpipe|softpipe|software|basic render/i,
+      /* clearly weak GPUs only (2014-2018 entry level): Mali-400/450, Mali-T6xx-T8xx, Mali-G31; Adreno 1xx-4xx and
+         50x; PowerVR SGX and Rogue GE8100-GE8300 series; Intel GMA and HD Graphics 2000/3000; VideoCore; Vivante;
+         Tegra 2-4 */
+      WEAK = /mali-(4\d\d|t[678]\d\d|g31)\b|adreno \(tm\) ([1-4]\d\d|50\d)\b|powervr (sgx|rogue ge8[0-3]\d\d)|\bgma ?\d|hd graphics (2000|3000)\b|videocore|vivante|tegra [234]\b/i,
+      d3 = null, d3on = false, d3arm = false, d3st = "off", d3why = "", d3try = 0, pre = null, gpu = "", visAt = -1e9, awayAt = -1e9,
+      cad = 0, gd = null, fnow = 0, cur = null, fading = 0, FADE = num("--dur-handback", 180);
+    function asc(a, b) { return a - b; }
+    /* the session's answer: "1|<gpu>" (the probe passed) or "0|<why>" (refused by the probe, or handed back); the
+       testing modes neither read nor write it */
+    function mem(v) {
+      try {
+        if (v === undefined) return F3 || T3 ? "" : sessionStorage.getItem("ab-3d") || "";
+        if (!F3 && !T3) sessionStorage.setItem("ab-3d", v);
+      } catch (e) {}
+      return "";
+    }
     /* still: no scroll being followed and no flight for 400 ms, at rest or under the flat colour (where a visitor
        reads; a pause mid-shot is often the gap between two gestures). The 3D module is evaluated, mounted and warmed
        only then. */
     var moved = 0;
-    function quiet() { return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT); }
+    function quiet() {
+      var sc = navigator.scheduling;       /* Chromium: an input already waiting is not stillness */
+      return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT) && !(sc && sc.isInputPending && sc.isInputPending());
+    }
     function whenQuiet(f) {
       var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
       (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
     }
     /* The 3D camera follows the CSS camera's zoom s exactly on the door's plane, mostly with the lens: it moves in
-       only s^-DOLLY of its rest distance (DOLLY 0.12: 0.79 of it at 7x) and narrows its field for the rest. A real
-       dolly to the threshold (it went on through the doorway into the hall before) made the open leaves, which
-       reach a metre into the hall, sweep wider and wider as the camera neared them (client, 9 Nov: «as portas
-       aumentam de tamanho quando se entra»). Now they grow with the doorway, as on the CSS path, and the hall
-       keeps a little parallax. */
+       only s^-DOLLY of its rest distance (DOLLY 0.12) and narrows its field for the rest, and it moves in only while
+       the doors open (s up to its value at DOOR[1], about 0.93 of the rest distance); past that the walk-in is the
+       lens alone. A real dolly to the threshold (it went on through the doorway into the hall before) made the open
+       leaves, which reach a metre into the hall, sweep wider and wider as the camera neared them (client, 9 Nov: «as
+       portas aumentam de tamanho quando se entra»); a dolly kept up after the doors had opened still widened them,
+       by 9-11% between p 0.34 and 0.66 against the doorway (review, door finish). With the camera still once they
+       are open, the open leaves keep their width against the doorway, as on the CSS path. The hall is drawn in a pass of
+       its own, from a camera that keeps the dolly all the way (zh = s^-DOLLY), so it keeps the depth it had: held
+       still with the rest, its far arch grew as s (8.3x at 1440 p 0.54, against s^kp, 5.6x, on the CSS path). */
     var DOLLY = 0.12;
     function view3d(r, ez) {
       var c = camV(r), u = E.door(clamp((r - DOOR[0]) / (DOOR[1] - DOOR[0]))),
         v = { cw: stage.clientWidth, ch: stage.clientHeight, rect: box3, tx: c[0], ty: c[1], u: u, spill: (1 - Math.cos(OPEN * u)) / COS };
       v.s = scaleAt(r);
-      v.zc = Math.pow(v.s, -DOLLY);
+      v.zc = Math.pow(Math.min(v.s, scaleAt(DOOR[1])), -DOLLY);
+      v.zh = Math.pow(v.s, -DOLLY);                   /* the hall's own camera: the dolly all the way (door3d.js frame()) */
       return v;
     }
-    function show3d(yes) {
-      if (yes === d3on) return;
-      d3on = yes;
-      d3.canvas.style.visibility = yes ? "visible" : "";
-      scene.style.visibility = yes ? "hidden" : "";
+    /* what the stage shows: 0 the CSS entrance (the photograph's layers), 1 the canvas, 2 neither (under the flat
+       colour, after the canvas has drawn: the flood covers the stage) */
+    var d3m = 0;
+    function show3d(m) {
+      m = +m;
+      if (m === d3m) return;
+      d3m = m;
+      d3on = m === 1;
+      d3.canvas.style.visibility = m === 1 ? "visible" : "";
+      scene.style.visibility = m && !fading ? "hidden" : "";
     }
     function draw3d(r, p) {
-      if (!d3 || !box3) return;
+      /* handing back (handBack()): the canvas keeps its last frame while it fades; the slow 3D is not drawn again */
+      if (!d3 || !box3 || fading) return;
       var flat = Math.max(r, p - LAG) >= COVER_AT, ok;
       if (!d3arm) { if (r > 0 && !flat) return; d3arm = true; }
+      /* under the flat colour after the canvas has drawn: the canvas hidden and the photograph's layers left hidden. Shown
+         again there (at rest scale, then at the camera's zoom), they were decoded and painted under the opaque flood
+         just as the list rose in: frames of 100-300 ms at 390 x 844 (review, door finish). On the way back up the
+         canvas draws again; they come back only if it cannot (below) */
+      if (flat && r > 0 && d3m && d3.ok) { show3d(2); return; }
       ok = r > 0 && !flat && d3.draw(view3d(r));
+      if (!d3) return;                     /* the draw threw: handed back (onError) */
       if (!ok && d3on && r > 0 && !flat && !decoded()) return;
-      /* the photograph's layers come back under the flat colour, deep in the walk-in: the camera at its rest scale for
-         a few frames, out of sight, so its layer (the street in it) is made again at that scale (see tickInner()) */
-      if (!ok && d3on && flat && scaleAt(r) > STEP) { low = 3; lowT = performance.now(); scene.style.transform = "none"; }
-      show3d(ok);
+      /* the photograph's layers come back under the flat colour, deep in the walk-in (the 3D cannot draw: a theme whose
+         textures are still loading): the camera at its rest scale for a few frames, out of sight, so its layer (the
+         street in it) is made again at that scale (see tickInner()) */
+      if (!ok && d3m && flat && scaleAt(r) > STEP) { low = 3; lowT = performance.now(); scene.style.transform = "none"; }
+      show3d(ok ? 1 : 0);
+      if (ok && gd) gd.drew = true;
+    }
+    /* The live safeguard, once per driver frame (tickInner): the interval from a frame in which the canvas drew to
+       the next frame (what that frame cost, the GPU's share included, since the next frame waits for it), over the
+       first second of such frames. A loop that stopped (the page at rest) starts the count afresh (prev = 0), so a gap
+       is never taken for a slow frame; after a tab switch or a restored page the next two intervals are not counted
+       either (the first frame after a long stall can carry the time stamp of a frame scheduled before it, so the
+       stall shows in the second). With the rule off (?3d, ?3d=force) it still measures, for ?diag. */
+    function watch3d() {
+      if (!gd || gd.done || !fnow) return;
+      var drew = gd.drew;
+      gd.drew = false;
+      if (!d3on) { gd.prev = 0; gd.last = false; return; }
+      if (gd.skip > 0) gd.skip--;
+      else if (gd.prev && gd.last && fnow > gd.prev) {
+        var d = fnow - gd.prev, s, lim;
+        gd.t.push(d);
+        gd.sum += d;
+        if (d > gd.worst) gd.worst = d;
+        if (GUARD.on && d > GUARD.max) { handBack("a frame of " + Math.round(d) + " ms (limit " + GUARD.max + ")", true); return; }
+        if (gd.sum >= 1000) {
+          s = gd.t.slice().sort(asc);
+          gd.med = s[s.length >> 1];
+          gd.done = true;
+          lim = Math.max(GUARD.med, 1.5 * (cad || 16.7));
+          if (GUARD.on && gd.med > lim) { handBack("median frame " + gd.med.toFixed(1) + " ms (limit " + Math.round(lim) + ")", true); return; }
+        }
+      }
+      gd.prev = fnow;
+      gd.last = drew;
+    }
+    /* the display's own frame interval (16.7 ms; 8.3 on a 120 Hz screen; 33.3 in a 30 Hz low-power mode), from a
+       dozen empty frames while the page is still */
+    function cadence() {
+      var ts = [], t0 = 0;
+      function f(t) {
+        if (t0) ts.push(t - t0);
+        t0 = t;
+        if (ts.length < 12 && !document.hidden) window.requestAnimationFrame(f);
+        else if (ts.length > 4) { ts.sort(asc); cad = Math.min(34, Math.max(6, ts[ts.length >> 1])); }
+      }
+      window.requestAnimationFrame(f);
     }
     /* The theme changed under the shown canvas (the 3D's new textures are not in yet): its last frame stays, at most
        300 ms, until the new theme's facade and leaves are decoded, so the CSS entrance never comes back for a frame
@@ -554,34 +664,80 @@
       }
       return hold.done || performance.now() - hold.t0 > 300;
     }
-    function lost3d(why) {
-      if (d3) { show3d(false); try { d3.destroy(); } catch (e) {} }
-      d3 = null;
-      d3st = why || "lost";
+    /* the canvas goes at once (the CSS entrance shows the same progress in this very frame); the context is let go a
+       moment later, outside the frame */
+    function lost3d(st, why) {
+      var m = cur || d3;
+      if (d3) show3d(0);
+      d3 = cur = null;
+      fading = 0;
+      if (m) setTimeout(function () { try { m.destroy(); } catch (e) {} }, 60);
+      d3st = st;
+      if (why) d3why = why;
       wrap.classList.remove("porta--3d");
-      if (why !== "off") ERR.push("3d: " + d3st);
+      ERR.push("3d: " + st + (why ? " (" + why + ")" : ""));
     }
-    function want3d() {
-      var c = navigator.connection;
-      return on && d3st === "off" && /[?&]3d\b/.test(location.search) && !/[?&](sem3d|semporta)\b/.test(location.search) && !(c && (c.saveData || /2g/.test(c.effectiveType || "")))
-        && "noModule" in HTMLScriptElement.prototype && !!window.WebGL2RenderingContext && !!wrap.getAttribute("data-3d");
+    /* The live safeguard's hand-back, for the rest of the session: the CSS entrance at the same progress. When the
+       canvas still shows a frame (a slow frame, a slow median), the CSS layers are shown under it at once and it
+       dissolves into them over --dur-handback (180ms), its last frame frozen: the 3D the guard has just found slow is
+       not drawn again (drawn through a 400ms dissolve, it went on for 3 more slow frames, review, door finish). The two
+       differ by what 3D adds (the leaves' thickness and light, the hall's depth; at p 0.3 a mean 2-4 levels, deep in
+       the walk-in 20-26) and, in a scroll, by the few frames the CSS entrance moves on meanwhile. A lost context or an
+       exception cannot draw: the swap is immediate. */
+    function handBack(why, soft) {
+      mem("0|" + why);
+      if (gd) gd.done = true;
+      if (!soft || !d3 || !d3on || fading) { lost3d("handed back", why); queue(); return; }
+      d3st = "handing back";
+      d3why = why;
+      fading = performance.now();
+      scene.style.visibility = "";
+      d3.canvas.style.transition = "opacity " + FADE + "ms linear";
+      d3.canvas.style.opacity = "0";
+      setTimeout(function () { if (fading) { lost3d("handed back", why); queue(); } }, FADE + 50);
     }
-    /* A device with no WebGL 2 worth having (none, disabled, a blocklisted GPU, a software renderer: the slowest
-       phones) is known before a byte of the module is fetched (review r1): a throwaway context, released at once,
-       probed once per session at idle. ?3d=force skips it (the tests force SwiftShader). */
-    function cap3d() {
-      if (cap3 !== null) return cap3;
-      var ok = false;
-      try {
-        var cv = document.createElement("canvas"), gl = cv.getContext("webgl2", { failIfMajorPerformanceCaveat: true });
-        if (gl) {
-          var x = gl.getExtension("WEBGL_debug_renderer_info"), lose = gl.getExtension("WEBGL_lose_context");
-          ok = !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(gl.getParameter(x ? x.UNMASKED_RENDERER_WEBGL : gl.RENDERER)));
+    function refuse(why) { d3st = "refused"; d3why = why; }
+    /* what the page knows without WebGL; "" = go on */
+    function gate() {
+      var c = navigator.connection, m, dm = navigator.deviceMemory, hc = navigator.hardwareConcurrency;
+      if (still.matches) return "reduced motion";
+      if (/[?&]semporta\b/.test(Q)) return "?semporta";
+      if (/[?&]sem3d\b/.test(Q)) return "?sem3d";
+      if (!on) return "the sequence is off";
+      if (c && c.saveData) return "data saver";
+      if (c && /2g/.test(c.effectiveType || "")) return "2G link (" + c.effectiveType + ")";
+      if (!("noModule" in HTMLScriptElement.prototype)) return "no ES modules";
+      if (!window.WebGL2RenderingContext) return "no WebGL 2";
+      if (!wrap.getAttribute("data-3d")) return "no 3D module on this page";
+      if (F3 || T3) return "";
+      m = mem();
+      if (m.charAt(0) === "0") return "earlier in this session: " + m.slice(2);
+      if (dm && dm < 2) return "weak device (deviceMemory " + dm + " GB)";
+      if (!IOS && hc && hc < 4) return "weak device (" + hc + " cores)";
+      return "";
+    }
+    /* The GPU (review r1): a device with no WebGL 2 worth having (none, disabled, a blocklisted GPU, a software
+       renderer, a clearly weak GPU) is known before a byte of the module is fetched: a throwaway context, released at
+       once, probed once per session at idle. "" = go on. */
+    function gpu3d() {
+      var m = mem(), cv, gl = null, x, lose, mt, why = "";
+      if (m.charAt(0) === "1") { gpu = m.slice(2); return ""; }
+      try { cv = document.createElement("canvas"); gl = cv.getContext("webgl2", { failIfMajorPerformanceCaveat: true, antialias: false, depth: false }); } catch (e) {}
+      if (!gl) why = "no GPU-backed WebGL 2 context (failIfMajorPerformanceCaveat)";
+      else {
+        try {
+          x = gl.getExtension("WEBGL_debug_renderer_info");
+          lose = gl.getExtension("WEBGL_lose_context");
+          gpu = String(gl.getParameter(x ? x.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+          mt = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+          if (SOFT.test(gpu)) why = "software renderer (" + gpu + ")";
+          else if (mt < 4096) why = "MAX_TEXTURE_SIZE " + mt;
+          else if (!T3 && WEAK.test(gpu)) why = "weak GPU (" + gpu + ")";
           if (lose) lose.loseContext();
-        }
-      } catch (e) { ok = false; }
-      try { sessionStorage.setItem("ab-3d", ok ? "1" : "0"); } catch (e) {}
-      return (cap3 = ok);
+        } catch (e) { why = "probe: " + (e && e.message || e); }
+      }
+      mem(why ? "0|" + why : "1|" + gpu);
+      return why;
     }
     /* fetched (and parsed) only: the module and three.js, as module preloads; nothing is evaluated */
     function pre3d() {
@@ -593,60 +749,117 @@
       });
       return (pre = Promise.all(ps));
     }
-    /* The 3D entrance is evaluated, mounted and warmed only while the page is still: never in the middle of a
-       gesture or of the action's flight (it would cost the hero's motion 100-300 ms frames at 4x CPU throttle; it
-       gains nothing then, since the canvas takes over only at rest or under the flat colour) (review r1). The first
-       sign of a scroll only fetches it (prime). */
+    /* At idle right after the load event: the gate, then the fetch. The module is evaluated, mounted and warmed only
+       while the page is still: never in the middle of a gesture or of the action's flight (it would cost the hero's
+       motion 100-300 ms frames at 4x CPU throttle; it gains nothing then, since the canvas takes over only at rest or
+       under the flat colour) (review r1). */
     function load3d() {
-      if (!want3d()) return;
-      if (!cap3d()) { d3st = "refused"; return; }
+      if (d3st !== "off") return;
+      var why = gate();
+      if (!why && !F3) why = gpu3d();
+      if (why) { refuse(why); return; }
       d3st = "loading";
+      d3why = (F3 ? "?3d=force" : T3 ? "?3d (testing)" : "passed the gate") + (gpu ? ": " + gpu : "");
+      if (!cad) cadence();                         /* now, while the page is idle: not during the mount's own tasks */
       pre3d().then(function () {
         whenQuiet(function () {
           if (d3st !== "loading") return;
           if (root.__door3d) return mount3d();        /* mounted before (a context was lost): the module is in */
-          window.addEventListener("door3d", mount3d, { once: true });
-          var s = document.createElement("script");
-          s.type = "module";
+          /* the module's evaluation is one task; the mount is the next, again only once the page is still (a gesture
+             that began meanwhile is not made to wait for both, review, door finish) */
+          window.addEventListener("door3d", function () { whenQuiet(mount3d); }, { once: true });
+          var s = document.createElement("script"), t0;
           s.src = wrap.getAttribute("data-3d");
-          s.onerror = function () { lost3d("module failed"); };
+          s.type = "module";
+          s.onerror = function () { lost3d("refused", "the module failed to load"); };
+          /* fetched but not run (a syntax error, a throw at its top level, an engine without a feature it uses): the
+             error event names the file; with none, 10 s after it was asked for (the files were already fetched) it is
+             taken as not running. Either is remembered for the session, so ?diag never says «loading» for good and a
+             reload does not fetch and fail again */
+          function bad(why) {
+            window.removeEventListener("error", onErr);
+            clearTimeout(t0);
+            if (d3st !== "loading" || root.__door3d) return;
+            mem("0|module: " + why);
+            lost3d("refused", "module: " + why);
+          }
+          function onErr(e) { if (/door3d|three/.test(e && e.filename || "")) bad(String(e.message || "error").slice(0, 80)); }
+          window.addEventListener("error", onErr);
+          t0 = setTimeout(function () { bad("not evaluated within 10 s"); }, 10000);
+          window.addEventListener("door3d", function () { window.removeEventListener("error", onErr); clearTimeout(t0); }, { once: true });
           document.head.appendChild(s);
         });
       });
     }
+    /* a mount that fails is remembered for the session ("0|mount: <stage>: <why>": the next load is refused before any
+       request), except a photograph that did not arrive (a network fault: tried again on the next load). The stages:
+       context, create, textures, theme, upload, compile, warm (door3d.js) */
     function mount3d() {
+      if (d3st !== "loading") return;
       try {
-        var m = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: /[?&]3d=force\b/.test(location.search),
+        var m = cur = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: F3,
+          /* the device's own pixel ratio, up to 3, on iOS too: at 2 an iPhone's take-over frame was softer than the
+             photograph (gradient energy 0.74 / 0.84 of the page's image), against «não perder o fotorrealismo»;
+             without MSAA above 2 its buffer is smaller (~24 MB against ~42 MB), and the live safeguard watches the
+             2.25x pixels it shades (decided 9 Nov, after the door finish) */
+          maxDpr: 3,
           big: function () { return Math.round(scene.offsetWidth * 3) + "px"; },
           quiet: quiet,
           /* the first frames drawn ahead (canvas hidden), so the first frame of a scroll pays for nothing */
           views: function (ez) { return box3 ? [view3d(0.3, ez), view3d(0.05, ez)] : []; },
-          onLost: function () { lost3d("context lost"); queue(); setTimeout(revive3d, 3000); },
+          /* hidden, away and not yet back (the loss can be told before the page's return event), or shown again less
+             than 3 s ago (iOS frees a hidden page's GPU memory and may say so only on its return): rebuilt once the
+             page is shown and still; while shown (memory pressure, a GPU reset): the CSS entrance for the session */
+          onLost: function () {
+            if (m !== cur) return;
+            if (document.hidden || awayAt > visAt || performance.now() - visAt < 3000) {
+              lost3d("context lost", "lost in the background: rebuilt when shown");
+              queue();
+              setTimeout(revive3d, 3000);
+            } else handBack("context lost while shown");
+          },
+          onError: function (e) { if (m === cur) handBack("exception: " + String(e && e.message || e).slice(0, 80)); },
           /* a theme's textures are in: the canvas takes over again only at rest or under the flat colour */
-          onTheme: function () { d3arm = false; queue(); } });
+          onTheme: function () { if (m === cur) { d3arm = false; queue(); } } });
         m.ready.then(function () {
-          if (d3st !== "loading") { m.destroy(); return; }
+          if (m !== cur || d3st !== "loading") { m.destroy(); return; }
           d3 = m;
           d3st = "on";
           d3arm = false;
+          gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, worst: 0, med: 0, done: false };
           wrap.classList.add("porta--3d");
           queue();
-        }, function (e) { m.destroy(); lost3d("textures: " + e); });
-      } catch (err) {         /* no WebGL 2, or only a software renderer: the CSS entrance, quietly */
-        var msg = String(err && err.message || err);
-        if (/context/i.test(msg)) { d3st = "refused"; wrap.classList.remove("porta--3d"); } else lost3d("mount: " + msg);
+        }, function (e) {
+          if (m !== cur) { m.destroy(); return; }
+          var msg = String(e && e.message || e).slice(0, 120);
+          if (!(e && e.stage === "textures")) mem("0|mount: " + msg);
+          lost3d("refused", "mount: " + msg);
+        });
+      } catch (err) {         /* no WebGL 2 context after all: the CSS entrance, quietly, for the session */
+        var msg = String(err && err.message || err).slice(0, 120);
+        cur = null;
+        mem("0|mount: context: " + msg);
+        if (/context/i.test(msg)) { refuse("mount: context: " + msg); wrap.classList.remove("porta--3d"); } else lost3d("refused", "mount: context: " + msg);
       }
     }
-    /* a lost context (iOS drops them in the background or under memory pressure): the CSS entrance at once, then the
-       3D mounted again from the cached files when the page is shown and still, twice at most */
+    /* back from the background (a tab switch, an app switch, a page restored from the back/forward cache): the guard
+       starts its count afresh, and a context the system took while the page was away (lost without an event, or
+       with one) is rebuilt from the cached files when the page is shown and still, twice at most */
     function revive3d() {
+      if (d3 && d3.lost()) lost3d("context lost", "lost in the background: rebuilt when shown");
       if (d3st !== "context lost" || d3try >= 2 || document.hidden) return;
       d3try++;
       d3st = "off";
       whenQuiet(load3d);
     }
-    document.addEventListener("visibilitychange", revive3d);
-    window.addEventListener("pageshow", revive3d);
+    function back3d(e) {
+      if (gd) { gd.prev = 0; gd.skip = 2; }
+      if (e.type === "pagehide" || (e.type === "visibilitychange" && document.hidden)) { awayAt = performance.now(); return; }
+      if (e.type === "pageshow" ? e.persisted : !document.hidden) { visAt = performance.now(); revive3d(); }
+    }
+    document.addEventListener("visibilitychange", back3d);
+    window.addEventListener("pageshow", back3d);
+    window.addEventListener("pagehide", back3d);
 
     /* Promote the moving layers only while they move; at rest the photograph is drawn as it is. Every layer whose
        opacity changes per frame gets its own compositor layer too (the leaves' shade, the lamplight, the hall's
@@ -718,13 +931,22 @@
       raf = 0;
       moved = performance.now();
       if (!on) return;
+      fnow = now;
       var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
       last = now;
       /* the list at rest (the run is over): how far past its end the page is, kept for refresh() (not while new
          geometry is waiting to be measured: this frame may read the new layout against the old run) */
       if (!rq && !fl) endOff = g.p >= 1 ? g.y - pin - run : -1;
-      if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;           /* first frame, or a jump: no replay */
-      else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
+      /* a jump is the scroll's own change since the last frame (a link, a focus move, a restored position), never its
+         distance from r: under the exponential follow that distance is about the scroll's speed x 99 ms, so a fast flick
+         (1300 px/s on a landscape phone) passed 0.35 and the walk-in cut ahead in one frame (review, door finish).
+         Otherwise r follows, at most LAGMAX behind or ahead of the scroll: after that it moves with the scroll itself,
+         so a fling never leaves it far behind and never makes it jump. */
+      if (shown < 0 || seen < 0 || Math.abs(g.p - seen) > JUMP) r = g.p;     /* first frame, or a jump: no replay */
+      else {
+        r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
+        r = Math.min(Math.max(r, g.p - LAGMAX), g.p + LAGMAX);
+      }
       if (Math.abs(g.p - r) < EPS) r = g.p;
       if (r !== shown || g.p !== seen || low) {
         if (r > 0) {
@@ -748,11 +970,14 @@
         seen = g.p;
         crisp(r);
       } else if (lift) crisp(r);
+      watch3d();
+      fnow = 0;
       if (g.y !== lastY) { lastY = g.y; calm = 0; } else calm++;
       /* keep reading scrollY for a few frames after it stops: a late momentum frame is never missed */
       if (r !== g.p || calm < 8 || low) raf = window.requestAnimationFrame(tick);
       else {
         last = 0;
+        if (gd) gd.prev = 0;
         clearTimeout(idle);
         /* at the top: no hints at all (the exact rest state), 300ms after the loop settles (about 0.8s after a fast
            scroll reaches the top). Mid-sequence, while the jambs are on screen: crisp re-raster (see rest()). Inside
@@ -856,7 +1081,7 @@
        the walk-in (a press lasts about 100ms before its click): promote now, so the first frame of the sequence does
        not also pay for creating its layers (dropped again if nothing moves) */
     function prime() {
-      if (d3st === "off" && cap3 === true && want3d()) pre3d();   /* fetched only: evaluated once the page is still */
+      if (d3st === "loading") pre3d();   /* fetched only: evaluated once the page is still */
       if (!on || promoted || shown > 0) return;
       promote(true);
       clearTimeout(idle);
@@ -874,6 +1099,7 @@
     function refresh() { try { refreshInner(); } catch (err) { bail("refresh", err); } }
     function refreshInner() {            /* new geometry, same progress */
       rq = 0;
+      aim();
       if (!on) return;
       var was = endOff, w0 = mw, h0 = mh;
       measure();
@@ -892,11 +1118,11 @@
       calm = 0;
       kick();
     }
-    function queue() { if (on && !rq) rq = window.requestAnimationFrame(refresh); }
+    function queue() { if (!rq) rq = window.requestAnimationFrame(refresh); }   /* off (reduced motion): the cue only */
 
     function off() {
       land();
-      if (d3) show3d(false);
+      if (d3) show3d(0);
       on = false;
       if (raf) window.cancelAnimationFrame(raf);
       raf = 0;
@@ -912,6 +1138,7 @@
     }
     function set() {
       off();
+      aim();
       if (still.matches || /[?&]semporta\b/.test(location.search)) {
         root.classList.remove("porta-on");
         root.setAttribute("data-sequence", "static");
@@ -923,6 +1150,8 @@
       measure();
       window.addEventListener("scroll", kick, { passive: true });
       kick();
+      /* reduced motion turned off live: the 3D entrance may be tried again */
+      if (d3st === "refused" && d3why === "reduced motion") { d3st = "off"; whenQuiet(load3d); }
     }
     window.addEventListener("wheel", prime, { passive: true });
     wrap.addEventListener("pointerdown", function (e) { if (e.target.closest && e.target.closest('a[href="#lista"]')) prime(); }, { passive: true });
@@ -950,19 +1179,23 @@
       if (keyed && on && target().p > 0.01) window.scrollTo(0, pin);
     });
     try { set(); } catch (err) { bail("set", err); }
-    /* the 3D entrance: after the page has loaded and gone idle (the larger photographs are fetched by then) */
+    /* the 3D entrance: at idle right after the load event (first paint and the hero's photograph are done; the
+       larger photographs are being fetched at idle by 2a): the gate, the GPU probe, the fetch. Not on the first
+       scroll: by the time a visitor has read the first screen it is usually mounted and warm. */
     (function () {
-      var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1200); };
-      function go() { setTimeout(function () { idle(function () { try { load3d(); } catch (e) { lost3d("load"); } }, { timeout: 4000 }); }, 1500); }
+      var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 200); };
+      /* not inside a frame of motion: the probe makes a WebGL context (10-30 ms on a phone) */
+      function go() { idle(function () { if (raf || fl) return setTimeout(go, 200); try { load3d(); } catch (e) { refuse("load: " + (e && e.message || e)); } }, { timeout: 1500 }); }
       if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
     })();
     /* while the sequence is moving (a flight, or the loop still following the scroll), the theme changes
        without a cross-fade (no snapshot mid-shot); parked anywhere, even in the list, it cross-fades */
     root.__portaBusy = function () { return on && (!!fl || !!raf); };
     /* geometry for the tests and the ?diag panel (read-only) */
-    root.__porta = { fly: fly, land: land, geo: function () {
+    root.__porta = { fly: fly, land: land, d3probe: function () { return d3 && d3.probe ? d3.probe() : null; }, geo: function () {
       return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen,
-        d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try };
+        d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try, d3why: d3why, d3gpu: gpu, d3dpr: d3 ? d3.dpr() : 0,
+        d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), done: gd.done, cadence: +cad.toFixed(1) } : null };
     } };
   })();
   /* ---------------------------------------------------------------- 3. The waiting list
@@ -1136,12 +1369,19 @@
     box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;margin:0;padding:8px;font:11px/1.35 ui-monospace,Menlo,monospace;background:rgba(0,0,0,.8);color:#fff;border-radius:6px;pointer-events:none;white-space:pre-wrap;max-height:45vh;overflow:hidden";
     document.body.appendChild(box);
     (function f() { frames++; window.requestAnimationFrame(f); })();
+    /* the entrance's path (3D or CSS), its state and why; the safeguard's numbers over the first second of 3D motion */
+    var diag3d = function () {
+      var g = root.__porta && root.__porta.geo(), q = g && g.d3guard;
+      if (!g) return "path=CSS (the sequence stepped aside)";
+      return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") +
+        (q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms cadence=" + q.cadence + "ms" + (q.done ? " (done)" : "") : "");
+    };
     setInterval(function () {
       var st = document.querySelector(".porta__stage"), r = st && st.getBoundingClientRect();
       box.textContent = [navigator.userAgent,
         "y=" + Math.round(window.pageYOffset) + " ih=" + window.innerHeight + " vv=" + (window.visualViewport ? Math.round(window.visualViewport.height) : "-") + " docH=" + document.documentElement.scrollHeight,
         "seq=" + root.getAttribute("data-sequence") + " theme=" + root.getAttribute("data-theme") + " cls=" + root.className,
-        "3d=" + (root.__porta && root.__porta.geo().d3) + " shown=" + (root.__porta && root.__porta.geo().d3shown),
+        diag3d(),
         "stage top=" + (r ? Math.round(r.top) : "-") + " h=" + (st ? st.offsetHeight : "-") + " pos=" + (st ? getComputedStyle(st).position : "-"),
         "frames/s=" + frames * 2, "errors: " + (ERR.length ? ERR.join(" | ") : "none")].join("\n");
       frames = 0;

@@ -8,14 +8,14 @@
 //    720 x 450 = 1440 x 900 at 200%) and tall ones; and every rest position from the flat moment to the end of the
 //    page (title, sentence and form opacity > 0 while on screen, 1 from the end of the run on).
 // C. The hero is reachable in about one screen: the scroll from the top until the list title and the email field are
-//    fully in view and readable (opacity >= 0.99) is 0.9-1.2 viewport heights.
+//    fully in view and readable (opacity >= 0.99) is 0.6-1.0 viewport heights (0.9-1.2 before the 9 Nov shorter walk-in).
 // D. States: a failed send offers the house's address as a real mailto link; the success line sits where the field
 //    was (not floating in the form's box) and does not repeat the sentence above it.
 // E. The sun note: with no stored choice, the sky over Torres Vedras decides (a system dark mode does not override
 //    it); the note is visible on phones too, in the serif, and never touches the crest.
 // F. The walk-in is fluid on portrait screens: the doorway's foot, sampled every 0.004 of progress from 0.3 to 0.6
-//    (settled), never changes speed by more than 1.5px from one step to the next (the camera's rise was clipped, a
-//    bob of about 6px per step, review r1).
+//    (settled), never changes speed by more than 1.8px from one step to the next (1.5px before the 9 Nov shorter
+//    walk-in compressed the same curve; the camera's rise was clipped, a bob of about 6px per step, review r1).
 // G. The list stays at rest when the screen changes size under it: a keyboard that resizes the page (focus in the
 //    email field at the end of the run and at the page end, the page 300px shorter, then back) and a rotation round
 //    trip: the field stays opaque and in view, and the page comes back where it was.

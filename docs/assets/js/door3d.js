@@ -18,7 +18,7 @@ const KNOB = { l: [277, 750], r: [38, 750] }, ESC = [32, 815, 9, 20];
 const HINGES = [[1002, 1057], [1516, 1575], [2043, 2104]];
 const NOTCH = [1080, 1206, 907, 920];
 const BIAS = -0.65;
-const MAXDPR = 3;
+const MAXDPR = 3, MSAA_PX = 4.2e6;
 const GLSL = `
 uniform vec4 uPj;
 uniform vec2 uWH;
@@ -30,14 +30,15 @@ uniform float uLampOn;
 uniform vec4 uDoor;
 vec3 sunL(vec3 p) { return uLampOn > 0.5 ? normalize(uLamp - p) : uSunDir; }
 float sunK(vec3 p) { vec3 d = uLamp - p; return uLampOn > 0.5 ? 2.6 / max(dot(d, d), 0.6) : 1.0; }
-float doorVis(vec3 p, vec3 L) {
+float doorVisE(vec3 p, vec3 L, float e0, float e1) {
 if (p.z > -0.002) return 1.0;
 float t = -p.z / max(L.z, 0.02);
 vec2 q = p.xy + L.xy * t;
-float e = 0.012 + 0.05 * t;
+float e = e0 + e1 * t;
 return smoothstep(uDoor.x - e, uDoor.x + e, q.x) * smoothstep(uDoor.y + e, uDoor.y - e, q.x)
 * smoothstep(uDoor.w + e, uDoor.w - e, q.y) * step(-0.5, L.z);
 }
+float doorVis(vec3 p, vec3 L) { return doorVisE(p, L, 0.012, 0.05); }
 float sphereSh(vec3 p, vec3 L, vec4 S) {
 vec3 d = S.xyz - p; float t = dot(d, L);
 if (t <= 0.0 || S.w <= 0.0) return 1.0;
@@ -144,7 +145,7 @@ float dn = dot(L, nl);
 if (abs(dn) < 1e-3) return 1.0;
 float t = dot(vec3(hx, 0.0, 0.0) - p, nl) / dn;
 if (t <= 0.0) return 1.0;
-vec3 q = p + L * t; float sl = dot(q - vec3(hx, 0.0, 0.0), dl), e = 0.03 + 0.04 * t;
+vec3 q = p + L * t; float sl = dot(q - vec3(hx, 0.0, 0.0), dl), e = 0.15 + 0.15 * t;
 return 1.0 - smoothstep(-e, e, sl) * smoothstep(uLeafW + e, uLeafW - e, sl) * step(q.y, uDoor.w);
 }
 float leafFoot(vec3 p, float hx, float a) {
@@ -161,7 +162,7 @@ if (uOpenK > 0.0) {
 vec3 n = normalize(vNW), p = vW, cl = lin(c);
 if (uSunK > 0.0 && n.y > -0.5) {
 float ndl = max(dot(n, uSunDir), 0.0);
-if (ndl > 0.0) cl *= 1.0 + uSunK * uOpenK * ndl * doorVis(p, uSunDir) * leafSh(p, uSunDir, uDoor.x, uOpen) * leafSh(p, uSunDir, uDoor.y, uOpen);
+if (ndl > 0.0) cl *= 1.0 + uSunK * uOpenK * (1.0 - 0.7 * uSoft / 3.0) * ndl * doorVisE(p, uSunDir, 0.08, 0.12) * leafSh(p, uSunDir, uDoor.x, uOpen) * leafSh(p, uSunDir, uDoor.y, uOpen);
 }
 if (n.y > 0.5) {
 float f = min(leafFoot(p, uDoor.x, uOpen), leafFoot(p, uDoor.y, uOpen));
@@ -187,7 +188,7 @@ if (uK > 0.0) {
 float d = clamp(-vW.z / WALLT_, 0.0, 1.0);
 vec2 q = vec2(0.236 + d * 0.062, 0.40 + (vW.x + 0.81) / 1.62 * 0.31), ts = vec2(textureSize(uTex, 0));
 float lod = log2(max(max(length(dFdx(q * ts)), length(dFdy(q * ts))), 1e-4));
-vec3 st = mix(textureLod(uTex, q, 5.5).rgb, textureLod(uTex, q, max(lod, 3.0)).rgb, 0.45);
+vec3 st = mix(textureLod(uTex, q, 5.5).rgb, textureLod(uTex, q, max(lod, 5.0)).rgb, 0.45);
 if (uLampOn > 0.5) st = enc(lin(st) * (0.6 + 1.6 * d) * vec3(1.0, 0.84, 0.62));
 else st *= vec3(0.78, 0.74, 0.69) * mix(1.0, 0.88, d);
 c = mix(c, st, uK);
@@ -266,7 +267,7 @@ gl_FragColor = s;
 const THEMES = {
 dia: { sunDir: new Vector3(0.55, 0.5, 0.67).normalize(), sun: [1.0, 0.94, 0.84], sky: [0.62, 0.64, 0.68],
 hall: [0.78, 0.71, 0.6], lampOn: 0, minM: 0.5, maxM: 1.45, spec: 0.05, far: -3.8, wall: [250, 236, 223],
-gapGlow: 0, sunK: 1.1, blur: 4.0,
+gapGlow: 0, sunK: 0.35, blur: 4.0,
 env: { top: [1.15, 1.18, 1.25], hor: [0.95, 0.88, 0.78], low: [0.45, 0.4, 0.34], in: [0.8, 0.72, 0.6] } },
 noite: { sunDir: new Vector3(0, 0, 1), sun: [1.0, 0.64, 0.33], sky: [0.035, 0.04, 0.06], hall: [1.4, 0.9, 0.48],
 lampOn: 1, minM: 0.5, maxM: 8.0, spec: 0.03, far: -4.0, wall: [28, 20, 15], gapGlow: 50, sunK: 0, blur: 4.0,
@@ -367,21 +368,60 @@ t.wrapS = t.wrapT = ClampToEdgeWrapping;
 t.needsUpdate = true;
 return t;
 }
-export function create(canvas, G, opt) {
-opt = opt || {};
-const renderer = new WebGLRenderer({ canvas, antialias: Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR) <= 2, alpha: false, depth: true,
-stencil: false, powerPreference: "default", preserveDrawingBuffer: !!opt.preserve, failIfMajorPerformanceCaveat: !opt.force });
-{
-const gl = renderer.getContext(), ext = gl.getExtension("WEBGL_debug_renderer_info"),
-name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
-if (!opt.force && /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) { renderer.dispose(); throw new Error("software context: " + name); }
+const BIG = 2.5e6, BAND = 6e5;
+function banded(img) {
+if (!(typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap && img.width * img.height > BIG)) return tex(img);
+const t = tex({ width: img.width, height: img.height });
+t.source.dataReady = false;
+t.mipmapsAutoUpdate = false;
+t.userData.bitmap = img;
+return t;
 }
+function staged(stage, e) {
+if (e && e.stage) return e;
+const x = new Error(stage + ": " + String(e && e.message || (e && e.type === "error" ? "a photograph did not load" : e)).slice(0, 100));
+x.stage = stage;
+return x;
+}
+export function context(canvas, opt) {
+opt = opt || {};
+const ATTR = (msaa) => ({ antialias: msaa, alpha: false, depth: true, stencil: false, powerPreference: "default",
+preserveDrawingBuffer: !!opt.preserve, failIfMajorPerformanceCaveat: !opt.force, premultipliedAlpha: true });
+const dpr0 = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR),
+msaa = dpr0 <= 2 && (window.innerWidth || 1) * (window.innerHeight || 1) * dpr0 * dpr0 <= MSAA_PX;
+const gl = canvas.getContext("webgl2", ATTR(msaa));
+if (!gl) throw new Error("Error creating WebGL context.");
+{
+const ext = gl.getExtension("WEBGL_debug_renderer_info"),
+name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+if (!opt.force && /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) {
+const x = gl.getExtension("WEBGL_lose_context");
+if (x) x.loseContext();
+throw new Error("software context: " + name);
+}
+}
+return { gl, canvas, msaa, fail: { why: "" }, renderer: null };
+}
+function renderer3(ctx) {
+const renderer = new WebGLRenderer({ canvas: ctx.canvas, context: ctx.gl });
+const fail = ctx.fail;
+renderer.debug.onShaderError = function (gl, prog, vs, fs) {
+const log = [gl.getShaderInfoLog(fs), gl.getShaderInfoLog(vs), gl.getProgramInfoLog(prog)].map((t) => String(t || "").trim()).filter(Boolean)[0] || "";
+if (!fail.why) fail.why = (log.split("\n")[0] || "a program did not link").slice(0, 80);
+if (window.console) console.warn("door3d: shader error: " + log.slice(0, 400));
+};
+ctx.renderer = renderer;
+return renderer;
+}
+export function create(ctx, G, opt) {
+opt = opt || {};
+const { renderer, msaa, fail } = ctx;
 renderer.autoClear = true;
 renderer.sortObjects = true;
 const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 const scene = new Scene();
-const camera = new PerspectiveCamera();
-camera.matrixAutoUpdate = false;
+const camera = new PerspectiveCamera(), camH = new PerspectiveCamera();
+camera.matrixAutoUpdate = camH.matrixAutoUpdate = false;
 const X = (u) => (u - G.hp[0]) * WM, Y = (v) => (G.hp[1] - v) * HM;
 const door = { x0: X(G.door[0]), x1: X(G.door[2]), top: Y(G.door[1]), bot: Y(G.door[3]) };
 const gap = { l: X(G.gap[0]), r: X(G.gap[1]) };
@@ -600,7 +640,7 @@ const P = THEMES[t];
 theme = t;
 for (const k of Object.keys(textures)) { if (textures[k]) textures[k].dispose(); delete textures[k]; }
 for (const k of ["facade", "leafL", "leafR", "plate", "reveal", "spill"]) if (imgs[k]) {
-textures[k] = tex(imgs[k]);
+textures[k] = banded(imgs[k]);
 textures[k].anisotropy = k === "plate" || k === "reveal" ? 1 : maxAniso;
 }
 buildHall(P.far);
@@ -640,11 +680,23 @@ ready = true;
 const IDENT = new Matrix4();
 function track(o) { o.onBeforeRender = function (r, s, c, g, m) { m.uniforms.uMRest.value = rest.get(o) || IDENT; m.uniformsNeedUpdate = true; }; }
 scene.traverse((o) => { if (o.isMesh) track(o); });
-const proj = new Matrix4(), view = new Matrix4();
-function frame(v) {
-if (!ready) return false;
+const proj = new Matrix4(), projH = new Matrix4(), view = new Matrix4();
+function size(v, rts) {
 const dpr = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR), key = v.cw + "x" + v.ch + "@" + dpr;
 if (key !== lastSize) { renderer.setPixelRatio(dpr); renderer.setSize(v.cw, v.ch, false); lastSize = key; }
+if (rts) {
+const bw = Math.max(1, Math.round(v.cw * dpr / 2)), bh = Math.max(1, Math.round(v.ch * dpr / 2));
+if (rtA.width !== bw || rtA.height !== bh) { rtA.setSize(bw, bh); rtB.setSize(bw, bh); }
+renderer.initRenderTarget(rtA); renderer.initRenderTarget(rtB);
+}
+return dpr;
+}
+let lastV = null;
+function frame(v) {
+if (!ready) return false;
+lastV = v;
+if (fail.why) throw new Error("shader: " + fail.why);
+const dpr = size(v);
 pose(v.u);
 const zc = v.zc * D, f = D * v.rect.w / WM * (v.s ? v.s * v.zc : 1), n = 0.02, far = 60;
 const px = v.rect.x + G.hp[0] * v.rect.w + v.tx, py = v.rect.y + G.hp[1] * v.rect.h + v.ty;
@@ -653,6 +705,12 @@ camera.projectionMatrix.copy(proj);
 camera.projectionMatrixInverse.copy(proj).invert();
 camera.matrixWorld.makeTranslation(0, 0, zc);
 camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+const zhv = v.zh || v.zc, fh = D * v.rect.w / WM * (v.s ? v.s * zhv : 1);
+projH.makePerspective(-px * n / fh, (v.cw - px) * n / fh, py * n / fh, -(v.ch - py) * n / fh, n, far);
+camH.projectionMatrix.copy(projH);
+camH.projectionMatrixInverse.copy(projH).invert();
+camH.matrixWorld.makeTranslation(0, 0, zhv * D);
+camH.matrixWorldInverse.copy(camH.matrixWorld).invert();
 for (const s of ["l", "r"]) {
 const p = leaves[s].head.clone().applyMatrix4(leaves[s].pivot.matrixWorld);
 headW[s].set(p.x, p.y, p.z, 0.031);
@@ -671,13 +729,13 @@ hallMat.uniforms.uOpenK.value = ok3;
 soffitMat.uniforms.uK.value = ok3 * ok3 * (3 - 2 * ok3);
 facadeMat.uniforms.uSpillK.value = theme === "noite" ? (v.spill || 0) : 0;
 facadeMat.uniforms.uOpenK.value = ok3;
-const fz = Math.min(1, Math.max(0, (1 - v.zc) / 0.6)), P = THEMES[theme], ez = fz * fz * (3 - 2 * fz), sig = P.blur * ez;
+const fz = Math.min(1, Math.max(0, (1 - Math.pow(v.s || 1 / v.zc, -0.12)) / 0.6)), P = THEMES[theme], ez = fz * fz * (3 - 2 * fz), sig = P.blur * ez;
 hallMat.uniforms.uSoft.value = 3.0 * ez;
 if (sig < 0.05) {
 if (bg.parent) scene.remove(bg);
 renderer.autoClear = true;
 renderer.setRenderTarget(null);
-renderer.render(sceneH, camera);
+renderer.render(sceneH, camH);
 renderer.autoClear = false;
 renderer.clearDepth();
 renderer.render(scene, camera);
@@ -686,7 +744,7 @@ renderer.autoClear = true;
 const bw = Math.max(1, Math.round(v.cw * dpr / 2)), bh = Math.max(1, Math.round(v.ch * dpr / 2));
 if (rtA.width !== bw || rtA.height !== bh) { rtA.setSize(bw, bh); rtB.setSize(bw, bh); }
 renderer.setRenderTarget(rtA);
-renderer.render(sceneH, camera);
+renderer.render(sceneH, camH);
 const sh = sig * dpr / 2, it = Math.min(3, Math.max(1, Math.ceil(Math.pow(sh / (1.64 * 2.1), 2)))), r = sh / (1.64 * Math.sqrt(it));
 quad.material = blurMat;
 for (let i = 0; i < it; i++) {
@@ -699,7 +757,17 @@ renderer.setRenderTarget(null);
 if (!bg.parent) scene.add(bg);
 renderer.render(scene, camera);
 }
+if (fail.why) throw new Error("shader: " + fail.why);
 return true;
+}
+const pv = new Vector3();
+function probe() {
+if (!lastV) return null;
+const sx = (x, y, z, M) => { pv.set(x, y, z); if (M) pv.applyMatrix4(M); pv.applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix); return (pv.x + 1) / 2 * lastV.cw; };
+const ext = (m) => { m.geometry.computeBoundingBox(); const b = m.geometry.boundingBox; let a = 1e9, z = -1e9;
+for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const w of [b.min.z, b.max.z]) { const v = sx(x, y, w, m.matrixWorld); a = Math.min(a, v); z = Math.max(z, v); }
+return [+a.toFixed(2), +z.toFixed(2)]; };
+return { door: [+sx(door.x0, 0, 0).toFixed(2), +sx(door.x1, 0, 0).toFixed(2)], leafL: ext(leaves.l.leaf), leafR: ext(leaves.r.leaf), cam: [+(camera.matrixWorld.elements[14] / D).toFixed(5), +(camH.matrixWorld.elements[14] / D).toFixed(5)] };
 }
 function endZ(v) {
 const f = D * v.rect.w / WM, far = THEMES[theme || "dia"].far, k = (D - far) / D,
@@ -709,19 +777,115 @@ return (far + d) / D;
 }
 function dispose() {
 for (const k of Object.keys(textures)) if (textures[k]) textures[k].dispose();
+rtA.dispose(); rtB.dispose();
+const gs = new Set(), ms = new Set([blurMat, bgMat]);
+for (const o of [scene, sceneH, quadScene]) o.traverse((m) => { if (m.isMesh) { gs.add(m.geometry); ms.add(m.material); } });
+gs.add(bg.geometry);
+for (const g of gs) g.dispose();
+for (const m of ms) m.dispose();
 renderer.dispose();
 }
-async function warm(views, pause) {
-for (const k of Object.keys(textures)) { if (textures[k]) { await pause(); if (textures[k]) renderer.initTexture(textures[k]); } }
+async function drained(gone) {
+const gl = renderer.getContext();
+let f = null;
+try { f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } catch (e) { return; }
+if (!f) return;
+for (let t0 = performance.now(); performance.now() - t0 < 1500 && !(gone && gone());) {
+await new Promise((ok) => setTimeout(ok, 16));
+if (gl.isContextLost() || gl.getSyncParameter(f, gl.SYNC_STATUS) === gl.SIGNALED) break;
+}
+try { gl.deleteSync(f); } catch (e) {}
+}
+let tiny = null;
+function prime(m) {
+if (!tiny) tiny = new WebGLRenderTarget(4, 4, { depthBuffer: true, stencilBuffer: false });
+const was = m.parent, mw = m.matrixWorld.clone();
+renderer.setRenderTarget(tiny);
+renderer.render(m, camera);
+renderer.setRenderTarget(null);
+m.matrixWorld.copy(mw);
+if (was) m.matrixWorldNeedsUpdate = true;
+}
+async function upload(t, pause, gone) {
+const bm = t.userData.bitmap;
+if (!bm) { renderer.initTexture(t); await drained(gone); return; }
+renderer.initTexture(t);
+const W = bm.width, H = bm.height, rows = Math.max(16, Math.floor(BAND / W)), o = { premultiplyAlpha: "none", colorSpaceConversion: "none" };
+const gl = renderer.getContext(), gt = renderer.properties.get(t).__webglTexture;
+for (let y = 0; y < H; y += rows) {
+const h = Math.min(rows, H - y), part = await createImageBitmap(bm, 0, y, W, h, o);
+await pause();
+if (gone()) { part.close(); return; }
+renderer.state.bindTexture(gl.TEXTURE_2D, gt);
+gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, y, gl.RGBA, gl.UNSIGNED_BYTE, part);
+renderer.state.unbindTexture();
+part.close();
+await drained(gone);
+}
+await pause();
+if (gone()) return;
+renderer.state.bindTexture(gl.TEXTURE_2D, gt);
+gl.generateMipmap(gl.TEXTURE_2D);
+renderer.state.unbindTexture();
+delete t.userData.bitmap;
+await drained(gone);
+}
+function linked(stage) {
+const gl = renderer.getContext();
+for (const p of renderer.info.programs || []) {
+if (fail.why) break;
+if (p.program && gl.getProgramParameter(p.program, gl.LINK_STATUS) === false)
+fail.why = (String(gl.getProgramInfoLog(p.program) || "").trim().split("\n")[0] || "a program did not link").slice(0, 80);
+}
+if (fail.why) throw staged(stage, "shader: " + fail.why);
+}
+async function warm(views, pause, isGone) {
+const gone = isGone || (() => false);
+for (const k of Object.keys(textures)) {
+const t = textures[k];
+if (!t) continue;
+await pause();
+if (gone() || textures[k] !== t) continue;
+try { await upload(t, pause, gone); } catch (e) { throw staged("upload", e); }
+if (gone()) return;
+}
 pose(0);
 const par = renderer.extensions.has("KHR_parallel_shader_compile");
+const seen = new Set(), first = [];
+for (const [sc, list] of [[sceneH, [sceneH]], [scene, [scene, bg]], [quadScene, [quadScene]]])
+for (const root of list) root.traverse((m) => { if (m.isMesh && !seen.has(m.material)) { seen.add(m.material); first.push([m, sc]); } });
 try {
-if (par) { await renderer.compileAsync(sceneH, camera); await pause(); await renderer.compileAsync(scene, camera); }
-else { renderer.compile(sceneH, camera); await pause(); renderer.compile(scene, camera); }
-} catch (e) {}
-for (const v of views) { await pause(); frame(v); }
+if (par) {
+await renderer.compileAsync(sceneH, camera); await pause();
+await renderer.compileAsync(scene, camera); await pause();
+await renderer.compileAsync(quadScene, camera); await renderer.compileAsync(bg, camera, scene);
+} else {
+for (const [m, sc] of first) { await pause(); if (gone()) return; renderer.compile(m, camera, sc); linked("compile"); }
 }
-return { setTheme, frame, endZ, warm, dispose, renderer, scene, sceneH, get theme() { return theme; }, get ready() { return ready; } };
+} catch (e) { throw staged("compile", e); }
+await pause();
+if (gone()) return;
+linked("compile");
+pose(0.3);
+for (const [m] of first) {
+await pause();
+if (gone()) return;
+try { prime(m); } catch (e) { throw staged("warm", e); }
+await drained(gone);
+}
+if (tiny) { tiny.dispose(); tiny = null; }
+linked("warm");
+if (views.length) { await pause(); if (gone()) return; size(views[0], true); await drained(gone); }
+for (const v of views) {
+await pause();
+if (gone()) return;
+try { frame(v); } catch (e) { throw staged("warm", e); }
+await drained(gone);
+}
+linked("warm");
+}
+return { setTheme, frame, endZ, warm, dispose, probe, renderer, scene, sceneH, msaa, fail, get theme() { return theme; }, get ready() { return ready; },
+get dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); } };
 }
 const MAXTEX = 4096;
 export function mount(env) {
@@ -729,11 +893,12 @@ const canvas = document.createElement("canvas");
 canvas.className = "porta__3d";
 canvas.setAttribute("aria-hidden", "true");
 env.stage.insertBefore(canvas, env.stage.firstChild);
-let core;
-try { core = create(canvas, env.G, { force: env.force }); } catch (e) { canvas.remove(); throw e; }
-let dead = false, have = null, want = null;
-const cache = {}, root = document.documentElement;
-canvas.addEventListener("webglcontextlost", function () { dead = true; canvas.remove(); if (env.onLost) env.onLost(); }, false);
+const opt = { force: env.force, maxDpr: env.maxDpr };
+let ctx, core = null;
+try { ctx = context(canvas, opt); } catch (e) { canvas.remove(); throw e; }
+let dead = false, gone = false, have = null, want = null, building = null;
+const cache = {}, root = document.documentElement, gl = ctx.gl;
+canvas.addEventListener("webglcontextlost", function () { dead = true; canvas.remove(); if (env.onLost && !gone) env.onLost(); }, false);
 const idle = (f) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: 500 }) : setTimeout(f, 16));
 const still = () => !env.quiet || env.quiet();
 const pause = () => new Promise((ok) => {
@@ -741,11 +906,31 @@ const pause = () => new Promise((ok) => {
 });
 const loaded = (im) => (im.complete && im.naturalWidth ? Promise.resolve(im)
 : new Promise((ok, no) => { im.addEventListener("load", () => ok(im), { once: true }); im.addEventListener("error", no, { once: true }); }));
+let wk = null, wid = 0;
+const wq = new Map();
+function worker() {
+if (wk !== null) return wk;
+try {
+const src = "onmessage=async(e)=>{const d=e.data;try{const b=await(await fetch(d.u)).blob();const m=await createImageBitmap(b,d.o);postMessage({i:d.i,m},[m])}catch(x){postMessage({i:d.i,x:String(x&&x.message||x)})}}";
+const u = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+wk = new Worker(u);
+wk.__u = u;
+wk.onmessage = (e) => { const c = wq.get(e.data.i); if (!c) return; wq.delete(e.data.i); if (e.data.m) c[0](e.data.m); else c[1](new Error(e.data.x)); };
+wk.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); for (const c of wq.values()) c[1](new Error("worker")); wq.clear(); wk = false; };
+} catch (e) { wk = false; }
+return wk;
+}
+function decodeOff(url, o) {
+const w = worker();
+if (!w) return Promise.reject(new Error("no worker"));
+return new Promise((ok, no) => { const i = ++wid; wq.set(i, [ok, no]); w.postMessage({ i, u: new URL(url, location.href).href, o }); });
+}
 async function bitmap(url) {
 const o = { premultiplyAlpha: "none", colorSpaceConversion: "none" };
 if (window.createImageBitmap && window.fetch) {
 try {
-let bm = await createImageBitmap(await (await fetch(url)).blob(), o);
+let bm;
+try { bm = await decodeOff(url, o); } catch (e) { bm = await createImageBitmap(await (await fetch(url)).blob(), o); }
 const k = Math.min(1, MAXTEX / Math.max(bm.width, bm.height));
 if (k < 1) { const r = await createImageBitmap(bm, Object.assign({ resizeWidth: Math.round(bm.width * k), resizeHeight: Math.round(bm.height * k), resizeQuality: "high" }, o)); bm.close(); bm = r; }
 return bm;
@@ -791,11 +976,25 @@ return cache[t];
 const drop = (t) => { const c = cache[t]; if (!c) return; delete cache[t]; c.then((o) => { for (const v of Object.values(o)) if (v && v.close) v.close(); }, () => {}); };
 function use(t) {
 want = t;
-return load(t).then(async (imgs) => {
+return load(t).catch((e) => { throw staged("textures", e); }).then(async (imgs) => {
 if (dead || want !== t) { if (want !== t) drop(t); return; }
 have = null;
-core.setTheme(t, imgs);
-await core.warm(env.views ? env.views(core.endZ) : [], pause);
+if (!core) {
+building = building || (async () => {
+await pause();
+if (dead) return;
+if (!ctx.renderer) try { renderer3(ctx); } catch (e) { throw staged("context", e); }
+await pause();
+if (dead) return;
+try { core = create(ctx, env.G, opt); } catch (e) { throw staged("create", e); }
+})();
+await building;
+if (dead || !core) return;
+}
+await pause();
+if (dead || want !== t) return;
+try { core.setTheme(t, imgs); } catch (e) { throw staged("theme", e); }
+await core.warm(env.views ? env.views(core.endZ) : [], pause, () => dead || want !== t);
 if (dead || want !== t) return;
 drop(t);
 have = t;
@@ -808,9 +1007,26 @@ return {
 ready: use(env.theme()),
 canvas,
 get ok() { return !dead && have === env.theme(); },
-endZ: (v) => core.endZ(v),
-draw(v) { if (dead || have !== env.theme()) return false; try { return core.frame(v); } catch (e) { return false; } },
-destroy() { mo.disconnect(); dead = true; for (const k of Object.keys(cache)) drop(k); core.dispose(); canvas.remove(); }
+endZ: (v) => (core ? core.endZ(v) : 1),
+probe: () => (core && have ? core.probe() : null),
+draw(v) {
+if (dead || have !== env.theme()) return false;
+try { return core.frame(v); } catch (e) { if (env.onError) env.onError(e); return false; }
+},
+lost() { return dead || gl.isContextLost(); },
+dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); },
+msaa: ctx.msaa,
+destroy() {
+if (gone) return;
+gone = true;
+mo.disconnect(); dead = true; for (const k of Object.keys(cache)) drop(k);
+if (wk) { try { wk.terminate(); URL.revokeObjectURL(wk.__u); } catch (e) {} wk = false; }
+for (const c of wq.values()) c[1](new Error("gone"));
+wq.clear();
+try { if (core) core.dispose(); else if (ctx.renderer) ctx.renderer.dispose(); } catch (e) {}
+try { if (!gl.isContextLost()) { const x = gl.getExtension("WEBGL_lose_context"); if (x) x.loseContext(); } } catch (e) {}
+canvas.remove();
+}
 };
 }
 if (typeof document !== "undefined" && document.currentScript === null && typeof window !== "undefined") {

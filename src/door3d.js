@@ -19,8 +19,9 @@
 
    The camera is the page's: the driver (site.js) gives the scene's rest rect on the canvas, the pan of the hall point
    (tx, ty, the CSS camera's translate), the CSS camera's zoom s and the camera's distance zc (in units of the rest
-   distance: 1 at rest; site.js keeps it near, s^-0.12, and the lens makes up the rest, so the door's plane is
-   magnified exactly s, as on the page, and the open leaves never sweep wider than the doorway they stand in).
+   distance: 1 at rest; site.js keeps it near, s^-0.12 while the doors open and still once they are open, and the
+   lens makes up the rest, so the door's plane is magnified exactly s, as on the page, and the open leaves keep their
+   width against the doorway they stand in).
    Without s (an older page) the camera dollies, zc = 1/s. Rendering happens only in frame(). */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Mesh, Group, BufferGeometry, Float32BufferAttribute, ShaderMaterial,
@@ -51,9 +52,11 @@ const NOTCH = [1080, 1206, 907, 920];
 /* LOD bias of the photograph's samples: trilinear minification of the 2388 master is softer than the browser's own
    image scaling, so the take-over frame lost grain and edges (review r1); -0.65 matches the page's <img> (sharp.js) */
 const BIAS = -0.65;
-/* the canvas at the device's own pixel ratio, up to 3 (the iPhone case): at 2 the take-over frame was drawn at 2/3 of
-   the page photograph's resolution and upscaled (review r1). Above 2 there is no MSAA (create()). */
-const MAXDPR = 3;
+/* the canvas at the device's own pixel ratio, up to 3: at 2 a 3x screen's take-over frame is drawn at 2/3 of the page
+   photograph's resolution and upscaled (review r1). iOS too since 9 Nov (the brief's cap of 2 softened an iPhone's
+   take-over frame against the photograph; the live safeguard watches the cost). MSAA only up to a ratio of 2 and a
+   drawing buffer of 4.2 Mpx (create()). */
+const MAXDPR = 3, MSAA_PX = 4.2e6;
 
 const GLSL = `
 uniform vec4 uPj;                 /* hall point (u, v), D, 0 */
@@ -67,14 +70,15 @@ uniform vec4 uDoor;               /* doorway x0 x1 y0 y1 (metres, plane z = 0) *
 vec3 sunL(vec3 p) { return uLampOn > 0.5 ? normalize(uLamp - p) : uSunDir; }
 float sunK(vec3 p) { vec3 d = uLamp - p; return uLampOn > 0.5 ? 2.6 / max(dot(d, d), 0.6) : 1.0; }
 /* a point inside the wall (z < 0) sees the sun / lantern only through the opening */
-float doorVis(vec3 p, vec3 L) {
+float doorVisE(vec3 p, vec3 L, float e0, float e1) {
   if (p.z > -0.002) return 1.0;
   float t = -p.z / max(L.z, 0.02);
   vec2 q = p.xy + L.xy * t;
-  float e = 0.012 + 0.05 * t;
+  float e = e0 + e1 * t;
   return smoothstep(uDoor.x - e, uDoor.x + e, q.x) * smoothstep(uDoor.y + e, uDoor.y - e, q.x)
        * smoothstep(uDoor.w + e, uDoor.w - e, q.y) * step(-0.5, L.z);
 }
+float doorVis(vec3 p, vec3 L) { return doorVisE(p, L, 0.012, 0.05); }
 float sphereSh(vec3 p, vec3 L, vec4 S) {
   vec3 d = S.xyz - p; float t = dot(d, L);
   if (t <= 0.0 || S.w <= 0.0) return 1.0;
@@ -192,14 +196,15 @@ uniform float uSoft;              /* LOD bias as the camera walks in: seen from 
                                      are stretched along the rays from C0, and its render grain would draw radial streaks */
 varying vec3 vRest, vW, vNR, vNW;
 varying vec4 vX;
-/* the open leaves, seen from a point on the floor towards the light: does the ray cross leaf s (hinge at hx)? */
+/* the open leaves, seen from a point on the floor towards the light: does the ray cross leaf s (hinge at hx)? (a wide
+   penumbra: the pool is soft overcast sun, as the facade's own light) */
 float leafSh(vec3 p, vec3 L, float hx, float a) {
   vec3 dl = vec3(cos(a) * -sign(hx), 0.0, -sin(a)), nl = vec3(-dl.z, 0.0, dl.x);
   float dn = dot(L, nl);
   if (abs(dn) < 1e-3) return 1.0;
   float t = dot(vec3(hx, 0.0, 0.0) - p, nl) / dn;
   if (t <= 0.0) return 1.0;
-  vec3 q = p + L * t; float sl = dot(q - vec3(hx, 0.0, 0.0), dl), e = 0.03 + 0.04 * t;
+  vec3 q = p + L * t; float sl = dot(q - vec3(hx, 0.0, 0.0), dl), e = 0.15 + 0.15 * t;
   return 1.0 - smoothstep(-e, e, sl) * smoothstep(uLeafW + e, uLeafW - e, sl) * step(q.y, uDoor.w);
 }
 /* contact: the leaf's foot on the floor (distance to its footprint, x/z) */
@@ -215,10 +220,13 @@ void main() {
   if (rv.x > 0.0 && rv.x < 1.0 && rv.y > 0.0 && rv.y < 1.0) { vec4 r = texture2D(uReveal, rv, uSoft); c = mix(c, r.rgb, r.a); }
   if (uOpenK > 0.0) {
     vec3 n = normalize(vNW), p = vW, cl = lin(c);
-    /* daylight through the opened doorway: a soft pool of sun on the stone, cut by the leaves' shadows */
+    /* daylight through the opened doorway: a faint, soft pool of sun on the stone (the photograph's own light is soft:
+       the lantern's and the olive's shadows are broad and faint), cut by the leaves' shadows with a wide penumbra, and
+       let go as the camera passes the threshold (with the lens blur, uSoft). It was a bright wedge before, +35-40
+       levels with a long hard diagonal edge across the screen at 390 p 0.45-0.54 (review, door finish) */
     if (uSunK > 0.0 && n.y > -0.5) {
       float ndl = max(dot(n, uSunDir), 0.0);
-      if (ndl > 0.0) cl *= 1.0 + uSunK * uOpenK * ndl * doorVis(p, uSunDir) * leafSh(p, uSunDir, uDoor.x, uOpen) * leafSh(p, uSunDir, uDoor.y, uOpen);
+      if (ndl > 0.0) cl *= 1.0 + uSunK * uOpenK * (1.0 - 0.7 * uSoft / 3.0) * ndl * doorVisE(p, uSunDir, 0.08, 0.12) * leafSh(p, uSunDir, uDoor.x, uOpen) * leafSh(p, uSunDir, uDoor.y, uOpen);
     }
     if (n.y > 0.5) {
       float f = min(leafFoot(p, uDoor.x, uOpen), leafFoot(p, uDoor.y, uOpen));
@@ -232,8 +240,8 @@ void main() {
 
 /* the lintel's soffit, at the door's depth (so as sharp as the jambs, never in the hall's blur). Seen through the gap
    at rest, where it is the photograph's hall and the doorway's shade (exactly as the hall pass draws it there); as the
-   doors open it becomes the pilasters' limestone in the lintel's shade: low-passed (its 5 mm pits would grow into
-   blotches as the camera nears), a warm bounce tint, lighter towards the light (the street by day, the lamplit hall
+   doors open it becomes the pilasters' limestone in the lintel's shade: low-passed to mip 5 at least (its 5 mm pits
+   grew into dark blotches, 15-24 levels, as the camera neared at mip 3: review r1 and door finish), a warm bounce tint, lighter towards the light (the street by day, the lamplit hall
    by night) (review r1) */
 const FS_SOFFIT = GLSL + `
 uniform sampler2D uPlate, uReveal, uTex;
@@ -252,7 +260,7 @@ void main() {
     float d = clamp(-vW.z / WALLT_, 0.0, 1.0);
     vec2 q = vec2(0.236 + d * 0.062, 0.40 + (vW.x + 0.81) / 1.62 * 0.31), ts = vec2(textureSize(uTex, 0));
     float lod = log2(max(max(length(dFdx(q * ts)), length(dFdy(q * ts))), 1e-4));
-    vec3 st = mix(textureLod(uTex, q, 5.5).rgb, textureLod(uTex, q, max(lod, 3.0)).rgb, 0.45);
+    vec3 st = mix(textureLod(uTex, q, 5.5).rgb, textureLod(uTex, q, max(lod, 5.0)).rgb, 0.45);
     if (uLampOn > 0.5) st = enc(lin(st) * (0.6 + 1.6 * d) * vec3(1.0, 0.84, 0.62));   /* night: the hall's lamplight, warmer and stronger towards it */
     else st *= vec3(0.78, 0.74, 0.69) * mix(1.0, 0.88, d);                             /* day: a warm bounce, lighter towards the street */
     c = mix(c, st, uK);
@@ -346,7 +354,7 @@ void main() {
 const THEMES = {
   dia: { sunDir: new Vector3(0.55, 0.5, 0.67).normalize(), sun: [1.0, 0.94, 0.84], sky: [0.62, 0.64, 0.68],
     hall: [0.78, 0.71, 0.6], lampOn: 0, minM: 0.5, maxM: 1.45, spec: 0.05, far: -3.8, wall: [250, 236, 223],
-    gapGlow: 0, sunK: 1.1, blur: 4.0,
+    gapGlow: 0, sunK: 0.35, blur: 4.0,
     env: { top: [1.15, 1.18, 1.25], hor: [0.95, 0.88, 0.78], low: [0.45, 0.4, 0.34], in: [0.8, 0.72, 0.6] } },
   noite: { sunDir: new Vector3(0, 0, 1), sun: [1.0, 0.64, 0.33], sky: [0.035, 0.04, 0.06], hall: [1.4, 0.9, 0.48],
     lampOn: 1, minM: 0.5, maxM: 8.0, spec: 0.03, far: -4.0, wall: [28, 20, 15], gapGlow: 50, sunK: 0, blur: 4.0,
@@ -460,27 +468,79 @@ function tex(img) {
   t.needsUpdate = true;
   return t;
 }
+/* A photograph over BIG pixels (the facade, the 2388 x 2634 master: one upload of it was a 94-169 ms task at 4x CPU
+   throttle, review, door finish) goes up in bands of rows, each its own step: the texture is allocated empty (every mip
+   level, no data, no mipmaps made), the bands are cut from the decoded bitmap off the main thread (createImageBitmap) and
+   copied in one by one, then the mip chain is made in a step of its own (see upload()). */
+const BIG = 2.5e6, BAND = 6e5;
+function banded(img) {
+  if (!(typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap && img.width * img.height > BIG)) return tex(img);
+  const t = tex({ width: img.width, height: img.height });
+  t.source.dataReady = false;            /* initTexture() allocates only */
+  t.mipmapsAutoUpdate = false;           /* made once, after the last band */
+  t.userData.bitmap = img;
+  return t;
+}
 
-export function create(canvas, G, opt) {
+/* an error that names the step of the mount it came from (site.js remembers it for the session, except "textures":
+   a photograph that did not arrive) */
+function staged(stage, e) {
+  if (e && e.stage) return e;
+  const x = new Error(stage + ": " + String(e && e.message || (e && e.type === "error" ? "a photograph did not load" : e)).slice(0, 100));
+  x.stage = stage;
+  return x;
+}
+
+/* the context alone: the first step of the mount (10-30 ms on a phone). A shader that does not compile or link on the
+   device's driver is caught here for the whole mount (three.js would only log it and draw on without the part it
+   failed: the leaves vanished from the doorway, review, door finish): it fails the mount, or hands back */
+export function context(canvas, opt) {
   opt = opt || {};
+  const ATTR = (msaa) => ({ antialias: msaa, alpha: false, depth: true, stencil: false, powerPreference: "default",
+    preserveDrawingBuffer: !!opt.preserve, failIfMajorPerformanceCaveat: !opt.force, premultipliedAlpha: true });
   /* a software renderer (no GPU, or a blocklisted one) would draw this at a few frames per second: the context is
      refused (failIfMajorPerformanceCaveat) and the page keeps its CSS entrance; ?3d=force forces it, for tests only */
-  /* MSAA only up to a pixel ratio of 2: at 3 the edges are finer than the eye resolves, and a 4-sample buffer of an
-     iPhone screen would cost ~47 MB for nothing. The default power preference: on a two-GPU laptop the discrete GPU
-     is not woken (and kept awake) for a few seconds of doors. */
-  const renderer = new WebGLRenderer({ canvas, antialias: Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR) <= 2, alpha: false, depth: true,
-    stencil: false, powerPreference: "default", preserveDrawingBuffer: !!opt.preserve, failIfMajorPerformanceCaveat: !opt.force });
+  /* MSAA only up to a pixel ratio of 2 (at 3 the edges are finer than the eye resolves) and a drawing buffer of
+     MSAA_PX at most: 4 samples of colour and depth cost 32 bytes a pixel, ~42 MB for a phone at 2x (390 x 844), but
+     ~170 MB for 1440 x 900 at 2x or an iPad, where the edges are fine without it. The default power preference: on a
+     two-GPU laptop the discrete GPU is not woken (and kept awake) for a few seconds of doors. */
+  const dpr0 = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR),
+    msaa = dpr0 <= 2 && (window.innerWidth || 1) * (window.innerHeight || 1) * dpr0 * dpr0 <= MSAA_PX;
+  const gl = canvas.getContext("webgl2", ATTR(msaa));
+  if (!gl) throw new Error("Error creating WebGL context.");
   {                                       /* the same for a software renderer that does not declare the caveat */
-    const gl = renderer.getContext(), ext = gl.getExtension("WEBGL_debug_renderer_info"),
+    const ext = gl.getExtension("WEBGL_debug_renderer_info"),
       name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
-    if (!opt.force && /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) { renderer.dispose(); throw new Error("software context: " + name); }
+    if (!opt.force && /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) {
+      const x = gl.getExtension("WEBGL_lose_context");
+      if (x) x.loseContext();
+      throw new Error("software context: " + name);
+    }
   }
+  return { gl, canvas, msaa, fail: { why: "" }, renderer: null };
+}
+/* three.js on that context: the next step (its extensions and state, 25-45 ms at 4x CPU throttle) */
+function renderer3(ctx) {
+  const renderer = new WebGLRenderer({ canvas: ctx.canvas, context: ctx.gl });
+  const fail = ctx.fail;
+  renderer.debug.onShaderError = function (gl, prog, vs, fs) {
+    const log = [gl.getShaderInfoLog(fs), gl.getShaderInfoLog(vs), gl.getProgramInfoLog(prog)].map((t) => String(t || "").trim()).filter(Boolean)[0] || "";
+    if (!fail.why) fail.why = (log.split("\n")[0] || "a program did not link").slice(0, 80);
+    if (window.console) console.warn("door3d: shader error: " + log.slice(0, 400));
+  };
+  ctx.renderer = renderer;
+  return renderer;
+}
+
+export function create(ctx, G, opt) {
+  opt = opt || {};
+  const { renderer, msaa, fail } = ctx;
   renderer.autoClear = true;
   renderer.sortObjects = true;
   const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   const scene = new Scene();
-  const camera = new PerspectiveCamera();
-  camera.matrixAutoUpdate = false;
+  const camera = new PerspectiveCamera(), camH = new PerspectiveCamera();
+  camera.matrixAutoUpdate = camH.matrixAutoUpdate = false;
   const X = (u) => (u - G.hp[0]) * WM, Y = (v) => (G.hp[1] - v) * HM;
   const door = { x0: X(G.door[0]), x1: X(G.door[2]), top: Y(G.door[1]), bot: Y(G.door[3]) };
   const gap = { l: X(G.gap[0]), r: X(G.gap[1]) };
@@ -718,7 +778,7 @@ export function create(canvas, G, opt) {
     theme = t;
     for (const k of Object.keys(textures)) { if (textures[k]) textures[k].dispose(); delete textures[k]; }
     for (const k of ["facade", "leafL", "leafR", "plate", "reveal", "spill"]) if (imgs[k]) {
-      textures[k] = tex(imgs[k]);
+      textures[k] = banded(imgs[k]);
       /* the hall's plate isotropic: seen from inside, its LOD must follow the larger footprint (see uSoft) */
       textures[k].anisotropy = k === "plate" || k === "reveal" ? 1 : maxAniso;
     }
@@ -761,13 +821,27 @@ export function create(canvas, G, opt) {
   function track(o) { o.onBeforeRender = function (r, s, c, g, m) { m.uniforms.uMRest.value = rest.get(o) || IDENT; m.uniformsNeedUpdate = true; }; }
   scene.traverse((o) => { if (o.isMesh) track(o); });
 
-  const proj = new Matrix4(), view = new Matrix4();
-  /* v: { cw, ch: canvas CSS size; rect: {x, y, w, h} the scene's rest box on the canvas; tx, ty: pan; zc: camera
-     distance in rest units; u: the doors' opening, 0..1; spill: Noite lamplight 0..1 } */
-  function frame(v) {
-    if (!ready) return false;
+  const proj = new Matrix4(), projH = new Matrix4(), view = new Matrix4();
+  /* the drawing buffer at the canvas's size; ahead of the first frame (warm()) the lens's half-size targets too */
+  function size(v, rts) {
     const dpr = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR), key = v.cw + "x" + v.ch + "@" + dpr;
     if (key !== lastSize) { renderer.setPixelRatio(dpr); renderer.setSize(v.cw, v.ch, false); lastSize = key; }
+    if (rts) {
+      const bw = Math.max(1, Math.round(v.cw * dpr / 2)), bh = Math.max(1, Math.round(v.ch * dpr / 2));
+      if (rtA.width !== bw || rtA.height !== bh) { rtA.setSize(bw, bh); rtB.setSize(bw, bh); }
+      renderer.initRenderTarget(rtA); renderer.initRenderTarget(rtB);
+    }
+    return dpr;
+  }
+  /* v: { cw, ch: canvas CSS size; rect: {x, y, w, h} the scene's rest box on the canvas; tx, ty: pan; s: the CSS
+     camera's zoom; zc: the camera's distance in rest units; zh: the hall's camera's (zc if absent); u: the doors'
+     opening, 0..1; spill: Noite lamplight 0..1 } */
+  let lastV = null;
+  function frame(v) {
+    if (!ready) return false;
+    lastV = v;
+    if (fail.why) throw new Error("shader: " + fail.why);
+    const dpr = size(v);
     pose(v.u);
     const zc = v.zc * D, f = D * v.rect.w / WM * (v.s ? v.s * v.zc : 1), n = 0.02, far = 60;
     const px = v.rect.x + G.hp[0] * v.rect.w + v.tx, py = v.rect.y + G.hp[1] * v.rect.h + v.ty;
@@ -776,6 +850,15 @@ export function create(canvas, G, opt) {
     camera.projectionMatrixInverse.copy(proj).invert();
     camera.matrixWorld.makeTranslation(0, 0, zc);
     camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    /* the hall's own camera (v.zh): it keeps walking in once the doors are open (s^-0.12 all the way), its lens holding
+       the door's plane at s exactly as the main camera's does, so the hall meets the doorway where it did and keeps
+       the depth it had; the main camera (the leaves, the jambs, the facade) stays put once the doors are open (v.zc) */
+    const zhv = v.zh || v.zc, fh = D * v.rect.w / WM * (v.s ? v.s * zhv : 1);
+    projH.makePerspective(-px * n / fh, (v.cw - px) * n / fh, py * n / fh, -(v.ch - py) * n / fh, n, far);
+    camH.projectionMatrix.copy(projH);
+    camH.projectionMatrixInverse.copy(projH).invert();
+    camH.matrixWorld.makeTranslation(0, 0, zhv * D);
+    camH.matrixWorldInverse.copy(camH.matrixWorld).invert();
     for (const s of ["l", "r"]) {
       const p = leaves[s].head.clone().applyMatrix4(leaves[s].pivot.matrixWorld);
       headW[s].set(p.x, p.y, p.z, 0.031);
@@ -795,14 +878,15 @@ export function create(canvas, G, opt) {
     facadeMat.uniforms.uSpillK.value = theme === "noite" ? (v.spill || 0) : 0;
     facadeMat.uniforms.uOpenK.value = ok3;
     /* the lens stays on the door: as the camera walks in, the hall (already the plate's defocus, magnified) goes
-       softer still, up to P.blur CSS px (sigma) once the camera nears the door plane */
-    const fz = Math.min(1, Math.max(0, (1 - v.zc) / 0.6)), P = THEMES[theme], ez = fz * fz * (3 - 2 * fz), sig = P.blur * ez;
+       softer still, with the walk-in's zoom s (not the camera's distance, which stops once the doors are open: the hall
+       would stay sharp, a CG look, review r1): the curve it had when the camera dollied all the way, 1 - s^-0.12 */
+    const fz = Math.min(1, Math.max(0, (1 - Math.pow(v.s || 1 / v.zc, -0.12)) / 0.6)), P = THEMES[theme], ez = fz * fz * (3 - 2 * fz), sig = P.blur * ez;
     hallMat.uniforms.uSoft.value = 3.0 * ez;
     if (sig < 0.05) {                 /* near rest: the plate as it is, full size */
       if (bg.parent) scene.remove(bg);
       renderer.autoClear = true;
       renderer.setRenderTarget(null);
-      renderer.render(sceneH, camera);
+      renderer.render(sceneH, camH);
       renderer.autoClear = false;
       renderer.clearDepth();
       renderer.render(scene, camera);
@@ -811,7 +895,7 @@ export function create(canvas, G, opt) {
       const bw = Math.max(1, Math.round(v.cw * dpr / 2)), bh = Math.max(1, Math.round(v.ch * dpr / 2));
       if (rtA.width !== bw || rtA.height !== bh) { rtA.setSize(bw, bh); rtB.setSize(bw, bh); }
       renderer.setRenderTarget(rtA);
-      renderer.render(sceneH, camera);
+      renderer.render(sceneH, camH);
       /* the lens (never on the door): the separable kernel has sigma 1.64 r; wide radii are split into up to three
          passes of r <= 2.1 so its taps never leave gaps (sigma adds in quadrature) */
       const sh = sig * dpr / 2, it = Math.min(3, Math.max(1, Math.ceil(Math.pow(sh / (1.64 * 2.1), 2)))), r = sh / (1.64 * Math.sqrt(it));
@@ -826,7 +910,19 @@ export function create(canvas, G, opt) {
       if (!bg.parent) scene.add(bg);
       renderer.render(scene, camera);
     }
+    if (fail.why) throw new Error("shader: " + fail.why);   /* a program first used in this frame: hand back (site.js) */
     return true;
+  }
+  /* read-only, for the tests and ?diag: the last frame's doorway and leaves on the canvas (CSS px, x from its left edge):
+     the doorway's width at the door's plane, each leaf's horizontal extent (its mesh's corners, projected) */
+  const pv = new Vector3();
+  function probe() {
+    if (!lastV) return null;
+    const sx = (x, y, z, M) => { pv.set(x, y, z); if (M) pv.applyMatrix4(M); pv.applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix); return (pv.x + 1) / 2 * lastV.cw; };
+    const ext = (m) => { m.geometry.computeBoundingBox(); const b = m.geometry.boundingBox; let a = 1e9, z = -1e9;
+      for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const w of [b.min.z, b.max.z]) { const v = sx(x, y, w, m.matrixWorld); a = Math.min(a, v); z = Math.max(z, v); }
+      return [+a.toFixed(2), +z.toFixed(2)]; };
+    return { door: [+sx(door.x0, 0, 0).toFixed(2), +sx(door.x1, 0, 0).toFixed(2)], leafL: ext(leaves.l.leaf), leafR: ext(leaves.r.leaf), cam: [+(camera.matrixWorld.elements[14] / D).toFixed(5), +(camH.matrixWorld.elements[14] / D).toFixed(5)] };
   }
   /* the camera distance (rest units) at which the hall's far arch of light fills the canvas */
   function endZ(v) {
@@ -835,24 +931,134 @@ export function create(canvas, G, opt) {
     const d = Math.min(f * L[0] / (v.cw / 2), f * L[1] / (v.ch / 2), f * L[2] / (v.ch / 2)) * 0.85;
     return (far + d) / D;
   }
+  /* everything this mount put on the GPU (textures, render targets, geometries, programs); the context itself is let go
+     by the caller (mount().destroy()) */
   function dispose() {
     for (const k of Object.keys(textures)) if (textures[k]) textures[k].dispose();
+    rtA.dispose(); rtB.dispose();
+    const gs = new Set(), ms = new Set([blurMat, bgMat]);
+    for (const o of [scene, sceneH, quadScene]) o.traverse((m) => { if (m.isMesh) { gs.add(m.geometry); ms.add(m.material); } });
+    gs.add(bg.geometry);
+    for (const g of gs) g.dispose();
+    for (const m of ms) m.dispose();
     renderer.dispose();
   }
+  /* the GPU done with what the last step queued (a fence, polled between tasks, never waited on): a step's GPU work
+     (a band, the mip chain) would otherwise stall the next step's first call that waits for the GPU (75 ms at 4x) */
+  async function drained(gone) {
+    const gl = renderer.getContext();
+    let f = null;
+    try { f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } catch (e) { return; }
+    if (!f) return;
+    for (let t0 = performance.now(); performance.now() - t0 < 1500 && !(gone && gone());) {
+      await new Promise((ok) => setTimeout(ok, 16));
+      if (gl.isContextLost() || gl.getSyncParameter(f, gl.SYNC_STATUS) === gl.SIGNALED) break;
+    }
+    try { gl.deleteSync(f); } catch (e) {}
+  }
+  /* a program's first use (its uniforms looked up, its textures bound) in a step of its own: one mesh drawn into a
+     4 x 4 target, so the first real frame only draws */
+  let tiny = null;
+  function prime(m) {
+    if (!tiny) tiny = new WebGLRenderTarget(4, 4, { depthBuffer: true, stencilBuffer: false });
+    const was = m.parent, mw = m.matrixWorld.clone();
+    renderer.setRenderTarget(tiny);
+    renderer.render(m, camera);
+    renderer.setRenderTarget(null);
+    m.matrixWorld.copy(mw);
+    if (was) m.matrixWorldNeedsUpdate = true;
+  }
+  /* one texture onto the GPU: at once, or (a banded one) a band of rows per step, then its mip chain in a step of its own */
+  async function upload(t, pause, gone) {
+    const bm = t.userData.bitmap;
+    if (!bm) { renderer.initTexture(t); await drained(gone); return; }
+    renderer.initTexture(t);             /* the empty storage, every level */
+    const W = bm.width, H = bm.height, rows = Math.max(16, Math.floor(BAND / W)), o = { premultiplyAlpha: "none", colorSpaceConversion: "none" };
+    /* straight into the texture: no state query in the step (copyTextureToTexture reads five pixel-store values back,
+       each a round trip that waits for the GPU to finish the band before) */
+    const gl = renderer.getContext(), gt = renderer.properties.get(t).__webglTexture;
+    for (let y = 0; y < H; y += rows) {
+      const h = Math.min(rows, H - y), part = await createImageBitmap(bm, 0, y, W, h, o);
+      await pause();
+      if (gone()) { part.close(); return; }
+      renderer.state.bindTexture(gl.TEXTURE_2D, gt);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, y, gl.RGBA, gl.UNSIGNED_BYTE, part);
+      renderer.state.unbindTexture();
+      part.close();
+      await drained(gone);
+    }
+    await pause();
+    if (gone()) return;
+    renderer.state.bindTexture(gl.TEXTURE_2D, gt);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    renderer.state.unbindTexture();
+    delete t.userData.bitmap;
+    await drained(gone);
+  }
+  /* every program linked? (the driver's own word, LINK_STATUS; a lost context answers null, not false) */
+  function linked(stage) {
+    const gl = renderer.getContext();
+    for (const p of renderer.info.programs || []) {
+      if (fail.why) break;
+      if (p.program && gl.getProgramParameter(p.program, gl.LINK_STATUS) === false)
+        fail.why = (String(gl.getProgramInfoLog(p.program) || "").trim().split("\n")[0] || "a program did not link").slice(0, 80);
+    }
+    if (fail.why) throw staged(stage, "shader: " + fail.why);
+  }
   /* the first frame's work, done ahead in small tasks (each after pause(): the page still, at idle; the canvas
-     hidden): each texture's upload on its own, the programs compiled in parallel where the driver can
-     (KHR_parallel_shader_compile), then one frame per view */
-  async function warm(views, pause) {
-    for (const k of Object.keys(textures)) { if (textures[k]) { await pause(); if (textures[k]) renderer.initTexture(textures[k]); } }
+     hidden): each texture's upload on its own (the facade in bands), the programs compiled in parallel where the
+     driver can (KHR_parallel_shader_compile), else one material per step, their link checked, then one frame per view.
+     Each failure names its stage (site.js remembers it for the session). */
+  async function warm(views, pause, isGone) {
+    const gone = isGone || (() => false);
+    for (const k of Object.keys(textures)) {
+      const t = textures[k];
+      if (!t) continue;
+      await pause();
+      if (gone() || textures[k] !== t) continue;
+      try { await upload(t, pause, gone); } catch (e) { throw staged("upload", e); }
+      if (gone()) return;
+    }
     pose(0);
     const par = renderer.extensions.has("KHR_parallel_shader_compile");
+    const seen = new Set(), first = [];
+    for (const [sc, list] of [[sceneH, [sceneH]], [scene, [scene, bg]], [quadScene, [quadScene]]])
+      for (const root of list) root.traverse((m) => { if (m.isMesh && !seen.has(m.material)) { seen.add(m.material); first.push([m, sc]); } });
     try {
-      if (par) { await renderer.compileAsync(sceneH, camera); await pause(); await renderer.compileAsync(scene, camera); }
-      else { renderer.compile(sceneH, camera); await pause(); renderer.compile(scene, camera); }
-    } catch (e) {}
-    for (const v of views) { await pause(); frame(v); }
+      if (par) {
+        await renderer.compileAsync(sceneH, camera); await pause();
+        await renderer.compileAsync(scene, camera); await pause();
+        await renderer.compileAsync(quadScene, camera); await renderer.compileAsync(bg, camera, scene);
+      } else {
+        /* a material per step: the first mesh that uses it, compiled with its scene's lights (none: the scene's own);
+           each checked in its own step: the driver compiles while the page goes on, and the first query of a program
+           waits for it */
+        for (const [m, sc] of first) { await pause(); if (gone()) return; renderer.compile(m, camera, sc); linked("compile"); }
+      }
+    } catch (e) { throw staged("compile", e); }
+    await pause();
+    if (gone()) return;
+    linked("compile");
+    pose(0.3);
+    for (const [m] of first) {
+      await pause();
+      if (gone()) return;
+      try { prime(m); } catch (e) { throw staged("warm", e); }
+      await drained(gone);
+    }
+    if (tiny) { tiny.dispose(); tiny = null; }
+    linked("warm");
+    if (views.length) { await pause(); if (gone()) return; size(views[0], true); await drained(gone); }
+    for (const v of views) {
+      await pause();
+      if (gone()) return;
+      try { frame(v); } catch (e) { throw staged("warm", e); }
+      await drained(gone);
+    }
+    linked("warm");
   }
-  return { setTheme, frame, endZ, warm, dispose, renderer, scene, sceneH, get theme() { return theme; }, get ready() { return ready; } };
+  return { setTheme, frame, endZ, warm, dispose, probe, renderer, scene, sceneH, msaa, fail, get theme() { return theme; }, get ready() { return ready; },
+    get dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); } };
 }
 
 /* ---------------------------------------------------------------- the page (site.js loads this module lazily)
@@ -861,10 +1067,13 @@ export function create(canvas, G, opt) {
    already fetched for the walk-in, the hall plate, the doorway's shade and the lamplight at the size shown). No
    texture is resized: the facade is the 2388 x 2634 master the page already holds for the walk-in (resizing it to
    2048 cost a 370 ms main-thread task at 4x CPU throttle and saved no byte); anything larger than 4096 px would be
-   scaled down. Each file is decoded off the main thread (createImageBitmap from its bytes, from the HTTP cache: one
-   made from the page's <img> re-decoded the master on the main thread, 126 ms at 4x throttle, review r1), then
-   uploaded, compiled and drawn once in small steps, each taken only while the page is still (env.quiet: no scroll
-   being followed, no flight) and at idle, so none lands in a gesture; the decoded copies are let go once on the GPU.
+   scaled down. Each file is decoded off the main thread (createImageBitmap from its bytes, from the HTTP cache, in a
+   worker: one made from the page's <img> re-decoded the master on the main thread, 126 ms at 4x throttle, review r1),
+   then uploaded, compiled and drawn once in small steps, each taken only while the page is still (env.quiet: no
+   scroll being followed, no flight, no input waiting) and at idle, the next one only once the GPU has done the last
+   (a fence): the context (mount()), three.js on it, the scene, the theme, each texture (the facade in bands of rows,
+   then its mips), each program (and its link), each program's first use, the drawing buffer, two frames. The decoded
+   copies are let go once on the GPU.
    A theme change does the same for the new theme; until it is done, draw() answers false and the page keeps its CSS
    entrance. A lost context ends this mount: the canvas goes, the page goes on with its CSS entrance (onLost) and may
    mount again later (site.js). */
@@ -874,11 +1083,15 @@ export function mount(env) {
   canvas.className = "porta__3d";
   canvas.setAttribute("aria-hidden", "true");
   env.stage.insertBefore(canvas, env.stage.firstChild);
-  let core;
-  try { core = create(canvas, env.G, { force: env.force }); } catch (e) { canvas.remove(); throw e; }
-  let dead = false, have = null, want = null;
-  const cache = {}, root = document.documentElement;
-  canvas.addEventListener("webglcontextlost", function () { dead = true; canvas.remove(); if (env.onLost) env.onLost(); }, false);
+  /* the context now (its own task); the scene, its geometry and its materials in the next step (use()) */
+  const opt = { force: env.force, maxDpr: env.maxDpr };
+  let ctx, core = null;
+  try { ctx = context(canvas, opt); } catch (e) { canvas.remove(); throw e; }
+  let dead = false, gone = false, have = null, want = null, building = null;
+  const cache = {}, root = document.documentElement, gl = ctx.gl;
+  /* iOS takes a hidden page's context, and any browser may under memory pressure: the canvas goes, the page decides
+     (site.js: rebuilt later if the page was in the background, else the CSS entrance for the session) */
+  canvas.addEventListener("webglcontextlost", function () { dead = true; canvas.remove(); if (env.onLost && !gone) env.onLost(); }, false);
   const idle = (f) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: 500 }) : setTimeout(f, 16));
   const still = () => !env.quiet || env.quiet();
   /* the next step: once the page is still, at idle (and still then) */
@@ -887,11 +1100,35 @@ export function mount(env) {
   });
   const loaded = (im) => (im.complete && im.naturalWidth ? Promise.resolve(im)
     : new Promise((ok, no) => { im.addEventListener("load", () => ok(im), { once: true }); im.addEventListener("error", no, { once: true }); }));
+  /* the photographs are decoded in a worker: createImageBitmap(blob) on the page's own thread still spent 60-80 ms of
+     it on the facade's master (4x CPU throttle, review, door finish). A small worker made from a blob (no file to
+     fetch), fetching from the HTTP cache; where it cannot run (no workers, no createImageBitmap in them, an error), the
+     page's own thread, as before. */
+  let wk = null, wid = 0;
+  const wq = new Map();
+  function worker() {
+    if (wk !== null) return wk;
+    try {
+      const src = "onmessage=async(e)=>{const d=e.data;try{const b=await(await fetch(d.u)).blob();const m=await createImageBitmap(b,d.o);postMessage({i:d.i,m},[m])}catch(x){postMessage({i:d.i,x:String(x&&x.message||x)})}}";
+      const u = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+      wk = new Worker(u);
+      wk.__u = u;
+      wk.onmessage = (e) => { const c = wq.get(e.data.i); if (!c) return; wq.delete(e.data.i); if (e.data.m) c[0](e.data.m); else c[1](new Error(e.data.x)); };
+      wk.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); for (const c of wq.values()) c[1](new Error("worker")); wq.clear(); wk = false; };
+    } catch (e) { wk = false; }
+    return wk;
+  }
+  function decodeOff(url, o) {
+    const w = worker();
+    if (!w) return Promise.reject(new Error("no worker"));
+    return new Promise((ok, no) => { const i = ++wid; wq.set(i, [ok, no]); w.postMessage({ i, u: new URL(url, location.href).href, o }); });
+  }
   async function bitmap(url) {
     const o = { premultiplyAlpha: "none", colorSpaceConversion: "none" };
     if (window.createImageBitmap && window.fetch) {
       try {
-        let bm = await createImageBitmap(await (await fetch(url)).blob(), o);
+        let bm;
+        try { bm = await decodeOff(url, o); } catch (e) { bm = await createImageBitmap(await (await fetch(url)).blob(), o); }
         const k = Math.min(1, MAXTEX / Math.max(bm.width, bm.height));
         if (k < 1) { const r = await createImageBitmap(bm, Object.assign({ resizeWidth: Math.round(bm.width * k), resizeHeight: Math.round(bm.height * k), resizeQuality: "high" }, o)); bm.close(); bm = r; }
         return bm;
@@ -942,11 +1179,25 @@ export function mount(env) {
   const drop = (t) => { const c = cache[t]; if (!c) return; delete cache[t]; c.then((o) => { for (const v of Object.values(o)) if (v && v.close) v.close(); }, () => {}); };
   function use(t) {
     want = t;
-    return load(t).then(async (imgs) => {
+    return load(t).catch((e) => { throw staged("textures", e); }).then(async (imgs) => {
       if (dead || want !== t) { if (want !== t) drop(t); return; }
       have = null;                        /* draw() answers false until the new theme is on the GPU */
-      core.setTheme(t, imgs);
-      await core.warm(env.views ? env.views(core.endZ) : [], pause);
+      if (!core) {                        /* once, whichever theme asks first (a change mid-mount waits for it) */
+        building = building || (async () => {
+          await pause();
+          if (dead) return;
+          if (!ctx.renderer) try { renderer3(ctx); } catch (e) { throw staged("context", e); }
+          await pause();
+          if (dead) return;
+          try { core = create(ctx, env.G, opt); } catch (e) { throw staged("create", e); }
+        })();
+        await building;
+        if (dead || !core) return;
+      }
+      await pause();
+      if (dead || want !== t) return;
+      try { core.setTheme(t, imgs); } catch (e) { throw staged("theme", e); }
+      await core.warm(env.views ? env.views(core.endZ) : [], pause, () => dead || want !== t);
       if (dead || want !== t) return;
       drop(t);                            /* uploaded: the decoded copies go (a later change decodes again, from the cache) */
       have = t;
@@ -959,10 +1210,32 @@ export function mount(env) {
     ready: use(env.theme()),
     canvas,
     get ok() { return !dead && have === env.theme(); },
-    endZ: (v) => core.endZ(v),
-    /* draws the frame; false when it cannot (no context, or the theme's textures are not in yet) */
-    draw(v) { if (dead || have !== env.theme()) return false; try { return core.frame(v); } catch (e) { return false; } },
-    destroy() { mo.disconnect(); dead = true; for (const k of Object.keys(cache)) drop(k); core.dispose(); canvas.remove(); }
+    endZ: (v) => (core ? core.endZ(v) : 1),
+    probe: () => (core && have ? core.probe() : null),
+    /* draws the frame; false when it cannot (no context, or the theme's textures are not in yet). An exception is
+       the page's to judge (site.js hands back to the CSS entrance for the session) */
+    draw(v) {
+      if (dead || have !== env.theme()) return false;
+      try { return core.frame(v); } catch (e) { if (env.onError) env.onError(e); return false; }
+    },
+    /* the context is gone, with or without its event (a page back from the background) */
+    lost() { return dead || gl.isContextLost(); },
+    dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); },
+    msaa: ctx.msaa,
+    /* everything goes at once: the GPU's resources and the context itself (WEBGL_lose_context), so its drawing buffer
+       (MSAA on a phone: about 50 MB on an iPhone at 2x) is freed now, not whenever the canvas is collected; a hand-back
+       is often the sign of memory or GPU pressure (review, door finish) */
+    destroy() {
+      if (gone) return;
+      gone = true;
+      mo.disconnect(); dead = true; for (const k of Object.keys(cache)) drop(k);
+      if (wk) { try { wk.terminate(); URL.revokeObjectURL(wk.__u); } catch (e) {} wk = false; }
+      for (const c of wq.values()) c[1](new Error("gone"));
+      wq.clear();
+      try { if (core) core.dispose(); else if (ctx.renderer) ctx.renderer.dispose(); } catch (e) {}
+      try { if (!gl.isContextLost()) { const x = gl.getExtension("WEBGL_lose_context"); if (x) x.loseContext(); } } catch (e) {}
+      canvas.remove();
+    }
   };
 }
 if (typeof document !== "undefined" && document.currentScript === null && typeof window !== "undefined") {
