@@ -109,7 +109,12 @@ svg { display: block; }
   line-height: var(--leading-ui);
   letter-spacing: 0;
   color: var(--color-text-muted);
-  white-space: nowrap;
+  /* one line at every normal size; with very large text (resize text to 200%) it wraps inside the screen instead of
+     running off it (review r1: clipped at 320px, and the page scrolled sideways), and site.js moves what is under
+     it (--bar-h, below) */
+  inline-size: max-content;
+  max-inline-size: calc(100vw - 2 * var(--gutter));
+  text-wrap: balance;
 }
 :root:not([data-sol]) .controls__note,
 [data-theme="dia"] .controls__note-noite,
@@ -168,7 +173,7 @@ svg { display: block; }
   flex-direction: column;
   align-items: center;
   min-block-size: 0;
-  padding-block-start: var(--space-4);
+  padding-block-start: calc(var(--rhythm-air) - var(--space-2));   /* the bar's tick to the crown: air, less the tick's own */
   padding-inline:
     max(var(--gutter), env(safe-area-inset-left))
     max(var(--gutter), env(safe-area-inset-right));
@@ -178,66 +183,65 @@ svg { display: block; }
   flex-direction: column;
   align-items: center;
   inline-size: 100%;
-  margin-block: auto var(--space-5);
+  margin-block: auto var(--rhythm-air);   /* the action to the façade's wall */
   text-align: center;
 }
 
 /* ---- Lockup (h1): the crest over the wordmark and its line, as on the identity pitch ------------------
-   The crest is the original emblem. «A Brazileira» is the pitch's reading of the façade's 1930s lettering: a heavy
-   flared Roman with a large A, the ornamental B, RAZILEIR in capitals at 72% of their height (the R's kicked out on
-   the baseline) and a large A to close, as drawn. Under it, close, in spaced Roman capitals: BOUTIQUE HOTEL · TORRES
-   VEDRAS on one line where the wordmark is large (the home page in the split layout, from 1024 x 700), on two lines
-   everywhere else. Nothing in the lockup is held on one line by force: with text enlarged (200%), the wordmark
-   breaks after its A, the line falls back to two lines when one does not fit the column (container query, in the
-   wordmark's em), and each label line may break between its words. The name is read once, from the hidden text
-   «A Brazileira»; the drawn letters are aria-hidden (one text run, so no screen reader splits «A B» / «razileir»). */
+   The crest is the current emblem (the pitch's shield monogram is on hold). «A Brazileira» is the pitch's own
+   lettering (the façade's 1930s letters read as a heavy flared Roman: a large A, the ornamental B, RAZILEIR in
+   smaller capitals with kicked R's, a large A to close), drawn as an inline SVG in the logo's ink. Under it, close,
+   in widely spaced Roman capitals: BOUTIQUE HOTEL · TORRES VEDRAS on one line where the wordmark is large (the
+   home page in the split layout, from 1024 x 700), on two lines everywhere else. Sizes are the pitch's ratios of
+   one width (--lockup-wordmark, in the lockup's em). Nothing is held at size by force: with text enlarged (200%)
+   the wordmark never grows past the column (max-inline-size), the line falls back to two lines when one does not
+   fit (container query) and each label line may break between its words. The name is read once, from the hidden
+   text «A Brazileira»; the drawn letters are aria-hidden. */
 .lockup {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: var(--font-display);
   font-size: var(--size-wordmark);
-  font-weight: var(--weight-wordmark);
-  line-height: var(--leading-lockup);
-  text-transform: uppercase;
-  letter-spacing: 0;
-  color: var(--color-text-strong);
+  color: var(--color-brand-ink);
 }
 .lockup__emblem {
   inline-size: var(--lockup-emblem);
   aspect-ratio: 200 / 228;
-  margin-block-end: 0.3em;
+  margin-block-end: var(--lockup-emblem-pull);
   color: var(--color-mark);
 }
 .lockup__emblem svg { inline-size: 100%; block-size: 100%; }
 .lockup__name {
-  letter-spacing: var(--track-wordmark);
-  margin-inline-end: calc(var(--track-wordmark) * -1);   /* optical centre */
-  margin-block-end: var(--lockup-pull);                  /* the line sits close under the letters, as on the pitch */
+  display: block;
+  inline-size: var(--lockup-wordmark);
+  max-inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 2316.2 / 369;               /* the drawing's own box: no layout shift, whatever loads first */
+  margin-block-end: var(--lockup-under);    /* the line's capitals sit this far under the R's kick, as on the pitch */
+  overflow: visible;
 }
-.lockup__sc { font-family: var(--font-display-sc); font-size: var(--lockup-sc); }
-.lockup__end { font-family: var(--font-display-end); }   /* the closing A: its own fallback width, so each run keeps its start */
 .lockup__label {
   display: block;
-  margin-block-start: var(--lockup-label-gap);
+  margin-block-start: var(--lockup-cap-top);   /* measured from the capitals, not from the line box */
   font-family: var(--font-label-lockup);
   font-weight: var(--weight-label);
   font-size: var(--lockup-label);
   line-height: var(--leading-label);
   letter-spacing: var(--track-label);
+  text-transform: uppercase;
   text-align: center;
-  color: var(--color-text-strong);
 }
 .lockup__kind, .lockup__place { display: block; margin-inline-end: calc(var(--track-label) * -1); }
 .lockup__place { font-family: var(--font-label-place); }   /* each piece has a fallback matched to its own width */
 .lockup__dot { display: none; font-family: var(--font-label-dot); color: var(--color-mark); }
-/* home, split layout from 1024 x 700: one line with « · », as on the pitch (13.7px at a 72px wordmark, never under
-   11.2px, never wider than 0.9 of the wordmark), only while it fits the text column: the lockup is the container
-   and its em is the wordmark size, so enlarged text (whose 0.7rem floor grows) drops it back to two lines */
+/* home, split layout from 1024 x 700: one line with « · », as on the pitch (capitals 0.019 of the wordmark's width,
+   never under 11.2px), only while it fits the text column: the lockup is the container and its em is the lockup
+   size, so enlarged text (whose 0.7rem floor grows) drops it back to two lines. The line is 29.7 of its own size
+   wide (Cinzel at 0.42em tracking): 5.47em at 0.0271 of a 6.8em wordmark, 20.8rem at the 0.7rem floor */
 @media (min-width: 64em) and (min-height: 43.75em) {
   .porta .lockup { align-self: stretch; container-type: inline-size; }
-  @container (min-width: 5.3em) and (min-width: 19.5rem) {
-    .porta .lockup__label { font-size: var(--lockup-label-line); margin-block-start: var(--lockup-label-line-gap); margin-inline-end: calc(var(--track-label) * -1); }
+  @container (min-width: 5.52em) and (min-width: 21rem) {
+    .porta .lockup__label { font-size: var(--lockup-label-line); margin-inline-end: calc(var(--track-label) * -1); }
     .porta .lockup__kind, .porta .lockup__place { display: inline-block; margin-inline-end: 0; }
     .porta .lockup__dot { display: inline; }
   }
@@ -247,7 +251,7 @@ svg { display: block; }
 /* the sentence the house says: EB Garamond, the largest text after the logo */
 .lede {
   max-inline-size: var(--measure-lede);
-  margin-block-start: var(--space-5);
+  margin-block-start: var(--rhythm-break);   /* the identity, then what it says */
   font-family: var(--font-lede);
   font-weight: var(--weight-text);
   font-size: var(--size-lede);
@@ -257,26 +261,19 @@ svg { display: block; }
   color: var(--color-text);
   text-wrap: balance;
 }
-/* 320-359px phones, Portuguese: one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada /
-   para receber hóspedes.»). In EB Garamond the first phrase is 12.6em and the first phrase with «está» 14.2em: a
-   plain wrap at 13.4em lands on those breaks with 6% to spare either side, so the web font and its fallback break
-   alike (balance would pick a different split for each). From 360px: two balanced lines. */
-@media (min-width: 20em) and (max-width: 22.49em), (orientation: landscape) and (max-height: 31.25em) and (max-width: 42.49em) {
-  .lede:lang(pt) { max-inline-size: 13.4em; text-wrap: wrap; }   /* also the narrow column of small landscape phones */
-}
 /* the status is a postscript to the sentence: close under it, brass, interface size. The action stands apart
    (more space above, strong ink, underline), so the two never compete; weight never separates them */
 .status {
-  margin-block-start: var(--space-2);
+  margin-block-start: var(--rhythm-pair);
   font-family: var(--font-status);
   color: var(--color-accent-text);
 }
 /* on phones the action is set at the status's size (17px): there the status keeps the quieter ink in Noite, where
-   brass is the most saturated text on the screen, so «Abre brevemente.» never weighs as much as the action */
+   brass is the most saturated text on the screen, so «Abrimos brevemente.» never weighs as much as the action */
 @media (max-width: 56.24em) { .status { color: var(--color-status-small, var(--color-accent-text)); } }
 
 /* ---- The one action: a text link-button to the waiting list -------------------- */
-.cta-row { margin-block-start: var(--space-4); }
+.cta-row { margin-block-start: var(--rhythm-apart); }
 .cta {
   display: inline-flex;
   align-items: center;
@@ -342,8 +339,8 @@ svg { display: block; }
    The doorway is a photograph cut into layers (photo.py, assets/photo/photo.json), each placed by its rect as a
    fraction of the facade image inside one box (.scene) with the facade's aspect ratio:
      plate (the hall beyond) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent) < spill
-   The facade's outer margin converges to the page colour (Papel by day, Noite by night), so the photo has no edge
-   on the page. Each layer holds a picture per theme; the theme's tokens show one (--t-dia, --t-noite). */
+   The page IS the photograph's wall (--parede / --parede-noite, sampled from its plaster; the facade's wall is graded
+   to that tone and its outer margin is exactly it), so the photo has no edge on the page at any size or zoom. Each layer holds a picture per theme; the theme's tokens show one (--t-dia, --t-noite). */
 .entrance {
   flex: 1 1 0;
   align-self: stretch;
@@ -378,10 +375,17 @@ svg { display: block; }
   aspect-ratio: var(--scene-ratio);
   inset-inline-start: calc(var(--scene-w) * (0.5 - var(--scene-axis)));
   transform-origin: var(--hp-x) var(--hp-y);       /* the camera walks in towards the hall point */
-  /* the placeholder until the photo has loaded (a 24px image, drawn blurred); site.js drops it after the load */
-  background: var(--photo-lqip) center / 100% 100% no-repeat;
 }
-.scene.is-loaded { background: none; }
+/* the placeholder until the photo has loaded (a 24px image, drawn blurred): its own layer over the street and under
+   the hall, the door and the facade (which cover it wherever they are drawn), inset by the facade's outer fade so it
+   never shows through that fade (photo.py › lqip_vars: the fade's widest, 10% of the width at the top and sides since
+   fix r1; until the load the street stands in for the margins, which are the street anyway); site.js drops it after
+   the load (without JavaScript the layers above cover it) */
+.ph--lqip {
+  --x: var(--lqip-x); --y: var(--lqip-y); --w: var(--lqip-w); --h: var(--lqip-h);
+  background: var(--photo-lqip) var(--lqip-pos) / var(--lqip-size) no-repeat;
+}
+.scene.is-loaded .ph--lqip { display: none; }
 /* until the facade is in, the placeholder alone stands for the whole scene: the small doorway files (leaves, the
    hall) would otherwise paint sharp over the blur, doors floating without their arch (review r1). With JavaScript
    only (data-theme on the root is set by the head script): without it nothing marks the load, and nothing is
@@ -398,6 +402,55 @@ svg { display: block; }
   block-size: var(--h);
 }
 .ph--facade { --x: 0%; --y: 0%; --w: 100%; --h: 100%; }
+/* The street (photo.py › street): the wall and the paving the photograph stands in, edge to edge on every screen, in
+   one box that reaches three scene widths left, two right and 1.8 scene heights down, so it moves with the camera like
+   the photograph. Backgrounds, top to bottom: two lights (by night: the lantern's and the doorway's, radial gains
+   blended color-dodge, so the cobbles under them keep their contrast; none by day), the paving strip (repeat-x at
+   exactly one scene width, the copy under the facade on its own paving) and the wall (a vertical gradient: the page
+   colour up top, a touch deeper by the paving; below the strip, the colour the near paving blurs into). The facade's
+   margins are graded into this same composite, so the photograph has no edge. The strip's file follows the screen
+   (a phone's scene is at most ~1290 device px wide, a desktop's ~1880), AVIF where image-set() takes a type. */
+.ph--street {
+  --x: var(--street-x); --y: var(--street-y); --w: var(--street-w); --h: var(--street-h);
+  --street-strip: var(--street-1080);
+  background-color: var(--street-below);
+  background-image: var(--street-glow-a), var(--street-glow-b), var(--street-strip), var(--street-wall);
+  --street-tile: var(--street-size);
+  background-repeat: no-repeat, no-repeat, repeat-x, no-repeat;
+  background-size: 100% 100%, 100% 100%, var(--street-tile), 100% 100%;
+  background-position: 0 0, 0 0, var(--street-pos), 0 0;
+  background-blend-mode: color-dodge, color-dodge, normal, normal;
+}
+@media (max-resolution: 2.49dppx) { .ph--street { --street-strip: var(--street-720); } }
+@media (min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em) {
+  .ph--street { --street-strip: var(--street-720); }
+}
+@media (min-width: 100em), (min-width: 56.25em) and (min-resolution: 1.5dppx), (orientation: landscape) and (min-width: 37.5em) and (min-resolution: 2.5dppx) {
+  .ph--street { --street-strip: var(--street-1080); }
+}
+@media (min-width: 56.25em) and (min-resolution: 1.5dppx) and (min-height: 43.75em) { .ph--street { --street-strip: var(--street-1600); } }
+@supports (background-image: image-set(url("x.avif") type("image/avif"))) {
+  .ph--street { --street-strip: var(--street-1080-avif); }
+  @media (max-resolution: 2.49dppx) { .ph--street { --street-strip: var(--street-720-avif); } }
+  @media (min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em) {
+    .ph--street { --street-strip: var(--street-720-avif); }
+  }
+  @media (min-width: 100em), (min-width: 56.25em) and (min-resolution: 1.5dppx), (orientation: landscape) and (min-width: 37.5em) and (min-resolution: 2.5dppx) {
+    .ph--street { --street-strip: var(--street-1080-avif); }
+  }
+  @media (min-width: 56.25em) and (min-resolution: 1.5dppx) and (min-height: 43.75em) { .ph--street { --street-strip: var(--street-1600-avif); } }
+}
+/* A phone held upright sees less than one scene width of street, so the 1-width strip never shows a repeat there.
+   Wider screens (tablets, landscape, desktops: up to 2.7 scene widths at 2560 px) take the strip three scene widths
+   wide (photo.json › street › strip3: the same strip, then two quilted from it), at the same densities: the ladder
+   above picks the density, this swaps in the wider files (review r1: the paving repeated every scene width) */
+@media (min-width: 37.5em), (orientation: landscape) {
+  .ph--street {
+    --street-tile: var(--street-size3, var(--street-size));
+    --street-720: var(--street3-720); --street-1080: var(--street3-1080); --street-1600: var(--street3-1600);
+    --street-720-avif: var(--street3-720-avif); --street-1080-avif: var(--street3-1080-avif); --street-1600-avif: var(--street3-1600-avif);
+  }
+}
 .ph--hall { --x: var(--door-x); --y: var(--door-y); --w: var(--door-w); --h: var(--door-h); overflow: clip; }   /* the doorway */
 /* a ring of the frame's own walnut just outside the doorway, under the facade (which covers it: its hole is 4 master px
    smaller than the doorway): where the compositor leaves a sub-pixel gap at the leaves' outer edges (promoted layers
@@ -482,6 +535,9 @@ picture.t-noite { display: var(--t-noite); }
   min-block-size: 100vh;
   min-block-size: 100svh;
   padding-block-start: calc(var(--topbar-pad) + var(--target) + var(--sol-h, 0px));   /* the top bar overlays this */
+  /* ... unless the bar is taller than that: with very large text its two groups wrap to two rows and the sun note to
+     two lines; site.js then sets --bar-h to the bar's real height (it is unset at every normal size) */
+  padding-block-start: max(calc(var(--topbar-pad) + var(--target) + var(--sol-h, 0px)), var(--bar-h, 0px));
 }
 .porta__frame > .stage { flex: 1 1 auto; padding-block-end: var(--hairline); }
 .porta__band {
@@ -499,7 +555,7 @@ picture.t-noite { display: var(--t-noite); }
   inline-size: var(--target);
   block-size: var(--target);
   margin-block: calc((1lh - var(--target)) / 2);
-  color: var(--color-text-muted);
+  color: var(--color-text-strong);          /* it lies on the paving now (the street): the muted ink was lost in the cobbles */
   -webkit-tap-highlight-color: transparent;
 }
 .porta__cue svg {
@@ -508,7 +564,7 @@ picture.t-noite { display: var(--t-noite); }
   overflow: visible;
   fill: none;
   stroke: currentColor;
-  stroke-width: var(--stroke-cue);          /* a hand-drawn chevron at a pen's weight, not an icon's stroke */
+  stroke-width: calc(var(--stroke-cue) * 1.3);   /* a hand-drawn chevron at a pen's weight, a little firmer on the stones */
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -537,6 +593,21 @@ picture.t-noite { display: var(--t-noite); }
   min-block-size: calc(100lvh - var(--stick, 0px));
 }
 .porta__probe { position: absolute; inset-block-start: 0; inline-size: 0; block-size: 100vh; block-size: 100svh; visibility: hidden; }
+/* the 3D entrance (site.js, door3d.js): one canvas over the whole pinned stage, under the text and the cue, over the
+   photograph's layers. Hidden until it draws (site.js shows it while 0 < r < the flat colour and hides the layers it
+   replaces); never a target. */
+.porta__3d {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* the words and the cue stand on the street (which reaches under them), and over the 3D canvas */
+.porta .intro, .porta .porta__band { position: relative; z-index: 2; }
 
 /* ==== Waiting list ======================================================================= */
 .surface-hall { background: var(--color-bg); -webkit-font-smoothing: var(--smoothing); -moz-osx-font-smoothing: var(--smoothing-moz); }
@@ -722,7 +793,9 @@ picture.t-noite { display: var(--t-noite); }
 }
 .check__text { min-inline-size: 0; }
 .check__more { display: block; }                      /* «Ler a nota de privacidade.» on its own line */
-.check__text .link-inline { white-space: nowrap; }   /* «nota de privacidade» reads and taps as one unit */
+/* «nota de privacidade» reads and taps as one unit (an inline block moves to the next line whole); with very large
+   text, wider than the line, it wraps inside itself instead of running off a 320px screen (review r1, 200% text) */
+.check__text .link-inline { display: inline-block; max-inline-size: 100%; white-space: normal; text-wrap: balance; }
 /* its tap area reaches 44px tall into the free space under the line (never up into the consent sentence,
    which toggles the box), without moving anything or enlarging the focus ring */
 .check__more .link-inline { position: relative; }
@@ -840,7 +913,7 @@ picture.t-noite { display: var(--t-noite); }
   font-variant-numeric: var(--num-text);    /* old-style figures in the reading text: art. 6.º, 24 meses */
 }
 .notice__home { display: flex; justify-content: center; text-decoration: none; }
-.lockup--small { font-size: var(--size-lockup-min); }          /* 24px wordmark: the minimum size of the lockup */
+.lockup--small { font-size: var(--size-lockup-min); }          /* the lockup at its minimum (30px em) */
 .notice__title { margin-block-start: var(--space-8); max-inline-size: var(--measure-title); }
 .notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); font-size: var(--size-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
 .notice__item { margin-block-start: var(--space-6); }
@@ -890,16 +963,23 @@ picture.t-noite { display: var(--t-noite); }
       max(var(--gutter), env(safe-area-inset-left), calc((100% - var(--container)) / 2))
       max(var(--gutter), env(safe-area-inset-right), calc((100% - var(--container)) / 2));
   }
+  /* the same four intervals, larger: pair 12, apart 32 (ink about 47 with the 21px action), break 56-72 (ink about
+     64-80); the column stands on the wall, its last line well clear of the paving (the scene's foot is 5.5% paving) */
+  :root { --rhythm-pair: var(--space-3); --rhythm-apart: var(--space-6); --rhythm-break: clamp(3.5rem, 8svh, 4.5rem); }
+  /* the column's optical centre sits a little above the middle of the wall (from the top of the screen to the paving's
+     line), not of the stage, which runs on below the paving: the padding under it grows with the height (10svh),
+     never so far that a short laptop pushes the crown under the top bar */
   .intro {
     align-self: center;
     margin-block: 0;
-    padding-block-end: var(--space-8);
+    padding-block-end: max(var(--space-8), min(calc(var(--space-8) + 10svh), calc(100svh - 40rem)));
   }
-  .lede { margin-block-start: var(--space-7); }
-  .status { margin-block-start: var(--space-3); }
-  .cta-row { margin-block-start: var(--space-7); }   /* the one action stands apart from the status: 48px */
   .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }
   .scene { inset-inline-start: 0; }
+  /* the scroll cue lies on the paving here too, seen from further away and at 1x: at the phone's 14px and 1.5px it
+     was the size and weight of the cobbles' own joints and sank into them (review r1); larger and firmer, it reads
+     as a mark on the stones, not one of them (no plate behind it) */
+  .porta__cue svg { inline-size: 1.25rem; stroke-width: calc(var(--stroke-cue) * 1.9); }
   /* the top bar lines up with the composition (container) on wide screens instead of the window's edges */
   .topbar {
     padding-inline:
@@ -910,26 +990,22 @@ picture.t-noite { display: var(--t-noite); }
 
 /* Landscape phones: compact split; the page may scroll a little. */
 @media (orientation: landscape) and (max-height: 31.25em) {
-  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); }
+  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); --rhythm-pair: var(--space-1); --rhythm-apart: 0px; --rhythm-break: var(--space-5); }
   .stage { padding-block-start: var(--space-2); column-gap: var(--space-6); }
-  .lockup { font-size: var(--size-lockup-short); }   /* never under the 24px minimum of the logo */
-  .intro { padding-block-end: var(--space-4); }
-  .lede { margin-block-start: var(--space-4); font-size: var(--size-read); }
-  .status { margin-block-start: var(--space-1); }
+  .lockup { font-size: var(--size-lockup-short); }   /* never under the logo's minimum */
+  .intro { padding-block-end: var(--space-7); }      /* the action stays on the wall, clear of the paving */
+  .lede { font-size: var(--size-read); }
   .entrance { min-block-size: 16rem; }
-  .cta-row { margin-block-start: 0; }
   .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); }
 }
 
 /* Short portrait phones (320 x 568-640): tighter rhythm; the page may scroll. */
 @media (orientation: portrait) and (max-height: 42.5em) {
-  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); }
-  .stage { padding-block-start: var(--space-2); }
-  .lede { margin-block-start: var(--space-4); }
-  .status { margin-block-start: var(--space-2); }
-  .intro { margin-block-end: var(--space-3); }
+  /* the same intervals, in proportion: pair 8, apart 12, break 24-32, air 20 */
+  :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); --rhythm-apart: var(--space-3);
+    --rhythm-break: clamp(1.5rem, 4.8svh, 2rem); --rhythm-air: 1.25rem; }
+  .stage { padding-block-start: var(--space-3); }
   .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
-  .cta-row { margin-block-start: var(--space-2); }   /* the action still stands apart from the status */
   .entrance { --scene-clear: var(--space-4); }       /* the photo's faded top stays clear of the action */
   .porta__band { padding-block: var(--space-3) max(var(--space-3), env(safe-area-inset-bottom)); }
 }
@@ -937,8 +1013,8 @@ picture.t-noite { display: var(--t-noite); }
    tighter rhythm, no scroll cue, and a photograph that takes the height that is left, so the whole door and its
    steps are inside the first screen (tested: the photo's foot is never below the small viewport). */
 @media (orientation: portrait) and (max-height: 37.5em) {
+  :root { --rhythm-break: var(--space-4); --rhythm-air: var(--space-4); }
   .lockup { font-size: var(--size-lockup-min); }
-  .lede { margin-block-start: var(--space-3); }
   .entrance { min-block-size: clamp(9rem, 28svh, 18rem); }
   .porta__band { display: none; }   /* no room for the cue: the photo keeps the height (the action invites on) */
 }
@@ -952,7 +1028,7 @@ picture.t-noite { display: var(--t-noite); }
   .surface-hall { --color-text-muted: var(--tinta); }
 }
 @media (forced-colors: active) {
-  .lockup__emblem, .lockup__place, .status { color: CanvasText; }
+  .lockup__emblem, .lockup__name, .lockup__place, .status { color: CanvasText; }
   .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
   /* forced colours: the photograph stays (images keep their colours); the light layers go */
   .ph--spill, .leaf__shade, .porta__flood { display: none; }

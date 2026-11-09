@@ -3,33 +3,40 @@ version: alpha
 name: A Brazileira · Boutique Hotel
 description: >-
   A coming-soon page for a boutique hotel in Torres Vedras, Portugal, and step 1 of its design system.
-  The canvas is warm paper (papel #F9F0E9), never white, and by night a walnut dark (noite #1C120B), never
-  black. The voice is the client's identity pitch: the original crowned B in a laurel wreath over the wordmark
-  A BRAZILEIRA (a heavy flared Roman with the ornamental B and kicked R's, the pitch's reading of the façade's 1930s lettering) and
-  BOUTIQUE HOTEL · TORRES VEDRAS in widely spaced Cinzel capitals; everything the house says, and the interface, is
+  The canvas is the photograph's own wall: its lime plaster (parede #FAECDF) by day, never white, and the dusk
+  wall beyond the lantern (parede-noite #1C140F) by night, never black. The voice is the client's identity pitch:
+  the original crowned B in a laurel wreath over the pitch's own wordmark A BRAZILEIRA, drawn as a vector in Verde
+  Torres (a heavy flared Roman with the ornamental B and kicked R's, the pitch's reading of the façade's 1930s
+  lettering), and BOUTIQUE HOTEL · TORRES VEDRAS in widely spaced Cinzel capitals; the pitch's shield monogram is on
+  hold; everything the house says, and the interface, is
   set in EB Garamond, in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
   switch the whole page, including the photograph. The signature is a photograph of an arched limestone doorway
   (walnut double door, fanlight, wall lantern, an olive in a clay pot), cut into layers: scrolling swings the doors
-  inwards, walks in through the doorway into a warm, out-of-focus hall and on into its light, one flat colour,
-  where the waiting list is. Shapes are square-cut; depth comes only from the photograph and its light. The rule
-  is restraint: one message, one action, no ornament.
+  inwards, walks in through the doorway into a limestone-and-lime hall and on into its light, one flat colour, where
+  the waiting list is. The same entrance drawn in real 3D, with the photograph itself as the skin (real thickness,
+  raised panels, brass knobs and hinges), ships opt-in (`?3d`) for testing on real devices; the default page is the
+  photograph in layers. Shapes are square-cut; depth comes only from the photograph and
+  its light. The rule is restraint: one message, one action, no ornament.
 
 colors:
   # primitives (tokens.css, layer 1)
-  papel: "#F9F0E9"          # canvas by day; lime plaster; form fields
+  papel: "#F9F0E9"          # form fields on the hall by day; the button's text
+  parede: "#FAECDF"         # the wall in soft daylight = the page by day (sampled from the photograph's plaster)
+  parede-noite: "#1C140F"   # the dusk wall beyond the lantern = the page by night
   areia: "#F0DFCF"          # lit stone, glass by day, skip-link surface
   pedra: "#DECDBD"          # limestone face
   oliva: "#72692E"          # olive (reserved: was the drawing's leaves; no use on the page now)
   azulejo: "#6F7A4A"        # glazed tile (reserved; no use on the page now)
-  castanho: "#804F1E"       # walnut doors by day; muted text 6.11:1 on papel
-  nogueira: "#5F3819"       # text, focus, hairlines, field borders; 9.03:1 on papel
-  tinta: "#2E1E14"          # strongest text (wordmark), the button; 14.23:1 on papel
-  latao: "#DB9E42"          # brass; 2.08:1 on papel = ornament only by day; 7.87:1 on noite
-  latao-marca: "#A57638"    # emblem by day (graphic, 3.56:1), close to the original logo gold
-  latao-texto: "#83602C"    # brass-hued small text by day, 5.08:1 on papel
-  noite: "#1C120B"          # canvas by night
-  linho: "#F3E6D6"          # text by night, 14.99:1 on noite
-  linho-escuro: "#C2AE96"   # muted text by night, 8.58:1 on noite
+  castanho: "#804F1E"       # walnut doors by day; muted text 5.93:1 on parede
+  nogueira: "#5F3819"       # text, focus, hairlines, field borders; 8.77:1 on parede
+  tinta: "#2E1E14"          # strongest text, the button; 13.82:1 on parede
+  verde-torres: "#24281B"   # Verde Torres, the identity pitch's ink (its palette circle): the wordmark and its line by day; 13.00:1 on parede
+  latao: "#DB9E42"          # brass; 2.02:1 on parede = ornament only by day; 7.77:1 on parede-noite
+  latao-marca: "#A57638"    # emblem by day (graphic, 3.45:1), close to the original logo gold
+  latao-texto: "#83602C"    # brass-hued small text by day, 4.93:1 on parede
+  noite: "#1C120B"          # walnut night: night surfaces and hairlines are mixed from it
+  linho: "#F3E6D6"          # text by night, 14.79:1 on parede-noite
+  linho-escuro: "#C2AE96"   # muted text by night, 8.47:1 on parede-noite
   luz-nucleo: "#FFF2D6"     # lamplight core: form fields by night
   luz: "#F4C978"            # lamplight body (sala-noite is derived from it)
   barro: "#9E3B1E"          # terracotta (handmade ceramics): form errors only; 5.17:1 / 5.58:1 on the hall
@@ -37,9 +44,9 @@ colors:
   sala-noite: "#FCE7BC"     # the lit hall by night (= luz-nucleo 72% in luz, stored as exact sRGB hex)
   # semantic roles (tokens.css, layer 2). Keys are the CSS custom properties without "--"; the plain key is the
   # Dia value, "-on-night" the Noite value ([data-theme="noite"], or the system's dark mode when nothing was chosen)
-  color-bg: "#F9F0E9"                  # papel
-  color-bg-on-night: "#1C120B"         # noite
-  color-text-strong: "#2E1E14"         # tinta: wordmark, active control, the action
+  color-bg: "#FAECDF"                  # parede: the page is the photograph's wall
+  color-bg-on-night: "#1C140F"         # parede-noite
+  color-text-strong: "#2E1E14"         # tinta: active control, the action
   color-text-strong-on-night: "#F3E6D6"   # linho
   color-text: "#5F3819"                # nogueira: the lede, reading text
   color-text-on-night: "#F3E6D6"       # linho
@@ -48,9 +55,11 @@ colors:
   color-accent-text: "#83602C"         # latao-texto: the status, the sun note, the control tick
   color-accent-text-on-night: "#DB9E42"   # latao
   color-mark: "#A57638"                # latao-marca: the emblem (graphic)
+  color-brand-ink: "#24281B"           # verde-torres: the wordmark and the lockup's line
+  color-brand-ink-on-night: "#F3E6D6"  # linho
   color-mark-on-night: "#DB9E42"       # latao
   color-ground: "#5F3819"              # nogueira: hairline rules (styleguide)
-  color-ground-on-night: "#75685D"     # pedra 46% in noite (3.41:1)
+  color-ground-on-night: "#75685D"     # pedra 46% in noite (3.37:1 on parede-noite)
   color-focus: "#5F3819"               # nogueira
   color-focus-on-night: "#DB9E42"      # latao
   color-selection: "#F0DFCF"           # areia
@@ -76,19 +85,16 @@ colors:
   color-on-strong: "#F9F0E9"           # papel: text and tick on the tinta button / checked box
 
 typography:
-  wordmark:                   # «A Brazileira»: the large A, the ornamental B, RAZILEIR at 72% (.lockup__sc), the large closing A
-    fontFamily: "'Brazileira Wordmark', 'Wordmark fallback', 'Times New Roman', serif"
-    fontSize: "clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem)"   # 36 -> 72px
-    fontWeight: 900
-    lineHeight: 1.05
-    letterSpacing: 0.01em
-    textTransform: uppercase
+  wordmark:                   # «A Brazileira»: not a font; the pitch's lettering as a vector (assets/img/wordmark.svg), inline
+    drawing: "assets/img/wordmark.svg, 2316.2 x 369, 11 paths, fill currentColor, aria-hidden"
+    fontSize: "clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem)"   # the lockup's em: 36 -> 72px
+    width: "6.8em of the lockup (--lockup-wordmark): 245px at 36px, 490px at 72px, 204px at the 30px minimum"
   label-lockup:               # BOUTIQUE HOTEL · TORRES VEDRAS
     fontFamily: "Cinzel, 'Cinzel lockup fallback', 'Times New Roman', serif"
-    fontSize: "max(0.32em, 11px) of the wordmark on two lines; max(0.19em, 11.2px) on one line (home, from 1024 x 700, when it fits the column)"
+    fontSize: "max(0.32em, 11px) of the lockup on two lines; max(0.0271 of the wordmark's width, 11.2px) on one line (home, from 1024 x 700, when it fits the column)"
     fontWeight: 400
     lineHeight: 1.3
-    letterSpacing: 0.32em
+    letterSpacing: 0.42em
     textTransform: uppercase
   label:                      # «Lista de espera» (19px); the privacy notice's section names (17px)
     fontFamily: "Cinzel, 'Cinzel list fallback', 'Times New Roman', serif"
@@ -156,11 +162,11 @@ spacing:
 
 components:
   lockup:
-    textColor: "{colors.color-text-strong}"
+    textColor: "{colors.color-brand-ink}"
     markColor: "{colors.color-mark}"
-    labelColor: "{colors.color-text-strong}; its « · » {colors.color-mark}"
+    labelColor: "{colors.color-brand-ink}; its « · » {colors.color-mark}"
     typography: "{typography.wordmark}; {typography.label-lockup}"
-    minSize: "30px wordmark (--size-lockup-min)"
+    minSize: "30px lockup em (--size-lockup-min): the wordmark 204px wide; the wordmark alone 120px"
   control:                    # theme buttons and language links share one recipe
     textColor: "{colors.color-text-muted}"
     typography: "{typography.ui}"
@@ -222,11 +228,11 @@ components:
     textColor: "{colors.color-text-muted}"
     typography: "{typography.ui}"
   entrance:                   # the photograph in layers (src/photo.py, src/assets/photo/photo.json)
-    layers: "plate (the hall) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent) < spill (Noite)"
-    files: "AVIF + WebP per theme; facade and leaves 720/1080/1600/2388 facade px, plate 720/1080/1600, reveal 1080/2388, spill 1080/1600"
-    firstPaint: "<= 180 KB on phones (measured 112 KB Dia, 48 KB Noite at 390 x 844, DPR 3; 174 KB Dia at 430 x 932, DPR 3)"
+    layers: "street (the page's wall, paving and night lights, CSS) < placeholder < plate (the hall) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent) < spill (Noite)"
+    files: "AVIF + WebP per theme; facade 720/1080/1300/1600/2388 facade px, leaves 720/1080/1600/2388, plate 720/1080/1600, reveal 1080/2388, spill 1080/1600; the street's paving strip one scene width wide (upright phones) or three (wider screens) at 720/1080/1600 per scene width"
+    firstPaint: "<= 180 KB on phones (measured with the street's paving strip: 161 KB Dia, 79 KB Noite at 390 x 844, DPR 3; 95 KB Dia at 375 x 667, DPR 2; over the budget at 430 x 932, DPR 3, by day: 193 KB with the 1300 rung, was 223; 440 x 956 @3 212 KB, was 244)"
     walkIn: "after the load, at idle: the larger facade and leaves (2388) for the walk-in, swapped in on the first move"
-    edges: "the facade's margin converges to the page colour (Papel / Noite): no rectangle on the page; the olive's crown is kept out of the feather; the hole overlaps the leaves by 4 master px"
+    edges: "the facade's wall is graded to the page colour (Parede / Parede-noite: the page is the photograph's wall) and its margins are the street; the layer fades out over a wide band whose start and end both wander (0-3% to 7-10% of its width, fix r1): no rectangle, no straight line on the page; the olive's crown is kept out of the feather; the hole overlaps the leaves by 4 master px"
     rest: "doors closed, the hall's light in the gap; also the reduced-motion and no-JS state"
   surface-hall:
     backgroundColor: "{colors.color-bg-hall}"
@@ -290,11 +296,24 @@ components:
 A Brazileira reads like the hotel's own card left on a stone step: warm paper, the gold crest of the original
 logo over the wordmark of the client's identity pitch, one sentence in a Garamond, one action, and the house's door. The door is a photograph: an arched
 limestone doorway with a walnut double door and a fanlight, a wall lantern on the left and an olive in a clay
-pot on the right, the house number 11 on the keystone. It is graded to the brand (lime plaster between Papel and
-Areia, limestone in the Pedra family, walnut rich but not orange) and its margin fades into the page, so it sits
-on the paper like the drawing it replaced, without a frame.
+pot on the right, the house number 11 on the keystone. It is graded to the brand (lime plaster, limestone in the
+Pedra family, walnut rich but not orange), and the page IS its wall: the page colour was sampled from the
+photograph's plaster (Parede by day, Parede-noite at dusk) and the facade's wall was graded to that tone towards its
+edges, so the photograph has no edge on the page at any size or zoom, and the 3D entrance (opt-in, `?3d`) continues
+the same wall, and since the polish pass the same street (wall, paving and night lights), as an endless plane.
 
-**Dia** is that doorway in daylight on the papel ground. **Noite** is the same photograph relit for the night
+**Polish pass** (POLISH_BRIEF, the client's notes on the live page from an iPhone): the façade now runs edge to
+edge. The page draws the wall and the paving round the photograph to the screen's sides and foot (the street: a
+paving strip synthesised from the photograph's own cobbles, repeating at one scene width on an upright phone and at
+three elsewhere (fix r1), and the wall's gradient,
+which fades only upward and only just; by night the lantern's and the doorway's light run on with it), and the
+photograph's margins are that same street, so there is no rectangle, no side fade, on any screen, in the CSS and the
+3D entrance alike (Layout › The street; Components › entrance). The first screen's spacing is one scale of four
+intervals (pair, apart, break, air) so the lockup, the words and the action read as groups; the sentence is
+rewritten plainer: «Estamos a restaurar um edifício antigo.» / «Abrimos brevemente.» (Voice › The first screen's
+words).
+
+**Dia** is that doorway in daylight on its own plaster. **Noite** is the same photograph relit for the night
 (its own files, not a filter): a deep dusk wall that falls away into the night ground, the lantern lit with a warm
 pool on the stone, lamplight in the door gap and on the step tops, the fanlight a blue-hour sky. Until the visitor
 chooses, the page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
@@ -310,17 +329,19 @@ night), so the form always reads dark ink on a light ground.
 
 Colour discipline: nogueira is the workhorse (text, focus ring, field borders). Latão is ceremonial: the emblem
 and the « · » of the lockup's line by day, the accent text by night. The photograph carries its own colour (graded to the
-palette); no interface colour is sampled from it. Barro (terracotta) exists only for form errors. The interface
+palette); the one colour sampled from it is the page itself (the wall), so the two cannot part. Barro (terracotta) exists only for form errors. The interface
 itself is 95% neutral.
 
 **Key characteristics**
-- Canvas `{colors.papel}` by day, `{colors.noite}` by night; the hall `{colors.color-hall}`; all flat.
-- The pitch's lockup: the original emblem.svg inline over «A Brazileira» in the wordmark face (a large A, the
-  ornamental B, RAZILEIR at 72% with both R's kicked out on the baseline, a large closing A) and, close under it,
-  BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel capitals, widely spaced.
+- Canvas `{colors.parede}` by day, `{colors.parede-noite}` by night (the photograph's wall); the hall
+  `{colors.color-hall}`; all flat.
+- The pitch's lockup: the original emblem.svg inline over the pitch's own «A Brazileira» (its lettering drawn as a
+  vector: a large A, the ornamental B, RAZILEIR in smaller capitals with both R's kicked out on the baseline, a large
+  closing A) in Verde Torres and, close under it, BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel capitals, widely spaced.
+  The pitch's shield monogram is on hold (the client's call); the crowned laurel stays.
 - Three voices, as on the pitch: the wordmark (logo only), Cinzel capitals for labels (the lockup's line and
   section names), EB Garamond for everything said (400) and the interface (500), roman, sentence case.
-- One accent: brass, `{colors.latao-texto}` by day (5.08:1), `{colors.latao}` by night (7.87:1).
+- One accent: brass, `{colors.latao-texto}` by day (4.93:1), `{colors.latao}` by night (7.77:1).
 - One action on the first screen: «Entrar na lista de espera» / «Join the waiting list».
 - Square corners everywhere; the only radius is the 2px corner of the focus ring.
 - Depth comes from the photograph alone (its perspective, its light), never from interface shadows.
@@ -333,70 +354,92 @@ itself is 95% neutral.
 
 ## Logo usage
 
-- **Source**: `src/assets/img/emblem.svg` (vector rebuild of the original: crown with cross, dense laurel,
-  bow, Trajan-style B). It is inlined in the h1 with `currentColor`, `aria-hidden`; the accessible name is the
-  live text "A Brazileira, Boutique Hotel, Torres Vedras". The drawn wordmark (`A B` + `razileir` + `a`, three
-  text runs) is `aria-hidden`; a visually hidden «A Brazileira» carries the name as one run, so a screen reader
-  that walks text runs (VoiceOver swiping) never reads «A B» and «razileir» apart.
-- **Lockup** (as on the client's identity pitch, «Interpretação para a marca»): the emblem 2.27em wide (of the
-  wordmark size; the same pixel size as before) · «A Brazileira» in Brazileira Wordmark 900: the large plain A, the
-  ornamental B, then RAZILEIR in capitals at 72% (`--lockup-sc`), both R's with the leg kicked out on the
-  baseline, and a large plain A to close, as on the board (its two A's are the same height), tracking 0.01em ·
-  BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel 400 capitals, tracking 0.32em, close under the letters as on the board
-  (wordmark baseline to the line's capitals: 0.2 of the B's height, the board's 0.18; `--lockup-pull` -0.2em on
-  the wordmark): on one line with a brass « · » where the wordmark is large (the home page in the split layout,
-  from 1024 × 700: max(0.19em, 11.2px), 13.7px at 72px, 0.81 of the wordmark's width as on the board, never over
-  0.9), on two lines (max(0.32em, 11px), 11.5px at 36px) everywhere else. Trailing tracking is compensated with a
-  negative end margin so each line is optically centred. The pitch's shield monogram is not used: the crowned
-  laurel B stays.
-- **Enlarged text** (WCAG 1.4.4; checked with the root size at 125–200%): nothing in the lockup is held on one
-  line by force. The wordmark breaks after its A («A / BRAZILEIRA»); the one-line label is a container query on
-  the lockup (`container-type: inline-size`, home split only), `(min-width: 5.3em) and (min-width: 19.5rem)` in the
-  wordmark's em, so it falls back to two lines as soon as one line no longer fits the column; each label line may
-  break between its words; on a phone the wordmark's minimum yields to 16vw (13vw for the 30px size), which only
-  binds with text enlarged. At 200%: 320 × 640 and 390 × 844 wrap to «A / BRAZILEIRA» inside the screen, 1024 ×
-  768 takes the two-line label; no letter is cut.
-- **Wordmark face**: Cinzel Decorative Black (Natanael Gama, OFL) is the closest open face to the pitch's
-  lettering (flared Roman serifs, heavy stems, an ornamental B). It is modified for this one use (the ornamental
-  B kept; the ornamental R kept with its swash tail, which dips well below the baseline in the original, redrawn
-  as the board's kick along the baseline: the part below the baseline pulled up, y / (1 + 0.01|y|), the tail past
-  the advance shortened by half, smooth joins kept; every other letter mapped to the plain Roman capital, upper
-  and lower case alike, A-Z only, 3.0 KB; built by `tools/fonts.py`) and, as the Reserved Font Name «Cinzel» of
-  Cinzel Decorative (2012) requires of a modified version, renamed «Brazileira Wordmark»
-  (`assets/fonts/OFL-cinzel-decorative.txt`). Compared by eye against the board with Elsie + Elsie Swash Caps
-  (closest B and R swashes, but Didone hairlines and ball terminals) and Limelight (Art Deco, too far from the
-  board's Roman); Cinzel Decorative won on serifs, weight and proportions.
-- **Colour**: Dia: emblem and the « · » `latao-marca`, wordmark and line `tinta`. Noite: emblem and the « · »
-  `latao`, wordmark and line `linho`. Forced colours: CanvasText.
-- **Clear space**: at least 0.75em of the wordmark size on every side (about the cap height of
-  A BRAZILEIRA). The page keeps 24px or more (0.86em at the smallest size).
-- **Minimum size**: wordmark 30px (`--size-lockup-min`; the wordmark about 187px wide; used at exactly this size
-  as the home link on the privacy notice, on landscape phones and on portrait screens up to 600px tall, where the
-  line is held at 11px, not the lockup's own 9.6px: Cinzel Regular's hairlines break up below that). Below that, use the emblem alone (favicon.svg, app icons),
-  which holds at 16px.
-- **Don't**: redraw, outline, recolour outside the two schemes, add a background plate, set the words in
-  another face, add more swashes (the B and the two R's are the only ones), change the tracking, put the lockup on the photograph, animate the emblem.
+- **Sources**: `src/assets/img/emblem.svg` (vector rebuild of the original: crown with cross, dense laurel, bow,
+  Trajan-style B) and `src/assets/img/wordmark.svg` (the identity pitch's lettering of «A Brazileira», vectorised
+  from the board: 2316.2 × 369, one path per letter with its counters, 218 nodes, 5.4 KB; checked against the
+  pitch's large wordmark at IoU 0.974, mean edge deviation 0.11 px at the board's scale). Both are inlined in the h1
+  by `build.py` with `currentColor`, `aria-hidden` and `focusable="false"`; the wordmark carries `width`/`height`
+  attributes and CSS `aspect-ratio: 2316.2 / 369`, so it holds its box before anything loads (CLS 0). The
+  accessible name is the live text «A Brazileira, Boutique Hotel, Torres Vedras»: a visually hidden «A Brazileira»
+  (in mixed case: the lockup no longer uppercases it) reads the name once. The wordmark is not a font: there is no
+  wordmark face, preload or fallback any more.
+- **Monogram**: the pitch's shield monogram (the B with an F wound into it) is **on hold** by the client's decision
+  («temos de pensar melhor nisso»). The lockup keeps the current crowned-laurel emblem; do not use the pitch
+  monogram, its gold (Latão Antigo #987245) or its frame until it is redrawn and approved.
+- **Lockup** (the pitch's «Interpretação para a marca», measured on the board: wordmark 579 × 92 px, its line
+  471 px wide with 11 px capitals). One width drives it: the wordmark is `--lockup-wordmark` 6.8em of the
+  lockup's size (`--size-wordmark` 36 → 72px: 245 → 490px wide; 204px at the 30px minimum). Everything else is a
+  ratio of that width (W):
+  - the emblem's box 0.257 W wide (`--lockup-emblem`; 200 × 228, ink 182 × 228), sized to the area of the
+    pitch's monogram (160 × 143 px there), centred on the wordmark; its foot dips 0.0073 W under the B's top
+    (`--lockup-emblem-pull`), as the shield's point does on the board, clear of the letters under it;
+  - BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel 400 capitals, tracking 0.42em (measured on the board; it was 0.32em),
+    its capitals 0.0286 W under the R's kick (`--lockup-under` on the wordmark, `--lockup-cap-top` -0.255em on the
+    line, so the gap is measured from the capitals, not the line box);
+  - on one line with a brass « · » where the wordmark is large (home, split layout, from 1024 × 700, while it fits
+    the column): `max(0.0271 W, 11.2px)`, capitals 0.019 W, the line 0.80 W wide as on the board (0.86 W at
+    1024 × 700, where the 11.2px floor binds); on two lines (`max(0.32em, 11px)`, 11.5px at 36px) everywhere else.
+    Trailing tracking is compensated with a negative end margin so each line is optically centred.
+  Checked on a 1440 render with the same ink measure as the board: wordmark height 0.159 W (board 0.159), line
+  width 0.80 W (0.81), crest foot 0.005 W under the wordmark's top (0.007).
+  Polish pass (the client: «melhores o espaçamento entre A Brazileira, Boutique Hotel, Torres Vedras e o copy em
+  baixo»): the lockup's own proportions are the pitch's and stay as they are (re-measured: 1440 × 900, wordmark
+  490 × 78, crest 126 wide = 0.257 W, line 399 wide = 0.81 W on one line; 390 × 844, wordmark 245 × 39, the line on
+  two lines 166 wide = 0.68 W, as the pitch's horizontal version sets it); what changed is the space round it, so
+  wordmark and line read as one unit and the words below as a second thing (Layout › The first screen's rhythm:
+  51px between the line and the sentence on a phone, 73px at 1440, against 24 and 48 before).
+- **Enlarged text** (WCAG 1.4.4; root size at 125–200%): the wordmark never grows past its column
+  (`max-inline-size: 100%`, height from its ratio); the one-line label is a container query on the lockup
+  (`(min-width: 5.52em) and (min-width: 21rem)`: the line is 29.7 of its own size wide), so it falls back to two
+  lines as soon as one no longer fits; each label line may break between its words. At 200%: 320 × 640 and
+  390 × 844 keep the wordmark inside the screen (224 and 294px) with the line on four and three lines; 1024 × 768
+  takes the two-line label; nothing is cut. The top bar at 200% (fix r1): the sun note wraps inside the screen
+  (`max-inline-size: calc(100vw - 2 × gutter)`, balanced) instead of running off a 320px screen, a PT · EN row that
+  wraps sits under the note, and the stage clears the bar's real height (`--bar-h`, set by site.js only when the bar
+  wraps or the note takes more than one line); the consent's privacy link, one unit that never breaks at normal
+  sizes, wraps inside itself when it is wider than the line. Measured with the root at 200%: no sideways scroll at
+  320, 390 and 1280, PT and EN.
+- **Colour** (from the pitch, `colours.json`): Dia: wordmark and line `verde-torres` #24281B (the pitch's palette
+  circle VERDE TORRES; its stroke cores measure #1A1C10), 13.00:1 on parede; emblem and the « · » `latao-marca`.
+  Noite: wordmark and line `linho` (a light ink, 14.79:1 on parede-noite); emblem and the « · » `latao`. The semantic
+  role is `--color-brand-ink`; nothing else on the site was recoloured. Forced colours: CanvasText.
+- **Clear space**: the height of RAZILEIR's capitals (0.098 W) on every side of the lockup; 20px at the minimum.
+  The page keeps 24px or more.
+- **Minimum size** (screen): the full lockup at a 30px em (`--size-lockup-min`, the wordmark 204px wide; used as
+  the home link on the privacy notice, on landscape phones under 328px tall and on portrait screens up to 600px
+  tall, the line held at 11px; landscape phones take 9.15svh, 35.7px at 390px tall, to keep the old footprint); the wordmark alone at 120px wide (the B's spiral and the R's kicks still read at DPR 1). Below that,
+  use the emblem alone (favicon.svg, app icons), which holds at 16px.
+- **Icons**: favicon.svg, apple-touch-icon.png and icon-512.png stay emblem-based, unchanged.
+- **Don't**: redraw the letters or set «A Brazileira» in a font, stretch, outline, recolour outside the two
+  schemes, add a background plate, change the line's tracking, put the lockup on the photograph, pair it with the
+  pitch monogram while that is on hold, animate the emblem.
 
 ## Colors
 
 ### Brand & accent
-- **Papel** (`--papel` #F9F0E9): day canvas; the fill of form fields on the hall by day. Never pure white.
+- **Parede** (`--parede` #FAECDF / `--parede-noite` #1C140F): the page, by day and by night. Sampled from the
+  retouched photograph's plaster (#F8EADF / #1C150F) and moved 1–4 levels to the nearest colour AVIF decodes
+  unchanged, so the photograph's flat outer wall and the page are the same pixel. Every text pair holds AA on it
+  (Contrast matrix). Never pure white, never black.
+- **Papel** (`--papel` #F9F0E9): the fill of form fields on the hall by day, and the button's text.
 - **Areia** (`--areia` #F0DFCF): skip-link surface, selection; the photograph's plaster is graded between
   Papel and Areia (about #F4EBE1). Not a text colour.
 - **Pedra** (`--pedra` #DECDBD): the limestone family the photograph is graded to; base of the night hairline.
-- **Castanho** (`--castanho` #804F1E): muted text (6.11:1 on papel).
-- **Nogueira** (`--nogueira` #5F3819): text, focus ring, hairlines and field borders (9.03:1); also the depth of
+- **Castanho** (`--castanho` #804F1E): muted text (5.93:1 on parede).
+- **Nogueira** (`--nogueira` #5F3819): text, focus ring, hairlines and field borders (8.77:1); also the depth of
   the walnut the photograph is graded to (about #8E4F2A on its lit faces).
-- **Tinta** (`--tinta` #2E1E14): the wordmark, the strongest text and the button (14.23:1).
-- **Latão** (`--latao` #DB9E42): ornament by day (2.08:1 on papel: never text there); text, emblem and focus by
-  night (7.87:1).
+- **Tinta** (`--tinta` #2E1E14): the strongest text and the button (13.82:1 on parede).
+- **Verde Torres** (`--verde-torres` #24281B): the identity pitch's ink, for the logo only: the wordmark and its
+  line by day (13.00:1 on parede). Never interface text.
+- **Latão** (`--latao` #DB9E42): ornament by day (2.02:1 on parede: never text there); text, emblem and focus by
+  night (7.77:1 on parede-noite).
 - **Oliva / Azulejo**: reserved (they coloured the drawing's olive). Never text, never interface.
 - **Barro** (`--barro` #9E3B1E): form errors on the hall surface only (text and the invalid field edge).
 - **Sala** (`--sala-dia` #F2DEC4, `--sala-noite` #FCE7BC): the lit hall. Stored as exact sRGB hex (not a
   `color-mix`), so every layer that paints it resolves to the same pixel.
 
 ### Surface
-Three surfaces: `--color-bg` (papel / noite), `--color-hall` (the lit hall: `--sala-dia` #F2DEC4 by day,
+Three surfaces: `--color-bg` (parede / parede-noite: the photograph's wall), `--color-hall` (the lit hall: `--sala-dia` #F2DEC4 by day,
 `--sala-noite` #FCE7BC by night) and `--color-surface` (areia / dark stone), which appears only under the
 focused skip link. `--color-hall` is ONE token per theme and the only colour of the hand-off: the
 photograph's far arch is graded to clip to it (within 2 levels after AVIF / WebP decoding), and the flat layer
@@ -414,7 +457,7 @@ doorway covers the screen, and is the whole frame from p = 0.76. `.surface-hall`
 need no special colours. No cards, no panels, no glass.
 
 ### Hairlines
-`--color-ground` (nogueira by day, 9.03:1; pedra 46% in noite by night, 3.41:1): the styleguide's rules. The
+`--color-ground` (nogueira by day, 8.77:1 on parede; pedra 46% in noite by night, 3.37:1 on parede-noite): the styleguide's rules. The
 page itself has none on the first screen: the drawing's floor line went with the drawing (the photograph has its
 own ground, the steps and the calçada, fading into the page). Field and checkbox borders: nogueira 1px on the
 hall (7.75:1).
@@ -430,16 +473,17 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 
 | Theme | Element | Foreground | Background | Ratio | Rule |
 |---|---|---|---|---|---|
-| Dia | Wordmark, lockup line (BOUTIQUE HOTEL · TORRES VEDRAS, 9.6–13px; 17px at 2560), privacy section names, active control, CTA | tinta #2E1E14 | papel #F9F0E9 | 14.23:1 | text |
-| Dia | Active-control tick, sun note | latao-texto #83602C | papel | 5.08:1 | text / non-text ≥ 3:1 |
-| Dia | Lede, privacy body | nogueira #5F3819 | papel | 9.03:1 | text |
-| Dia | Inactive control, separators, footer, scroll cue | castanho #804F1E | papel | 6.11:1 | text / graphic |
-| Dia | Status | latao-texto #83602C | papel | 5.08:1 | text |
-| Dia | Emblem, the lockup line's « · » (aria-hidden) | latao-marca #A57638 | papel | 3.56:1 | graphic ≥ 3:1 (logo) |
-| Dia | Focus ring | nogueira | papel | 9.03:1 | non-text ≥ 3:1 |
-| Noite | Wordmark, lockup line, section names, lede, active control, CTA | linho #F3E6D6 | noite #1C120B | 14.99:1 | text |
-| Noite | Inactive control, separators, footer, scroll cue | linho-escuro #C2AE96 | noite | 8.58:1 | text / graphic |
-| Noite | Status, emblem, the lockup line's « · », focus ring, active-control tick, sun note | latao #DB9E42 | noite | 7.87:1 | text |
+| Dia | Wordmark, lockup line (BOUTIQUE HOTEL · TORRES VEDRAS, 11–13.3px) | verde-torres #24281B | parede #FAECDF | 13.00:1 | text |
+| Dia | Privacy section names, active control, CTA | tinta #2E1E14 | parede | 13.82:1 | text |
+| Dia | Active-control tick, sun note | latao-texto #83602C | parede | 4.93:1 | text / non-text ≥ 3:1 |
+| Dia | Lede, privacy body | nogueira #5F3819 | parede | 8.77:1 | text |
+| Dia | Inactive control, separators, footer, scroll cue | castanho #804F1E | parede | 5.93:1 | text / graphic |
+| Dia | Status | latao-texto #83602C | parede | 4.93:1 | text |
+| Dia | Emblem, the lockup line's « · » (aria-hidden) | latao-marca #A57638 | parede | 3.45:1 | graphic ≥ 3:1 (logo) |
+| Dia | Focus ring | nogueira | parede | 8.77:1 | non-text ≥ 3:1 |
+| Noite | Wordmark, lockup line, section names, lede, active control, CTA | linho #F3E6D6 | parede-noite #1C140F | 14.79:1 | text |
+| Noite | Inactive control, separators, footer, scroll cue | linho-escuro #C2AE96 | parede-noite | 8.47:1 | text / graphic |
+| Noite | Status, emblem, the lockup line's « · », focus ring, active-control tick, sun note | latao #DB9E42 | parede-noite | 7.77:1 | text |
 | Hall (Dia / Noite) | List name (Cinzel capitals), labels, consent link | tinta | hall #F2DEC4 / #FCE7BC | 12.21 / 13.18:1 | text |
 | Hall | List sentence, consent text | nogueira | hall | 7.75 / 8.37:1 | text |
 | Hall | Footer (home), muted | castanho | hall | 5.24 / 5.66:1 | text |
@@ -451,6 +495,14 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 
 `latao-texto` on the hall would be 4.36:1, so `--color-accent-text` points to castanho inside `.surface-hall`.
 
+*Against the street* (polish pass): the first screen's text now stands on the wall's gradient (a touch deeper
+towards the paving by day) and, by night, near the lantern's light. Measured on the real pixels behind each text box
+(the text made transparent, the page shot, the lowest-contrast background pixel of the box decides; 7 viewports,
+Dia and Noite, stored theme and sky-decided, `final2/work/polish/tools/contrast.js`): Dia wordmark and line 12.80:1,
+lede 8.49, status 4.77 (its lowest, where the wall is deepest: was 4.93 on flat Parede; still above 4.5), action
+13.27, sun note 5.93; Noite wordmark 13.63, line 14.62, lede and action 14.79, status 7.77, sun note 8.47. The
+controls' boxes read lower only because they hold the brass tick (a graphic, 4.93 / 7.77:1 as above).
+
 ## Typography
 
 The client asked for type «mais em linha com o que está aqui (tipos de letras no pitch)»: the identity board
@@ -458,13 +510,14 @@ shows a lettered wordmark drawn from the façade («PASTEIS DE FEIJÃO», «CAF�
 widely spaced Roman capitals and a Garamond specimen for text. The site now follows it, three voices.
 
 ### Font family
-- **Brazileira Wordmark** 900 (Cinzel Decorative Black, modified and renamed, see Logo usage): «A Brazileira»
-  only. 3.0 KB.
+- The wordmark is not a face: «A Brazileira» is the pitch's lettering drawn as a vector
+  (`assets/img/wordmark.svg`, inline; see Logo usage). The modified Cinzel Decorative file that used to set it
+  («Brazileira Wordmark», 3.0 KB) and its licence copy are gone.
 - **Cinzel** 400 (Cinzel 2.000, Natanael Gama, OFL), capitals only (A-Z, the Portuguese accented capitals,
   figures, the punctuation a label may carry: . , : ; · - – — ‘ ’ “ ” « » ? ! … ' & ( ) / © º ª): the label voice,
   always `text-transform: uppercase`, widely spaced: the lockup's line, the waiting list's name, the privacy
   notice's section names. 5.9 KB. Cinzel 2.000 (2020) declares no Reserved Font Name (`OFL-cinzel.txt`), so the
-  subset keeps its name; only the wordmark, from Cinzel Decorative (2012, RFN «Cinzel»), is renamed.
+  subset keeps its name.
 - **EB Garamond** 400 and 500 (Georg Duffner, Octavio Pardo; OFL): 400 for every sentence the house says (lede,
   the page title, the list sentence, the consent, the privacy notice, the sun note) and the email a guest types;
   500 for the interface (Dia · Noite, PT · EN, status, the action, the field label, messages, the button, the
@@ -485,8 +538,8 @@ and its name is a spaced label above it. 320px is 320 × 640, 390px is 390 × 84
 
 | Token | Family | 320px | 390px | 1440px | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|---|---|---|
-| wordmark | Brazileira Wordmark | 36px (30px when the screen is ≤ 600px tall, and on landscape phones) | 36px | 72px | 900 | 1.05 | 0.01em | A Brazileira (RAZILEIR at 72%) |
-| lockup line | Cinzel | 11.5px, two lines (11px) | 11.5px, two lines | 13.7px, one line with « · » | 400 | 1.3 | 0.32em | BOUTIQUE HOTEL · TORRES VEDRAS |
+| wordmark | drawn (SVG), 6.8em of the lockup's 36–72px | 245px wide (204px when the screen is ≤ 600px tall, and on landscape phones) | 245px | 490px | — | — | — | A Brazileira, the pitch's lettering |
+| lockup line | Cinzel | 11.5px, two lines (11px) | 11.5px, two lines | 13.3px, one line with « · » | 400 | 1.3 | 0.42em | BOUTIQUE HOTEL · TORRES VEDRAS |
 | label | Cinzel | 19px | 19px | 19px | 400 | 1.3 | 0.2em | LISTA DE ESPERA (the privacy section names 17px, 1.47) |
 | title | EB Garamond | 28px | 28px | 38px | 400 | 1.15 | 0 | Nota de privacidade |
 | lede | EB Garamond | 19.2px | 20.25px | 28px | 400 | 1em + 7.2px (26.4 / 27.5 / 35.2px) | 0 | the sentence, the list sentence, 404, thank-you |
@@ -511,10 +564,10 @@ content. The field is 19px, never below 16px, so iOS Safari does not zoom on foc
   marked by a short brass tick, never by an underline.
 - Figures: EB Garamond's lining figures everywhere (the only set the files carry).
 - PT and EN get 0.08em because capitals need air.
-- Line breaks by rule, not by luck: `text-wrap: balance` on the ledes and titles; on 320–359px phones the
-  Portuguese lede is set one phrase a line («Uma casa antiga de Torres Vedras / está a ser restaurada / para
-  receber hóspedes.»: a plain wrap at 13.4em, between the first phrase at 12.6em and the first phrase with «está»
-  at 14.2em, with «para receber hóspedes» tied); the lockup's line takes one or two lines by rule (a media query
+- Line breaks by rule, not by luck: `text-wrap: balance` on the ledes and titles; the home sentence is one line
+  wherever it fits and breaks in one place only where it does not, between its halves («Estamos a restaurar / um
+  edifício antigo.», «We are restoring / an old building.»: the object is tied at build time, so the web font and
+  its fallback break alike); the lockup's line takes one or two lines by rule (a media query
   for the size, a container query so it never overflows its column), not by a near miss in width; `text-wrap: pretty` on reading text; no hyphenation anywhere (the privacy notice is read word by word).
   Ties at build time (`nb()` in build.py): «A Brazileira», «Torres Vedras», «© 2026», and every one-letter word
   holds to the next («e avisamos», «a ser»). «nota de privacidade» never splits and sits on its own line under
@@ -524,21 +577,20 @@ content. The field is 19px, never below 16px, so iOS Safari does not zoom on foc
 - Height-aware sizes (`svh` inside `min()`) keep the lockup and lede in one screen on short laptops.
 
 ### Font loading and fallbacks
-All five faces are `font-display: swap`, and the four files (wordmark, Cinzel capitals, EB Garamond 400 and
-500, 40 KB together) are preloaded on every page. Every role has its own local fallback (Times New Roman, or
-the metric-compatible Liberation Serif / Tinos; the wordmark's is Times Bold), sized so that role's own strings
+All four faces are `font-display: swap`, and the three files (Cinzel capitals, EB Garamond 400 and 500, 37 KB
+together) are preloaded on every page. The wordmark is drawn, so it needs no file, no preload and no fallback: it
+is in the HTML. Every role has its own local fallback (Times New Roman, or the metric-compatible Liberation Serif /
+Tinos), sized so that role's own strings
 set to the web font's width in Chromium, with English variants where the sentence differs (`[lang|=en]` swaps
 the stacks). Centred multi-line text (the ledes) and wrapped text near a break (the consent, the privacy intro)
 are matched on the line that decides the break, not on the average. Values (size-adjust, PT / EN):
-wordmark «A B» 108.9%, its RAZILEIR 103.26%, its closing A 99.7% (each run its own fallback, set from the
-measured width ratio, so each run starts where the web font starts it);
 lockup line BOUTIQUE HOTEL 103.15%, TORRES VEDRAS 98.6%, its « · » 80.49%;
 list name 97.37 / 101.77%; section names 102.05%;
-lede 92.74 / 93.51%; list sentence 93.14 / 91.31%;
+lede 94.41 / 94.01% (the polish pass's sentence); list sentence 93.14 / 91.31%;
 intro 92.33 / 93.31%; title 94.28%;
 consent 92.45 / 93.6%; text (sun note, field) 93.15 / 93.69%;
 interface 97.94%; action 97.33 / 98.09%;
-status 97.8 / 99.82%; back link 97.58 / 97.14%;
+status 98.06 / 99.73% («Abrimos brevemente.», «Opening soon.»); back link 97.58 / 97.14%;
 theme buttons 101.54 / 101.04% (so the sun note beside them never moves when the font lands;
 `--font-theme`); PT · EN 104.67%; the «·» between controls 65.9%; footer name 95.62%,
 place 97.91%, « · » 77.52%, link 96.87 / 94.75%. Ascent and descent
@@ -557,14 +609,36 @@ copy change (they follow the strings): `tools` in the type pass measure each rol
 4px base: 4, 8, 12, 16, 24, 32, 48, 64, 96 (`--space-1` … `--space-9`). Gutter 24 → 72px. Touch target 44px,
 field and button 48px, form column 26rem.
 
+**The first screen's rhythm** (polish pass, POLISH_BRIEF §2: «melhores o espaçamento entre A Brazileira, Boutique
+Hotel, Torres Vedras e o copy em baixo»). Four intervals on that scale, each a distinct step, so the eye reads groups
+and not a stack: the crest, the wordmark and its line are one unit (the pitch's own ratios, untouched); the sentence
+and its postscript are a pair; the action stands apart; the identity and what it says are two things; the frame
+round them breathes. Tokens (`tokens.css`), phones height-aware (svh), the split layout one step larger:
+
+| Token | Between | Phones (390 × 844) | Short phones (≤ 680px tall) | Split (1440 × 900) | Landscape phones |
+|---|---|---|---|---|---|
+| `--rhythm-pair` | sentence → status | 8px | 8px | 12px | 4px |
+| `--rhythm-apart` | status → action | clamp(16px, 2.6svh, 24px): 22px | 12px | 32px | 0 |
+| `--rhythm-break` | lockup's line → sentence | clamp(32px, 6svh, 52px): 51px | clamp(24px, 4.8svh, 32px) | clamp(56px, 8svh, 72px): 72px | 24px |
+| `--rhythm-air` | top bar → crest, action → façade | clamp(24px, 4.2svh, 40px): 35px | 20px | (the column is centred on the wall) | — |
+
+Measured between line boxes at 390 × 844: line → sentence 51px, sentence → status 8, status → action 23 (the action's
+44px target adds its own air: about 36px of ink), action → the façade's box 25 (about 51px of ink to the keystone);
+1440 × 900: 73, 12, 32, and the column's optical centre a little above the middle of the wall (`.intro`'s padding
+grows with 10svh). Ratios of the ink gaps, pair : apart : break, about 1 : 2.5 : 4 on phones and 1 : 3 : 5 on
+desktops. Before: 24 / 8 / 16 / 12 on phones and 48 / 12 / 48 on desktops (the action as far from the status as
+the sentence was from the lockup, so nothing grouped).
+
 ### Grid and container
 - **Stacked** (portrait below 900px): lockup · lede · status · action, then the photograph at the foot of the
   first screen, then a band with the scroll cue. The door's axis sits on the page axis: the photograph is
   asymmetric (lantern left, olive right), so it is offset by `--scene-axis` (0.48241, the door axis as a share of
   its width, from photo.json); `--scene-reach` 1.06 lets its faded right margin reach into the gutter, and
   `--scene-lift` 0.05 lets its top (plain wall, faded into the page) rise 5% of its height above the entrance's box,
-  into the space under the action. Measured widths: 322px at 390 × 844 (the door 102px wide, like the drawing's
-  105), 402px at 430 × 932, 227px at 375 × 667, 148px at 320 × 568.
+  into the space under the action. Measured widths (polish pass, with the new rhythm): 331px at 390 × 844 (the door
+  105px wide), 402px at 430 × 932, 227px at 375 × 667. Round it the street runs on to the screen's edges (the wall
+  above it, the paving along its foot and down through the cue's band), so the photograph's width is the door's
+  size, not a frame.
 - **Split** (from 900px wide, or any landscape screen from 600px): 5fr text | 6fr entrance, 64px apart,
   container 86rem; the text column is a centred crest; the photograph fills the right column (681 × 751px at
   1440 × 900), standing at its foot.
@@ -577,9 +651,9 @@ field and button 48px, form column 26rem.
   at the bottom of the stage. Its words are held at opacity 0, with no pointer target, until the screen is one
   colour (site.js). Home page document: 2.27 screens at 390 × 844 (was 3.08), 2.23 at 1440 × 900 (3.04), 2.75 at
   844 × 390 (3.53), 2.38 at 320 × 568 (3.19).
-- **Privacy notice**: top bar, the lockup at 24px as a home link, a 40rem reading column, footer.
+- **Privacy notice**: top bar, the lockup at its 30px minimum as a home link, a 40rem reading column, footer.
 - **Very short portrait screens** (up to 600px tall: 320 × 568, iPhone SE in Safari 375 × 553): the lockup at its
-  24px minimum, 12px above the lede, no scroll cue, and the photograph takes the height that is left, so the whole
+  30px minimum, 12px above the lede, no scroll cue, and the photograph takes the height that is left, so the whole
   door and its steps are inside the first screen (tested in `src/tests/cta.test.js`).
 
 ### Whitespace philosophy
@@ -614,7 +688,8 @@ The arch is architecture, not a UI radius.
 
 ## Components
 
-**`lockup`** (h1 on the home page; a 24px home link on the privacy notice): see Logo usage. States: none.
+**`lockup`** (h1 on the home page; a home link at the 30px minimum on the privacy notice): the emblem, the drawn
+wordmark (inline SVG) and its line; see Logo usage. States: none.
 
 **`control`** (`.ctl`, buttons and links): EB Garamond 500 17px, tracking 0.01em (PT · EN 0.08em), sentence
 case, muted colour, 44 × 44px minimum.
@@ -634,7 +709,8 @@ A head script sets `data-theme` before the first paint (no flash): the stored ch
 A distinctive touch), marked `data-sol` and never stored. The system's dark mode is not consulted when
 JavaScript runs (see Dia & Noite › The system's dark mode). A click on the other theme stores the choice, which
 wins from then on; tapping the theme already shown does nothing (nothing is stored, the sky keeps deciding).
-`meta[name=theme-color]` follows. Storage is wrapped in try/catch (a choice still holds for the visit if
+`meta[name=theme-color]` follows (the wall colour; the hall's light once the screen is that colour, when the root
+takes it too, so overscroll and the browser's bar never show the wall under the list). Storage is wrapped in try/catch (a choice still holds for the visit if
 storage is blocked). A theme change lands at once on the controls and links (their colour transitions are held
 for that frame, `.is-instant`), so nothing catches up after it.
 
@@ -675,7 +751,10 @@ covers the letters beside it.
 (Before: hover lightened the text, which read as dimming by day and did nothing by night, where text and
 strong text are both linho.) The scroll cue darkens to strong ink on hover the same way. The cue itself is drawn
 with a pen, not set as an icon: two strokes at `--stroke-cue` (1.15px, `vector-effect: non-scaling-stroke`), one
-a little longer and bowed, that cross where they meet (the pen's overshoot).
+a little longer and bowed, that cross where they meet (the pen's overshoot). It lies on the paving, in strong ink:
+14px wide at 1.3 × the stroke on phones; on the split layout 20px at 1.9 × (2.2px), because there, seen from further
+away and at 1×, the phone's glyph had the size and weight of the cobbles' own joints and sank into them (review r1).
+No plate behind it.
 
 **`porta`** (the door sequence): `.porta` > `.porta__stage` (sticky) > `.porta__frame` (the first screen,
 100svh) + `.porta__flood`. Without JS or with reduced motion it is just the first screen. Every moving layer
@@ -764,16 +843,132 @@ night.
 *The leaves by night*: the gap's light blooms onto the two inner arrises (a few CSS px at hero size), so the strip
 is lamplight between two doors, not a pasted light box; the leaves' shade covers it as they turn.
 
-*The edges*: the facade's outer margin converges to exactly the page colour (rectangular fade, 7.5% / 7% / 5% by
-day, 14% / 12% / 5% by night) and, on top, an elliptical falloff (`photo/py/facade2.py`): by night the dusk wall
-falls away into the night ground as if only the lantern and the door lit it; by day a lighter touch at the
-corners. The photograph never reads as a rectangle on the page, at 390 or at 1440 (the asset report noted a
-faint rectangle by night on desktop: gone). The source crops the olive's crown at its right edge, and the 7.5%
-feather drew a vertical ghosted band through the tree (review r1). By day the crown is protected from the
-feather: its foliage keeps full strength until the last 60 master px (2.5%), where only the sprigs the frame cuts
-fade out; the plaster around it fades as before (plaster and Papel are within a few levels). Widening the canvas
-with synthesised wall was weighed and not done: it changes the photo's aspect and every layout that depends on
-it, and the cut sprigs would still need the same short fade.
+*The street* (polish pass, POLISH_BRIEF §1; the client: «esticar o pavimento e parede da porta de um lado ao outro da
+tela, quer em mobile quer no desktop, e que o fade da cor da parede seja para cima e muito subtil»). The photograph
+no longer fades into the page at its sides and foot: the wall and the paving run on to the screen's edges, on phones
+and desktops, in the CSS entrance and in the 3D one, by day and by night. Two parts, made to be the same pixels
+where they meet.
+
+1. **The page draws the street** (`.ph--street`, the first layer of the scene, so it moves with the camera like the
+   photograph): one box reaching three scene widths to the left (the text column's side), two to the right and from
+   0.3 above to 1.8 scene heights below the facade's top, with four CSS backgrounds (all geometry static percentages of the box; the theme's values are tokens
+   written by the build from `photo.json › street`):
+   - the wall: a vertical `linear-gradient`, the page colour T down to 12% of the facade's height, then easing
+     (smootherstep, 7 stops) to the photograph's own lower plaster at the paving line (Dia: T × 0.990 / 0.979 /
+     0.968, #F8E7D8 against #FAECDF: ΔL\* about 1.9 over 0.83 of the facade's height, about 300px on a phone and 620px
+     at 1440). This is the wall's one fade, upward and very subtle, as the client asked. By night the wall is T,
+     flat (the light is the lanterns', below). Under the strip's end the gradient turns to the colour the near
+     paving blurs into;
+   - the paving strip: one image per theme, **periodic at exactly one scene width** (repeat-x, its copy under the
+     facade starting at the facade's left edge: the box starts three whole widths to its left, `background-position: 0`), from just above the
+     plaster line (0.938) to 1.5 facade heights: the photograph's own cobbles where it shows them, synthesised behind
+     the steps and the pot and across the wrap, then the pavement coming towards the viewer. That is the strip an
+     upright phone gets (it sees less than one scene width of street). From 600px wide and in landscape the strip is
+     **three scene widths wide** (`street3-*`, `--street-size3`): [A | B | C], A that same strip (so the copy under
+     the facade is still the photograph's paving, pixel for pixel) and B, C quilted from it, so no stone repeats on a
+     screen up to three scene widths across (2.7 at 2560 × 1440; review r1: the 1-width strip showed two or three
+     identical tiles side by side on desktops, autocorrelation r 0.85–0.96 at one or two scene widths). The
+     stylesheet keeps one density ladder and swaps the files and the tile size in one rule
+     (`@media (min-width: 37.5em), (orientation: landscape)`);
+   - by night, two lights: the lantern's (an ellipse 0.42 × 0.34 of the facade round the lamp) and the doorway's
+     (0.42 × 0.56, centred on the door), radial gradients of S = 1 − 1/gain blended `color-dodge` (B / (1 − S) =
+     B × gain): light multiplies what it falls on, so the cobbles and the plaster under it keep their contrast, and
+     the photograph's lit stone runs on into the page as the same falloff. By day no layer (none).
+   The strip's file follows the screen with media queries (phones under DPR 2.5 and desktops at DPR 1 under 1600px:
+   720; phones at DPR 3 and large or DPR 2 screens: 1080; DPR 2 screens from 700px tall: 1600), AVIF through
+   `image-set(... type())`, WebP otherwise.
+2. **The photograph's margins are that street**: the facade (re-exported from the ungraded master, not from the
+   old edge-faded file) is graded so that its outer 14% (Dia; by night an ellipse round the door and lantern, from
+   0.56 to 1.04 of its radii, the outer 120–720 master px and the top 22%) hands its light over to the page's composite, computed with the browser's own maths (8-bit
+   stops, linear interpolation, color-dodge), and its paving hands over to the strip, which holds the same cobbles
+   (flattened). The plaster's mean is matched row by row (the grade had set its highlights, not its mean, to the
+   wall), its texture fades with its light towards the edge, the olive's sprigs that the frame cut end on a ragged
+   line 66–134 master px inside it, each tapered to a point, and the layer fades out (alpha) over a wide, irregular
+   band: on the top and the sides it begins 0–3% of the width in and ends 7–10% in (up to 239 master px), both lines
+   wandering along each side (smooth noise), so neither is straight; the olive's crown keeps its own matte inside it
+   (never a ghost of leaves); the bottom, on the paving, which IS the strip there, over 70 master px. Each file is
+   encoded, decoded and corrected (three passes: the low-frequency error on flat areas, the fade included, subtracted
+   from the source), because AVIF's 4:2:0 chroma moved the wall's subtle gradient by 1–2 levels (ΔE about 1.4: the
+   box was faintly visible).
+   *Fix r1* (review: by night a darker ring, 1–2.5 levels and about 16px, drew the photograph's box on the wall;
+   by day a faint hairline): the master's margin was already the street to 0.0 levels; the export broke it. Pillow
+   resized RGBA premultiplied in 8 bits and un-premultiplied with a floor, so in the old 70px fade the colour came
+   back up to 3 levels dark, and its outermost rows held (0, 0, 0). The files are now made from the same master by
+   `final2/work/fix-r1/py/facade_export.py`: colour and alpha resampled apart in floating point and rounded once,
+   the street's colour pinned under the outermost 24 master px, the wide wandering fade above, WebP with a lossy
+   alpha plane (quality 60: the wandering fade cost 50% more bytes in lossless alpha; quantised alpha changes
+   nothing where the photograph equals the street under it, which is all of the fade). Decoded and laid over the
+   street in Python, the fade is within 0.15–0.36 levels of the ideal (mean |d|, AVIF / WebP).
+
+*How the strip was made* (`final2/work/polish/pipe/`, outside the build; no generative fill): the photograph's paving
+band (rows 2470–2634 of the 2388 × 2634 master) with its light taken out along each row (the row profile, the shade
+along the wall, is kept; hard cast shadows lifted locally); image quilting (Efros–Freeman, 48px patches, 14px
+overlaps, minimum-error cuts in every constrained overlap, matched with masked SSD among the best 12%, each block
+only from exemplar rows within 6px of its own, because the stones are flatter near the wall) fills what the
+photograph does not show: behind the steps and the pot, a 220px band across the wrap (so x = W−1 runs into x = 0;
+a block that holds a pixel to fill holds no protected one, so its cut is free), and 860 rows towards the viewer
+from the band's nearest rows. Those rows are then stretched with their distance from the horizon (the stones grow
+taller) and blurred as they come nearer (depth of field: the camera is focused on the door; σ 0 at the photograph's
+foot to 9 master px at 1.5 heights); by night they also darken by up to 28% away from the house. The lights by night
+were fitted to the photograph's own plaster (least squares on its low-frequency light, log ratio, windowed shapes
+that end with zero slope, so no ring marks where a gradient ends).
+
+*Why not a perspective-correct ground*: drawn in true perspective round one vanishing point, the paving two scene
+widths from the door (a desktop's left side) shears into long diagonal smears: that view is a 150° rectilinear
+panorama. The strip is a push-broom continuation instead: each stretch of the street is seen straight on, as a
+facade photographed in segments, so it can repeat at one width (three on wider screens) and stay believable at any
+screen width.
+
+*How the 3-width strip was made* (`final2/work/fix-r1/py/ground3.py`, `strip3_export.py`): a canvas three widths
+wide that wraps, A in its first third (never changed) and A's own continuation laid in either side of the empty
+two thirds (A is periodic: past its right edge come its first columns); quilted round the wrap (56px patches, 16px
+overlaps, masked SSD, near-best at random within 25%, rows within 5px of their own; the first row of blocks, which
+holds the plaster line, from exactly its own rows, so the line never jogs) from A and its mirror image; a block may
+not take its patch from within 48px of where its neighbours' pixels came from, shifted by their offset (otherwise a
+block next to A matches A's own continuation with an error of 0 and the quilt copies A verbatim: 352 columns of B
+did, a period again); then each join with A is re-cut along a minimum-error path through a 64px band (the quilt
+leaves a straight edge where a block stops inside a prefill). Rows, perspective stretch, depth of field, night
+fall-off and the wall under the top rows are the 1-width strip's own (its first third matches it to 0.0 levels).
+Bytes (AVIF, Dia / Noite, per scene width 720 / 1080 / 1600): 75 / 128 / 198 KB and 30 / 61 / 95 KB, three times
+the 1-width files, on screens that are not phones held upright.
+
+*How far it reaches* (`final2/work/polish/tools/extent.js`: the screen in scene units at every 1% of the visible
+walk-in, 21 screens from 320 × 568 to 5120 × 1440): at most 2.69 widths to the left (5120 × 1440; 1.03 at 1440 × 900,
+0.42 on phones), 1.84 to the right, 0.47 heights below the photograph; above it the page's own colour is the wall's
+top colour, so the box need not go higher. The box is 3 + 1 + 2 widths by 2.1 heights (it was 11 by 3.3, five widths
+either side: every scene size of it is work for the compositor when the camera layer is made or redrawn at a deep
+zoom). Checked at 2560 × 1080, 3440 × 1440, 3840 × 2160 and 5120 × 1440, both themes, at rest and mid-walk-in: the
+wall and the paving reach every edge; the rest frames match the larger box's but for the strip's resampling phase,
+and the edge measurements below are unchanged (within 0.06).
+
+*Measured* (Chromium screenshots of the final build at the seven review sizes, Dia and Noite,
+`final2/work/polish/tools/`): the mean ΔE (CIELAB) of a 10px band just inside the photograph's edge against one
+just outside, on plain wall, by day: at most 0.47 on desktops and 0.58 on phones (it was 1.4 before the encode
+correction; about 1 is the threshold of visibility); the largest step at an edge net of the local gradient (each
+side's 10px profile fitted with a line and extrapolated to the edge), at every side and height and along the top:
+at most 0.67 L\* (Noite, 1920), under 0.6 elsewhere, except where the olive's leaves fall inside the measuring
+window at the narrowest scenes. At ×10 contrast the photograph's own plaster mottling is still visible inside its
+box, fading out towards the margins, which are flat; at normal contrast nothing marks the box. The door's axis on
+phones: 0.0px off the page axis at 375, 390 and 430 (stored theme and sky-decided).
+*Measured again in fix r1* (the review found what those numbers missed: the ring sat in the fade itself, which a
+10px band either side of the edge did not see; `src/tests/edge.test.js`, `final2/work/fix-r1/tools/`): each frame
+against itself with the facade hidden, so only what the photograph adds is left, across the top and both sides.
+Before: by night a ring 1–2.5 levels deep (1440 × 900: −0.9, −1.2, −1.7, −2.6 over its 4–16px, then 0), by day
+−0.3 to −1.3; straight-edge step up to 1.79. After: no ring, no line; the step at most 0.48 over 28 frames (7 screens,
+2 themes, rest and walk-in), by day at most 0.25. What is left by night is a soft −0.3 to −0.9 inside the fade,
+irregular, from headless Chromium itself: its software raster resamples semi-transparent pixels in 8-bit
+premultiplied values when it draws a file smaller than its size (a flat-colour alpha ramp: exact at its own size,
+up to −1 level per channel at 720 → 680px; the same facade file over a flat colour at its own size: within 0.05 of
+the model). The paving (Dia, rest): autocorrelation of the band, high-passed, at every lag up to 0.9 of the screen:
+r ≤ 0.10 at 844 × 390, 768, 1440, 1920 and 2560, Dia and Noite (was 0.81–0.96 at one or two scene widths, Dia). Evidence:
+`shots/final2-fix-r1/` (`enh-before-*` / `enh-after-*` at ×8 contrast, `edge-*.txt`, `paving-*`).
+
+*On the compositor*: the street's box is six scene widths wide and is painted in the camera layer, so that layer is
+always made at the rest scale, even when the page arrives deep in the walk-in, and is dropped on a new size there
+(Performance › Layer sizes has the rules and the measurements). Under 4× CPU throttle, wheel down through the
+run and back and the walk-in on request, 390 × 844 @3 and 1440 × 900, Dia and Noite: p95 16.7–16.8ms (33ms at 1440 × 900
+Noite, wheel), one frame over 50ms (83ms, the same run), as the build before the street measured the same way (p95 up to 33ms, two
+frames over 50ms, at most 133ms; `final2/work/polish/tools/perf4x.js`).
 
 *Markup* (`src/photo.py`): `.entrance` (`role="img"`, the alt text from photo.json: «Entrada em arco de pedra
 calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro.» /
@@ -798,8 +993,10 @@ scene at 145 viewports from 320 × 560 to 3840 × 2160: every slot within 0.95�
 The head script, which already picks the theme, preloads the four first-paint files of that theme (facade,
 both leaves, plate; AVIF with `type="image/avif"`; `fetchpriority="high"` on the facade, `low` on the others, so
 they never compete with it). Until the facade has loaded, the scene shows the theme's LQIP (24 × 26px, drawn
-blurred through an SVG filter, a theme token `--photo-lqip`; its outer ring is the page colour and the next half
-way, so it has no rectangular edge either), and the doorway's layers (leaves, hall) are hidden
+blurred through an SVG filter, a theme token `--photo-lqip`), in a box inset by the facade's outer fade at its
+widest (10% of the width at the sides, 9.1% of the height at the top, 2.7% at the foot: `photo.py › lqip_vars`,
+from `photo.json › fade`), so it never shows through that fade, before or after the load; outside it the street
+stands in for the margins, which are the street anyway; and the doorway's layers (leaves, hall) are hidden
 (`visibility`, with JavaScript only): the placeholder alone stands for the scene, never sharp doors floating in
 a blur. site.js drops both after the facade's load (`.is-loaded`). The layers sit in boxes sized by CSS, so
 loading never moves anything (CLS 0).
@@ -819,20 +1016,35 @@ still near rest. Measured (source px per device px at p 0 / 0.36 / 0.44 / 0.52 /
 
 | Case | Files picked | First paint |
 |---|---|---|
-| 390 × 844, DPR 3, Dia | facade-1080, leaf-l/r-1080, plate-720, reveal-1080 (AVIF) | 112 KB |
-| 390 × 844, DPR 3, Noite | the same set | 48 KB (+ spill 22 KB after the load) |
-| 1440 × 900, DPR 1, Dia / Noite | facade-720 set | 66 / 27 KB |
-| 430 × 932, DPR 3, Dia | facade-1600, leaf-l/r-1600, plate-720, reveal-2388 | 174 KB (Noite 80 KB) |
-| 1440 × 900, DPR 2, Dia | facade-1600, leaf-l/r-1600, plate-1080, reveal-2388 | 192 KB (Noite 83 KB) |
+| 390 × 844, DPR 3, Dia | facade-1080, leaf-l/r-1080, plate-720, reveal-1080, **street-1080** (AVIF) | 161 KB (118 + the paving strip 43) |
+| 390 × 844, DPR 3, Noite | the same set, street-1080 Noite | 79 KB (+ spill 22 KB after the load) |
+| 375 × 667, DPR 2, Dia / Noite | facade-720 set, street-720 | 95 / 43 KB |
+| 430 × 932, DPR 3, Dia | **facade-1300**, leaf-l/r-1600, plate-720, reveal-2388, street-1080 | 193 KB (Noite 98 KB); was 223 with facade-1600 |
+| 440 × 956, DPR 3, Dia | facade-1300, leaf-l/r-1600, plate-1080, reveal-2388, street-1080 | 212 KB (Noite 101 KB); was 244 |
+| 768 × 1024, DPR 2, Dia | facade-1080 set, **street3-720** (the 3-width strip) | 193 KB (Noite 110 KB with the spill) |
+| 1440 × 900, DPR 1, Dia / Noite | facade-720 set, street3-720 | 145 / 63 KB (95 / 43 with the 1-width strip) |
+| 1440 × 900, DPR 2, Dia | facade-1600, leaf-l/r-1600, plate-1080, reveal-2388, street3-1600 | 399 KB (Noite 235 KB); 265 / 130 with the 1-width strip |
+| 1920 × 1080 and 2560 × 1440, DPR 1, Dia | facade-1080 set, street3-1080 | 246 KB (Noite 119–141 KB); 159 / 78 with the 1-width strip |
 | any, the other theme | nothing (until the theme control is hovered, focused or pressed) | 0 |
 | after the load, at idle, with the sequence on (the walk-in's larger files, shown theme) | facade-2388, leaf-l/r-2388 | 242 KB Dia / 124 KB Noite |
 
-Budget: ≤ 180 KB for the hero images on a phone; the largest phone case is 174 KB by day (the Dia plate grew from
-4–11 KB to 17–75 KB with its grain and floor; a desktop at DPR 2 fetches 192 KB by day). Each image is fetched
+Budget: ≤ 180 KB for the hero images on a phone. Since the polish pass the paving strip (a CSS background: 25 / 43 /
+66 KB by day, 11 / 21 / 33 KB by night at 720 / 1080 / 1600) is part of every first paint; the 390 × 844 @3 case is
+161 KB by day. The large phones at 3× (430 × 932, 440 × 956: scenes of 405–428px, 1215–1284 device px) took the 1600
+facade (223 / 244 KB by day); fix r1 adds a 1300 rung to the facade's ladder (both themes, AVIF 112 / 64 KB), so
+they take it: **193 / 212 KB by day, still over by 13 / 32 KB** (Noite 98 / 101). The rest of the way down, not taken
+because each costs the paving's sharpness where it meets the photograph: the 720 strip on phones (−18 KB), or AVIF
+q44 for the strip (−12 KB, the grout smears); a 1300 rung for the leaves would save 6 KB. Wider screens (from 600px,
+and landscape) fetch the 3-width paving strip, three times the bytes of the 1-width one (+50 KB at 1440 × 900 @1,
++87 KB at 1920 × 1080, +130 KB at 1440 × 900 @2 by day): the price of no repeat on a wide screen; there is no
+desktop budget, and the strip is a background image, so it never competes with the facade for the first paint's
+priority. (The phone budget is about the first view on a cellular link; a phone held upright keeps the 1-width
+strip.) Measured with `final2/work/polish/tools/bytes.js` (bytes of `assets/photo/` up to the
+load event). Each image is fetched
 once (the head's preload is the file the picture picks). With the photo files held back 1.2s: CLS 0 at 390, 430
 and 1440, both themes; the largest contentful paint is the facade image. The spill (Noite, invisible until the doors open) joins the scene after the page's load
 (`.is-ready`); everything is decoded (`img.decode()`) after the load, before anything moves. Shipped in all:
-2.15 MB in `assets/photo/` (both themes, every width, AVIF and WebP), of which a visitor fetches one theme's
+4.85 MB in `assets/photo/` since fix r1 (2.87 MB before it: the 3-width paving strips add 1.51 MB, the 1300 rung 0.39 MB, the wider fade the rest; 2.20 MB before the polish pass: the paving strips added 0.51 MB, the re-graded facades 0.16 MB) (both themes, every width, AVIF and WebP), of which a visitor fetches one theme's
 first-paint set. Without JavaScript a browser ignores `loading="lazy"` (the HTML standard turns it off when
 scripting is off), so a no-JS visit fetches both themes' first sets (about 85 KB at 390 × 844, DPR 2): the price
 of keeping one static page for both themes.
@@ -911,9 +1123,18 @@ US companies: GDPR safeguards such as the EU-US Data Privacy Framework or standa
 apart from hosting, the only third-party request is the form). «Última atualização: novembro de 2026.» and a
 link home. Linked from the consent label and every footer.
 
-**`404`**: the same top bar as every page (Dia · Noite, PT · EN; site.js loaded), tokens and lockup (24–36px,
+**`404`**: the same top bar as every page (Dia · Noite, PT · EN; site.js loaded), tokens and lockup (30–46px,
 `--size-lockup-plain`), two sentences (PT and EN) and one link home in each language at the back-link size;
-footer with the privacy link. A head script resolves the site root and writes `<base>` and the stylesheets.
+footer with the privacy link. A head script resolves the site root and writes `<base>`, the stylesheets and
+site.js (deferred): the script is written too, so the preload scanner never fetches a page-relative
+`a/b/assets/js/site.js` before the `<base>` applies (review r1: one 404 and a console error on every deep 404).
+Without JavaScript the stylesheets come from the site root (`/assets/css/…`), so a 404 at any depth is styled on
+the production domain (on the github.io preview, under `/abrazileira/`, a no-JS 404 is plain). Those two links are
+single-quoted on purpose: the repository's deploy step, `tools/stamp_assets.py`, fingerprints double-quoted,
+page-relative references only and stopped at a root-absolute one («404.html: missing asset /assets/css/tokens.css»,
+so no page was stamped: review r1); it leaves these alone, keeps the unstamped files in `docs/`, and build.py still
+gives them `?v=`. `src/tests/stamp.test.js` runs the build through that tool on a copy and checks every page's
+CSS/JS references exist (it fails on the build before this fix). The two `theme-color` metas as on every page.
 
 ## Motion
 
@@ -1136,7 +1357,29 @@ This replaces the former instant jump.
   layer, so a phone never holds a texture many screens wide. The facade is a layer of its own so an engine that
   composites images directly (WebKit) can use the decoded image as the layer's contents instead of a backing
   store re-rendered at every zoom; the camera layer then paints almost nothing (the LQIP is gone after the load).
-  Only Chromium was measured here.
+  Only Chromium was measured here. The one exception is the street (the wall and the paving round the
+  photograph, since the polish pass): it is painted in the camera layer and its box is six scene widths wide (three
+  to the left, two to the right) and 2.1 tall. It is rastered only where it is on screen, at the camera layer's raster scale, so that layer must
+  be made at the rest scale, as it is from the top. Three rules keep it so:
+  - Layers made under the flat colour (`#lista` on load, a jump to the list, a restored position) are made with
+    the camera at its rest scale (`transform: none` for its first three frames and 60ms at least, out of sight
+    under the hall's light: pixel-identical frames at nine viewports from 375 × 667 to 2560 × 1080, both themes),
+    then the true camera; should the light lift before then, the true camera at once (site.js, `low`).
+  - A new size deep in the walk-in (zoom over 2.2×: a window resized over the list, a rotation) drops the layers;
+    they are made again when the page next moves.
+  - With the 3D entrance (`?3d`), the photograph's layers are hidden while the canvas draws; when they come back
+    under the flat colour, the camera is drawn at its rest scale for those first frames too. Without it, a theme
+    change at rest after a walk-in redrew the street at the end's zoom and froze frame production for over 8s in the
+    software renderer (the door3d test's "theme change: the next scroll uploads nothing" failed one run in three;
+    after: 0 in 9).
+  Without them, at 1440 × 900: the rewind to the top on a Tab back to the title from `#lista` froze the page for
+  0.5–1.8s (frames of 517–1767ms), the scroll back up from `#lista` had frames of up to 300ms (7–13 over 50ms), and
+  a resize at p 0.8 took 2–4s on the compositor (the reverse-scroll test's E2 failed one run in three). With them:
+  frames of 17ms for the rewind, at most 33–50ms and none over 50ms coming back up (unthrottled and 4×), E2
+  settled in 0.44–0.48s in eight runs, as before the street. Tried and dropped: the street as a layer of its own
+  (made again at the doorway's zoom each time it came back into view: 9–21 frames over 50ms on a 4×-throttled wheel
+  scroll at 1440 × 900), and hiding it once the doorway covers the screen (the camera layer's raster scale then
+  followed the zoom: frames of 83–133ms coming back up).
 - No blend modes: the lamplight on the steps was first a layer with `mix-blend-mode: screen`; a blended layer reads
   its backdrop back in every composited frame (1440 × 900 Noite, 4× throttle: p95 33ms, frames of 83ms). It is now an
   RGBA overlay of one warm colour whose alpha was solved against the night facade itself (`photo/py/spill2.py`),
@@ -1149,6 +1392,130 @@ This replaces the former instant jump.
 - Crisp during the walk-in on request: during a flight, while the zoom grows past 2.2× the scale of the last raster
   and the jambs are still on screen (p < 0.58), the facade is handed back for one frame and promoted again: a fresh
   raster at the current zoom. A hand scroll keeps the raster it has while it moves and turns crisp when it rests.
+
+### The 3D entrance (door3d.js)
+**Status: opt-in, for testing on real devices** (polish brief §3, the client's latest words: «Ship the 3D door as
+OPT-IN (`?3d`) for real-device testing; default = the CSS photo version. Keep all fallbacks»). Every visitor gets the
+CSS entrance (the photograph in layers, «The door sequence» above); the 3D entrance is drawn only when the address
+carries `?3d` (`https://abrazileira.com/?3d`, `/en/?3d`). Without it site.js neither probes WebGL nor fetches or
+evaluates anything of the 3D (`want3d()`; the HTML still names the module in `data-3d` / `data-3d-dep`, which costs
+nothing until it is requested). With `?3d` every rule below holds unchanged, every fallback included: the GPU probe
+refuses a software renderer or a blocklisted GPU, reduced motion, a data saver, 2G, `?sem3d` and `?semporta` still
+win, and a lost context hands back to the CSS entrance. `?3d=force` also skips the probe and lets a software renderer
+draw (the headless tests only). The opt-in belongs to the address: the PT · EN links do not carry it. It becomes the
+default only after the real-device checks under «Roadmap and known gaps».
+
+The client saw the CSS leaves as flat cut-outs («parece um jogo da Sega Saturn»: no thickness, a painted knob, no
+light). Where the device has a real GPU (and the address opts in), the same timeline is drawn in WebGL 2 (three.js
+r187, self-hosted). The binding rule (client): **the photograph is the skin; no photorealism and no real detail of
+the door may be lost.**
+
+- **Projective texturing from the photograph's own camera.** The world is the one the interior plate was ray-traced
+  in (`photo/py/plate2.py`): the photograph's camera C0 stands 3 m in front of the door, focal length 1512 px of the
+  2388 px master, so the facade image spans 4.738 × 5.226 m on the plane z = 0 (doorway 1.50 × 2.59 m, eye 1.10 m
+  above the sill, the hall point at the origin). Every surface the photograph shows (facade, leaves, knobs,
+  escutcheon, hinge knuckles, the hall seen through the gap) takes, per fragment, the photo pixel its point had at
+  rest seen from C0 (`proj()` in the shaders). So at p = 0 the frame IS the photograph whatever the geometry, and a
+  turning leaf carries its own pixels. No procedural or stock material replaces a photographed one.
+- **As sharp as the page's photograph.** The canvas is drawn at the device's own pixel ratio, up to 3 (the iPhone
+  case; at 2 the take-over frame was drawn at 2/3 of the page photograph's resolution and upscaled), with MSAA only
+  up to a ratio of 2; the facade and leaf samples carry a LOD bias of −0.65 (trilinear minification of the 2388 master
+  is softer than the browser's own image scaling). Take-over frame at 1 px of scroll, gradient energy of the doorway,
+  3D ÷ the page's own `<img>` (`?sem3d`, now the default page), Dia: 390 × 844 @1 / @2 / @3 1.08 / 0.97 / 1.13, 1440 × 900 @1 / @2 0.98 / 1.01
+  (before: 0.87 / 0.80 / 0.64, 0.81 / 0.89). This is a deliberate deviation from the brief's «DPR ≤ 2» cap: the
+  client's photorealism rule wins; without MSAA above 2 the drawing buffer of a 390 × 844 @3 phone is ~24 MB against
+  ~47 MB at @2 with 4× MSAA.
+- **What 3D adds** (only what a picture cannot): leaves 55 mm thick, hinged on their outer front corners (the brass
+  knuckles stay, the leaves swing in to 84°); raised-and-fielded panels as real geometry measured on the photograph
+  (per side: a 20–24 px moulding band with quirk, ovolo and groove, a 10–30 px bevel to a field 5 mm below the
+  stile; mitred rings, smooth normals across the ovolo), so the photographed shading stays where its relief is and
+  parallax shows at grazing angles; knobs as lathe solids (rose Ø 76 mm, head Ø 69 mm, 66 mm deep) and the
+  escutcheon as a 4.5 mm plate, carrying the photographed brass; the doorway's depth (limestone jambs sampled from
+  the pilasters, the lintel's soffit); the hall as a box; the facade as an endless plane carrying the page's street round the photograph (`FS_FACADE`: the wall's stops as a 256 × 1 lookup texture (walking the stops per pixel doubled the frame time in the software renderer the tests use: p95 167–200ms against 83–100 before the street; with the lookup 117–150), the paving strip with RepeatWrapping at one facade width, or three when the stylesheet picked the 3-width strip (`uSt.w`, the period, read from the file's name; fix r1) (no anisotropic filtering: the plane faces the camera all the way in), the colour below it, the two night lights as gains, evaluated only inside their ellipses; the photograph's outer fade laid over it; the strip is the file the page's stylesheet picked, read from `.ph--street`'s computed background, so it comes from the cache), so the take-over frame and the CSS rest frame meet with the street intact.
+- **Brass the photograph saw edge-on** (the knob's neck, the rims of the rose and the head, the hinge barrel's sides)
+  would carry the silhouette's pixels smeared across it (a black streak on the neck, dark rings): where a brass face
+  turned less than ~0.12–0.4 towards C0 at rest, it takes the photograph's own mean brass of that part (a mip of the
+  knob's cap, the escutcheon's plate, the barrel's axis column) and is lit as that face was.
+- **Light modulates, never repaints.** Each surface is multiplied by E(now) / E(rest): the irradiance of its current
+  pose over that of its pose in the photograph (sun from the upper right by day, matching the lantern's and the
+  olive's shadows; the lantern as a point light by night; the street's sky; the hall's warm bounce, stronger deeper
+  in; the sun or lantern seen only through the doorway; the knob's soft sphere shadow). At rest the ratio is exactly 1.
+  Clamped to 0.5–1.45 by day, 0.5–8 by night (the leaves turning into the lamplit hall). Brass adds only the CHANGE of
+  a restrained reflection (now minus rest). The oiled walnut's sheen: a new sheen adds light; the photographed one
+  going away scales the photo pixel as a whole, its chroma kept, by at most 12 % (an absolute amount taken from dark
+  walnut emptied its blue channel: the leaves turned red-orange, crimson in shade). Walnut pixels with blue ≤ 2,
+  1440 Dia: p 0 0.2 %, p 0.15 0.6 %, p 0.3 0.8 %, p 0.5 2.3 % (CSS entrance at p 0.5: 2.1 %; before: 15 / 11 / 44 %).
+  The light the gap painted on the leaves' inner arris at rest (night: up to 6× in linear light within 6 px) is
+  divided out as the leaves open, so no bright line travels with them; the closed leaves' shadow line on the sill
+  and the gap's dark notch painted into the head of the frame above them (master px 1080–1206 × 907–920) fade as
+  they open, to the stone and the head's own lower face beside them.
+- **The hall** is the only part the photograph does not show, and it stays the photograph's own: the plate (the
+  ray-traced, defocused hall the page shows through the doorway) projected from C0 onto the plate's own box (floor
+  −1.10, ceiling 2.05, walls ±1.08, far wall 3.8 m behind the door by day, 4.0 by night), with the doorway's shade
+  over it. So the gap shows exactly the page's hall at rest and the walk-in has true parallax. It is never brought
+  into focus: a box with baked slabs and plaster drawn sharp read as CG exactly when it filled the screen (review r1),
+  so the lens stays on the door. The hall is drawn first into a half-size target and softened by a lens blur that
+  grows as the camera walks in (sigma up to 4 CSS px, smoothstep over zc 1 → 0.4; split into up to three passes so
+  the kernel never leaves gaps), and its plate is sampled ever softer (LOD bias up to +3, isotropic: seen from
+  inside, the plate's surfaces near the door are stretched along the rays from C0 and its render grain drew radial
+  streaks). Light only modulates it: by day a soft pool of sun through the opened doorway, cut by the leaves'
+  shadows (+1.1 × in linear light at most), and the leaves' contact shadow on the floor. It dissolves into the flat
+  `--color-hall` as before.
+- **The lintel's soffit** is at the door's depth, so it is drawn with the jambs (sharp, never in the hall's blur). At
+  rest it is the photograph's hall and the doorway's shade (what the gap shows there); as the doors open it becomes
+  the left pilaster's limestone at about its own scale, low-passed and at half its contrast (its 5 mm pits had grown
+  into 10–20 px blotches), a warm bounce by day (×0.78 / 0.74 / 0.69, lighter towards the street: 390 Dia p 0.5 mean
+  rgb(176, 157, 135), was 141, 128, 114), the hall's lamplight by night (warmer and stronger towards it).
+- **The camera is the page's.** site.js passes the photograph's rest box, the CSS camera's pan (tx, ty) and the
+  camera distance zc in rest units: 1 / s while the doors open (p ≤ 0.36, so the composition and the pan are the CSS
+  ones), then on a Hermite curve that keeps that speed through the door plane (zc = −0.083 at p 0.58, between the
+  open leaves) to the point where the far arch fills the screen (0.85 margin) at p 0.76, under the flat colour. The
+  doors' angle is the same `--curve-door` value as the CSS leaves'.
+- **When it draws.** Only while 0 < r < the flat colour (p 0.76). At rest (r = 0) the page shows its own
+  photograph and the canvas is hidden; under the flat colour nothing is drawn. It takes over only at one of those
+  two moments (armed at rest or under the flat colour, again after each theme change), never mid-shot. The swap is
+  two inline styles (canvas `visibility`, `.scene` `visibility`), never a class on `html`. Whenever it cannot draw
+  (the other theme's textures still loading, a lost context) the CSS entrance, which follows r all along, is shown;
+  after a theme change under the shown canvas its last frame stays (at most 300 ms) until the new theme's facade and
+  leaves are decoded, so the CSS entrance never comes back for a frame without its facade.
+- **Delivery.** Only with `?3d` (see Status). Nothing on the critical path, and nothing in a gesture. A device with no WebGL 2 worth having (none,
+  disabled, blocklisted, a software renderer) is known before a byte is fetched: site.js probes a throwaway context
+  (`failIfMajorPerformanceCaveat`, the renderer's name), releases it at once and remembers the answer for the session
+  (`sessionStorage["ab-3d"]`). The first wheel, touch or press of the action only fetches the module and three.js
+  (`<link rel="modulepreload">`; `data-3d` and `data-3d-dep` on `.porta` name both, content-hashed). The module is
+  evaluated, mounted and warmed only while the page is still (no scroll followed and no flight for 400 ms, at rest or
+  under the flat colour, where a visitor reads; a pause mid-shot is often the gap between two gestures), 1.5 s after
+  the load event at idle at the earliest: never in the hero's motion (it cost the CSS sequence 100–300 ms frames at 4×
+  throttle, review r1), and it gains nothing then, since the canvas takes over only at rest or under the flat colour.
+  The module imports `assets/js/vendor/three.min.js` (an esbuild tree-shaken subset of `three`: 23 exports, MIT
+  notice kept; `tools/vendor_three.py`, committed, the build only copies it). Textures are the page's own files: the
+  facade and the leaves at the sizes the page already fetches for the walk-in (sizes = 3× the scene), the plate, the
+  doorway's shade and the lamplight at the size shown; each decoded off the main thread (`createImageBitmap` from the
+  file's bytes, from the HTTP cache: one made from the page's `<img>` re-decoded the 2388 master on the main thread,
+  126 ms at 4× throttle), uploaded at its own size (resizing the master to 2048 cost a 370 ms task at 4× throttle and
+  saved no byte; anything over 4096 px would be scaled), compiled (KHR_parallel_shader_compile where available) and
+  drawn once, each step its own idle task taken only while the page is still; then the decoded copies are closed. A
+  theme change does the same for the new theme before the canvas may draw it, so the first frame of the next scroll
+  uploads nothing (`theme.js`, 4× throttle: first 3D frames 1–12 ms, were 122–197 ms with the whole new theme
+  uploaded in them; the change itself costs two idle tasks of 65–96 ms at rest, was one of 154–188 ms). Render on demand
+  (only from the driver's frames); the default power preference (a two-GPU laptop's discrete GPU is not woken).
+- **GPU budget** (texture uploads hooked, review r1 probe): the facade master 2388 × 2634 with mips (~33 MB, kept at
+  that size on every device: the brief's «textures ≤ 2K» is not met for this one texture, by design, it is the
+  photograph's detail at the walk-in's zoom), the leaves 319 × 1306, the plate 720–1080, the doorway's shade, the
+  lamplight by night: 45–55 MB in all. No CPU copy is kept after upload. The drawing buffer stays allocated while the
+  page lives (resizing it to 1 × 1 under the flat colour would cost the next take-over a reallocation); not measured
+  on a device.
+- **Refused, quietly, to the CSS entrance:** no `?3d` in the address (the default: never probed, never requested);
+  no ES modules or no WebGL 2; a software renderer or a blocklisted GPU
+  (the probe above; the module repeats the check); reduced motion, `?semporta`, `?sem3d`, a data saver or a 2G link
+  (never requested). A lost context (iOS drops them in the background or under memory pressure): the canvas goes and
+  the CSS entrance shows the same progress at once; the 3D entrance mounts again from the cached files when the page
+  is shown again and still (`pageshow`, `visibilitychange`, or 3 s later), twice at most per visit. `?3d=force` forces a
+  software renderer, for tests only. `?diag` shows the state (`3d=on|refused|loading|context lost`).
+- Files: `src/door3d.js` (module: scene, shaders, `mount()`), `src/assets/js/vendor/three.min.js`; the prototype
+  (`door3d/proto/index.html` in the working notes) renders any p, theme and viewport from the same module. The baked
+  hall atlas of the previous round (`tools/hall_bake.py`, `hall.{avif,webp}`, `hall-detail.webp`) is no longer
+  shipped.
 
 ### Other motion
 | Token | Duration | Easing | Use |
@@ -1173,6 +1540,10 @@ This replaces the former instant jump.
   under it), the list is visible with a disabled form and the `<noscript>` line.
 - Reduced motion and the theme: the change is instant, and the controls and links change with it (their colour
   transitions are held for that frame), so the control just pressed never flickers through a low-contrast mix.
+- 3D entrance (above): by default (no `?3d` in the address), and with `?3d` without a GPU-backed WebGL 2 (known
+  before anything is fetched), with `?sem3d`, a data saver or 2G, before it is ready, while the other theme's textures load, and after a lost context (until it mounts again),
+  the CSS entrance (the photograph in layers) runs the same timeline; nothing waits for the 3D, and the page never
+  shows neither.
 - Keyboard: Enter or Space on the action plays the walk-in and lands in the email field; Tab from the action
   lands on the email field with the list in view at once; focusing anything in the pinned first screen
   mid-sequence rewinds to the rest state, so focus is never on an invisible element. A tap or a click never
@@ -1182,6 +1553,33 @@ This replaces the former instant jump.
 Playwright (headless Chromium, software raster), 4× CPU throttle via CDP, traced with CDP tracing
 (devtools.timeline); frame intervals are `requestAnimationFrame` intervals counted while the page moves.
 390 × 844 at DPR 3, 1440 × 900 at DPR 1, Dia and Noite.
+
+**3D entrance round** (`door3d/ptools/perf.js`, `weight.js` in the working notes; headless Chromium WITHOUT a GPU:
+WebGL through SwiftShader, forced with `?3d`, which is `?3d=force` since the opt-in; 4× CPU throttle via CDP; measured
+before the merge with the pitch typography and wordmark, which touch neither the driver nor the module). The renderer's GPU work runs on the CPU here,
+so frame intervals say nothing about a phone (72–78ms median); what transfers is the main thread's work per frame,
+timed around every `requestAnimationFrame` callback during a wheel gesture down the run and back:
+
+| Viewport | Mode | Callbacks | p50 | p95 | Worst | > 17ms | > 50ms |
+|---|---|---|---|---|---|---|---|
+| 390 × 844, DPR 2 | CSS (`?sem3d`) | 170 | 0.1ms | 1.3ms | 7.9ms | 0 | 0 |
+| 390 × 844, DPR 2 | 3D | 118 | 3.8ms | 9.5ms | 13.3ms | 0 | 0 |
+| 1440 × 900, DPR 1 | CSS (`?sem3d`) | 174 | 0.1ms | 5.0ms | 8.4ms | 0 | 0 |
+| 1440 × 900, DPR 1 | 3D | 120 | 4.1ms | 13.3ms | 25.2ms | 3 | 0 |
+
+Mount (once, canvas hidden), 4× throttle: three long tasks of 163–183, 69–81 and 112–115 ms (module evaluation and
+context; the facade's upload; programs and the first frames; the photographs are decoded off the main thread), and
+only once the page is still at rest or under the flat colour (`early.js` in `shots/door3d-fix-r1`, a wheel, touch
+drags or the action pressed 300 ms after the load: no long task while anything moves, the walk-in on request has the
+same frames as with `?sem3d`, and the mount follows its landing; before this round the same gestures carried
+69–1234 ms tasks).
+Bytes (measured in the 3D round, on the photo build with its earlier fonts): first paint unchanged (the same 14–15 requests and bytes with and without the 3D entrance, Dia 312 KB at
+390 × 844 DPR 3 / 266 KB at 1440 × 900, Noite 226–270 KB; HTML +44 bytes, site.js +3.6 KB raw / +1.1 KB gzip,
+site.css +0.3 KB). Lazy, after the load: 2 requests, 572 KB raw, 145 KB gzip (three.min.js 536 / 133 KB, door3d.js
+36 / 11.9 KB; the baked hall atlas and detail of the first round are gone); photographs: 0 extra bytes (the same
+facade and leaf files the CSS entrance fetches at idle for its walk-in; the module re-reads them from the HTTP cache
+to decode them off the main thread). Target ≤ ~600 KB compressed: met. A device the probe refuses fetches none of it,
+and neither does the default page (no `?3d`).
 
 **Photo round (the photograph in layers; this build)**: `photoint-tools/perfwheel.js` (a wheel gesture down into the
 list and back up; finger drags, touch events, 18px a frame) and `photoint-tools/perfflight.js` (the walk-in on
@@ -1307,9 +1705,9 @@ pt-PT first, EN second. Facts only.
 | Key | PT | EN |
 |---|---|---|
 | title | A Brazileira · Boutique Hotel · Torres Vedras | A Brazileira · Boutique Hotel · Torres Vedras |
-| description | A Brazileira, hotel em Torres Vedras. Uma casa antiga em restauro. Abre brevemente. | A Brazileira, a hotel in Torres Vedras, Portugal. An old house under restoration. Opening soon. |
-| lede | Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes. | An old house in Torres Vedras is being restored to welcome guests. |
-| status | Abre brevemente. | Opening soon. |
+| description | A Brazileira, hotel em Torres Vedras. Um edifício antigo em restauro. Abrimos brevemente. | A Brazileira, a hotel in Torres Vedras, Portugal. An old building under restoration. Opening soon. |
+| lede | Estamos a restaurar um edifício antigo. (polish pass; was «Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.») | We are restoring an old building. (was «An old house in Torres Vedras is being restored to welcome guests.») |
+| status | Abrimos brevemente. (was «Abre brevemente.») | Opening soon. |
 | action | Entrar na lista de espera | Join the waiting list |
 | list title | Lista de espera | Waiting list |
 | list sentence | Deixe-nos o seu email e avisamos quando abrirmos. | Leave your email and we will let you know when we open. |
@@ -1325,11 +1723,46 @@ pt-PT first, EN second. Facts only.
 | sun note | É dia em Torres Vedras. · É noite em Torres Vedras. | It is daytime in Torres Vedras. · It is night in Torres Vedras. |
 | 404 | Esta página não existe. · Voltar ao início | This page does not exist. · Back to home |
 
+### The first screen's words (polish pass, POLISH_BRIEF §2)
+The client found the sentence «cringy». Read in order, the old screen said the town twice (the lockup's line, then
+the sentence), explained a purpose the lockup already states («para receber hóspedes»: it is a hotel), and leaned on
+«casa antiga», the romance of an old house, in a 13-word passive with an inversion. The rewrite gives each line one
+job, in the order a visitor reads them: who and where (the lockup), what is happening now (the sentence), when (the
+status), what to do (the action). Constraints: facts the brief allows only (an old building, under restoration,
+opening soon); no virtue words, clichés («casa com história», «mãos de artesão», «no coração de»), puns or
+exclamation marks; at most about 14 words for the sentence; pt-PT as a person from Torres Vedras would say it.
+
+Five options per language (sentence / status / action):
+
+| # | PT | EN | Note |
+|---|---|---|---|
+| **1** | **«Estamos a restaurar um edifício antigo.» / «Abrimos brevemente.» / «Entrar na lista de espera»** | **«We are restoring an old building.» / «Opening soon.» / «Join the waiting list»** | **chosen** |
+| 2 | «Um edifício antigo de Torres Vedras, em obras para ser hotel.» / «Abre brevemente.» / same | «An old building in Torres Vedras, being restored as a hotel.» / «Opening soon.» / same | true, but says the town and «hotel» again, right under the lockup |
+| 3 | «O edifício está em obras.» / «Abrimos brevemente.» / same | «The building is being restored.» / «Opening soon.» / same | the shortest; «o edifício» points at the photograph, but «em obras» reads as a building-site notice |
+| 4 | «Ainda em obras. Quando abrirmos, avisamos quem estiver na lista.» / (none) / same | «Still being restored. When we open, we will write to everyone on the list.» / (none) / same | folds the status into the reason for the list; repeats the list's own sentence one scroll later |
+| 5 | «Um hotel num edifício antigo, ainda em restauro.» / «Abre brevemente.» / «Pedir aviso da abertura» | «A hotel in an old building, still being restored.» / «Opening soon.» / «Ask to be told when we open» | a noun phrase, a caption more than a sentence; a new action label would split the one action's name from the button's |
+
+Why 1: read aloud after the lockup it runs as one statement («A Brazileira, Boutique Hotel, Torres Vedras. Estamos
+a restaurar um edifício antigo. Abrimos brevemente. Entrar na lista de espera.»), and from the lockup down that is
+what a screen reader hears too: no word repeated, nothing explained twice. (On a first visit, with no stored theme,
+the sun note «É noite em Torres Vedras.» sits in the top bar above the lockup and describes the theme buttons
+(`aria-describedby`), so the town is named once more there, by design: the note says why the page is dark or light,
+and it is the bar's, not the sentence's.) Active voice in the first person plural, the house speaking,
+as its other lines already do («avisamos quando abrirmos»), so the status follows in the same voice («Abrimos»,
+not «Abre»). One fact, no adjective but «antigo», six words: quiet because it is plain, confident because it does
+not explain itself. It translates word for word. The action keeps its name: it is the button's label too, and the
+list is called «Lista de espera» (ux-copy: same term for the same thing; the label says what happens).
+Copy lint (taste-skill, by hand and grep, PT and EN): virtue or banned words 0, clichés 0, puns 0 («Abrimos» is a
+business opening, not a door), exclamation marks 0, invented facts 0, «boutique» only in the lockup, 6 + 2 + 5
+words (6 + 2 + 4 in English). The rival test (swap the town and the name) leaves the sentence true anywhere, by design: it carries the
+news, while the lockup and the photograph carry the place. The new pt-PT lines need the client's sign-off.
+
 The only contact on the site is inn@abrazileira.com (privacy notice, the no-JS line and the send error).
 The round 3 copy changes (sun note, success, send error, button label) are new pt-PT lines: they need the client's
 sign-off.
-Open Graph: `assets/img/og.jpg`, 1200 × 630, 58 KB, Noite: the lockup (its line on two lines at 23px, 0.36em,
-so it still reads at about 10px when a link preview shows the card 500px wide) and the photograph of the entrance (doors
+Open Graph: `assets/img/og.jpg`, 1200 × 630, 60 KB, Noite: the lockup with the pitch's drawn wordmark at 72px (the
+wordmark 490px wide, the crest 126px; its line on two lines at 22px, 0.3em, so it still reads at about 9px when a
+link preview shows the card 500px wide) and the photograph of the entrance (doors
 closed, the lantern lit, the hall's light in the gap), rendered by `src/og.py` from the real components and
 layers (`--replace` writes it into `src/assets/img/`); JPEG, since it is a photograph (the PNG of the same frame is
 about ten times larger). `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
@@ -1357,13 +1790,22 @@ accessibility tree (nothing is made inert or hidden).
 
 ## Implementation notes (extension)
 - Source: `src/` (build.py, photo.py, site.css, site.js, tokens.tpl.css, noite.css, styleguide.py, og.py,
-  `assets/` with the emblem, fonts, icons, favicon, og.jpg and `photo/` (the layers per theme, AVIF + WebP, and
+  `assets/` with the emblem, the wordmark, fonts, icons, favicon, og.jpg and `photo/` (the layers per theme, AVIF + WebP, and
   photo.json), `tests/`). `python3 src/build.py` rebuilds `docs/` completely with Python 3 alone; every path is
   relative to `build.py`, nothing is read from outside `src/`. `photo.py` turns photo.json into the markup (see
   Components › entrance); the photo files are encoded once by the asset pipeline and copied as they are (the build
   needs no image library and is deterministic). The caderno drawing's generators (`scene.py`, `hand.py`) and every
   rule and token that drew it (`.k*`, `.w-*`, `--pen-*`, `--ink-*`, `--w-*`, `--i-*`, the hall's SVG layers, the
   load animation) are gone.
+- Consolidation (8 November 2026): this build joins three workstreams made in parallel from the photo version: the
+  wall-coloured page with the 3D entrance (`door3d.js` and the vendored three.js subset), the pitch typography
+  (Cinzel labels, EB Garamond; the version live at the time) and the pitch wordmark as a vector (`wordmark.svg` in
+  Verde Torres) over the current emblem. Where they met: the build ships the 3D module, three.js and only the fonts
+  still used (Cinzel capitals, EB Garamond 400 / 500; the wordmark face and its licence copy are gone); the
+  styleguide's contrast table measures the pitch's roles on the wall (`parede` / `parede-noite`), and so does
+  `--color-brand-ink` (Verde Torres 13.00:1 on parede, linho 14.79:1 on parede-noite); og.jpg is re-rendered with
+  `og.py --replace`, so the card's night ground and facade are the wall-graded ones. The 3D entrance was then made
+  opt-in (`?3d`, Motion › The 3D entrance).
 - Photo asset pipeline (outside the site, in the working notes `photo/py/`; Python with numpy, OpenCV and Pillow
   with AVIF): `masks`, `grade`, `build_dia`, `night`, `build_noite`, `export` (the first pass), then for this
   integration `plate2` (the hall), `export2` (plate files, LQIPs), `facade2` (the elliptical edge), `spill2` (the
@@ -1383,19 +1825,41 @@ accessibility tree (nothing is made inert or hidden).
   screen is one colour, mid-rise, at p = 1 and with the seam on screen, Dia and Noite, at 390 × 844, 430 × 932,
   375 × 667, 320 × 568, 844 × 390, 768 × 1024, 1440 × 900, 1920 × 1080 and 2560 × 1080; on 320 × 568, 375 × 553, 375 × 667 and 390 × 664
   the photograph's foot is inside the first screen and the cue is never sliced) and `node
-  src/tests/list.test.js docs` (50 checks: a tap or a click on the email field or the button never moves the
+  src/tests/list.test.js docs` (68 checks: a tap or a click on the email field or the button never moves the
   page, at three rest positions on 390 × 844 and 375 × 667 by touch and 1440 × 900 and 1280 × 720 by mouse, and the
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
   rest after a reload at the bottom, on six screens including 844 × 390 and 1440 × 900 at 200%; the scroll to the
   readable form is 0.9–1.2 screens on six viewports; the send error carries the mailto link and the success line
   sits where the field was, PT and EN; the sun note shows on phones, in EB Garamond, with dark mode not overriding
   the sky, clear of the crest at five sizes). `src/tests/png.js` decodes the screenshots (Node's zlib only).
+- The 3D entrance: `node src/tests/door3d.test.js docs` (61 checks, SwiftShader forced with `?3d=force`): lazy (nothing
+  requested before the load event), the photograph at rest with no inline style, the canvas drawing the doorway at
+  p 0.15 / 0.3 / 0.5 with the layers hidden, flat `--color-hall` and no canvas at p 0.9, the exact rest state back at
+  the top, the walk-in on request landing in the email field with the canvas drawn on the way, a theme change
+  mid-run (canvas or CSS entrance, never neither), a theme change at rest after which the next scroll uploads no
+  texture, a lost context (the CSS entrance takes over and keeps moving) and the 3D entrance back once the page is
+  shown again, at 390 and 1440 in both themes; the default page (no `?3d`: state `off`, nothing probed), `?sem3d`,
+  `?semporta`, reduced motion and `?3d` on a software renderer (the probe: `refused`) never request it; the take-over
+  frame as sharp as the page's photograph (3D ÷ the default page's
+  gradient energy 0.95–1.3 at 390 × 844 @3 and 1440 × 900 @1); a wheel or touch drag 300 ms after the load at 4×
+  CPU throttle with no long task over 50 ms. The other three suites load the default page (no `?3d`), so they
+  exercise the CSS entrance, which every visitor gets; their frame-timing assertions
+  would mean nothing with SwiftShader drawing the canvas on the CPU.
+- The photograph's box (fix r1): `node src/tests/edge.test.js docs` (28 checks: 375 × 667 @2, 390 × 844 @3,
+  430 × 932 @3, 768 × 1024 @2, 1440 × 900, 1920 × 1080 and 2560 × 1440, Dia and Noite, at rest and in the walk-in):
+  each frame against the same frame with the facade hidden (the street alone), the difference averaged along the
+  top and both sides and high-passed across them; the straight-edge step is at most 0.6 levels (worst 0.48 now; the
+  build before fix r1 fails 26 of 28, worst 1.79). And the deploy step: `node src/tests/stamp.test.js docs
+  [tools/stamp_assets.py]` (the repository's fingerprinting run on a copy of the build: it exits cleanly and every
+  page's CSS/JS reference, either quote style, names a file that exists).
 - Output: `docs/index.html`, `docs/en/index.html`, `docs/privacidade/index.html`, `docs/en/privacy/index.html`,
   `docs/404.html`, `docs/design/index.html` (noindex, unlinked styleguide), `assets/css/tokens.css`,
-  `assets/css/site.css`, `assets/js/site.js`, fonts, images, `assets/photo/{dia,noite}/` (72 files), `favicon.svg`, `robots.txt`, `sitemap.xml` (home
+  `assets/css/site.css`, `assets/js/site.js`, fonts, images, `assets/photo/{dia,noite}/` (100 files), `favicon.svg`, `robots.txt`, `sitemap.xml` (home
   and privacy, with hreflang), `site.webmanifest`, `.nojekyll`.
 - Cache busting: the build stamps every local CSS/JS URL with `?v=<sha256 prefix>` (GitHub Pages caches for
-  10 minutes; this keeps HTML and CSS/JS in step).
+  10 minutes; this keeps HTML and CSS/JS in step), in either quote style; the repository's deploy step
+  (`python3 tools/stamp_assets.py docs`) then fingerprints the file names. `node src/tests/stamp.test.js docs
+  [tools/stamp_assets.py]` checks that pair (skips if the tool is not there).
 - Shipped CSS and JS are stripped of comments and indentation by build.py (`min_css`, `min_js`; the build asserts
   the CSS is unchanged once whitespace is ignored and that no `//` comment exists); `src/` keeps every comment.
 - Internal URLs are relative (the tests serve the site under `/abrazileira/`; production is `/`); canonical,
@@ -1403,11 +1867,13 @@ accessibility tree (nothing is made inert or hidden).
   Pages), the only third-party request is the form submit to Supabase (EU).
 - Raw hex appears only in tokens.css, plus what cannot read CSS: the two `theme-color` metas, the manifest and
   favicon.svg.
-- Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded): 72.7 kB — HTML 11.6, CSS
-  11.0 (tokens 5.4 with the two LQIPs and the fallback faces, site 5.6), JS 10.1, fonts 40.0 (Brazileira Wordmark
-  3.0, Cinzel capitals 6.0, EB Garamond 400 15.0 and 500 15.9; the pitch typography replaced 62.2 kB of Cinzel and
-  Alegreya files, 94.2 kB before); target 150 kB, ceiling 170 kB (og and icons excluded). The privacy notice is
-  6.9 kB of HTML (68.0 kB in all).
+- Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded; re-measured on the consolidated
+  build): 74.5 kB — HTML 14.5 (the
+  drawn wordmark inline: 2.9 kB, where its font file was 3.1), CSS 10.9 (tokens 5.3 with the two LQIPs and the
+  fallback faces, site 5.6), JS 12.1 (10.0 before the 3D entrance's loader and fallbacks), fonts 37.0 (Cinzel capitals 6.1, EB Garamond 400 15.0 and 500 15.9; the
+  pitch typography replaced 62.2 kB of Cinzel and Alegreya files, 94.2 kB before); target 150 kB, ceiling 170 kB
+  (og and icons excluded). The privacy notice is 9.4 kB of HTML (70.4 kB in all). The 3D entrance, only with
+  `?3d`, adds door3d.js 11.9 kB and three.min.js 133.2 kB gzip (36.1 / 535.6 kB raw), after the load.
   The photo is counted on its own (Components › entrance › Budgets: 98 KB by day, 47 KB by night on a 3× phone).
   The HTML lost the inline SVG drawing (it was most of the page) and gained a `<picture>` per layer and theme. CLS 0
   on every page (the photograph's boxes are sized by CSS; the wrapper grows below the fold).
@@ -1418,16 +1884,16 @@ accessibility tree (nothing is made inert or hidden).
 |---|---|---|
 | Stacked (default) | portrait, below 900px | lockup · lede · status · action, then the photograph at the foot (door axis on the page axis, its faded top may rise 5% into the space under the action), then the cue band |
 | Tight portrait | `(orientation: portrait) and (max-height: 42.5em)` (≤ 680px tall) | top bar inset 4px, lede 16px above, action 8px under the status, 16px between the action and the photograph, compact cue band |
-| Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 24px minimum, lede 12px above, no cue band, the photograph takes the height that is left (door and steps in the first screen) |
+| Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 30px minimum, lede 12px above, no cue band, the photograph takes the height that is left (door and steps in the first screen) |
 | Split | `(min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em)` | 5fr text \| 6fr entrance, 64px apart, container 86rem; lede 48px under the lockup; action 48px under the status; top bar inset follows the container |
-| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: wordmark 30–36px (its line on two lines), lede 19px, status 4px under it, action right under it, entrance min 16rem |
+| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 30–36px (`--size-lockup-short`, 9.15svh: 35.7px at 390px tall, so the drawn lockup keeps the 142px footprint the old one had and the photograph beside it keeps its size), the wordmark 204–245px wide (its line on two lines), lede 19px, status 4px under it, action right under it, entrance min 16rem |
 | Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 19px; then 21px |
-| Lockup line | `(min-width: 64em) and (min-height: 43.75em)`, then `@container (min-width: 5.3em) and (min-width: 19.5rem)` on the lockup | home only: BOUTIQUE HOTEL · TORRES VEDRAS on one line, as on the pitch, where it is at most 0.9 of the wordmark's width (0.84 at 1024 × 700, 0.81 from 1280) and fits the column (two lines everywhere else, and with enlarged text) |
+| Lockup line | `(min-width: 64em) and (min-height: 43.75em)`, then `@container (min-width: 5.52em) and (min-width: 21rem)` on the lockup | home only: BOUTIQUE HOTEL · TORRES VEDRAS on one line, as on the pitch, where it is at most 0.9 of the wordmark's width (0.86 at 1024 × 700, 0.80 from 1440) and fits the column (two lines everywhere else, and with enlarged text) |
 | Footer lines | `(max-width: 29.99em)` | name, place and link on three lines, no separators |
-| Narrow PT lede | `(min-width: 20em) and (max-width: 22.49em)` (and small landscape phones) | the Portuguese lede one phrase a line (a plain wrap at 14.4em) |
-| Sun note | every width; `(min-width: 56.25em) and (min-height: 37.5em)` | its own line under Dia · Noite; the stage clears it by 12px (`--sol-h`) except on screens from 900 × 600, where the crest is far below |
+| Home sentence | `text-wrap: balance`, the object tied | one line where it fits (375px and up in PT at the phone size); otherwise two, «Estamos a restaurar / um edifício antigo.» (the 13.4em one-phrase-a-line rule for the old three-phrase sentence is gone) |
+| Sun note | every width; `(min-width: 56.25em) and (min-height: 37.5em)` | its own line under Dia · Noite; the stage clears it by 12px (`--sol-h`) except on screens from 900 × 600, where the crest is far below; with very large text it wraps inside the screen and the stage clears the bar's real height (`--bar-h`) |
 | Wide | `(min-width: 120em)`; `(min-width: 160em)` | root 112.5%; 131.25% (everything scales together) |
-| Large text | any width, browser text size 150–200% | the top bar wraps instead of overflowing; the list column shrinks to the screen (minmax(0, 1fr)) and long words wrap |
+| Large text | any width, browser text size 150–200% | the top bar wraps instead of overflowing (the sun note too, and PT · EN goes under it); the stage clears the bar's real height; the list column shrinks to the screen (minmax(0, 1fr)) and long words wrap; the consent's privacy link wraps inside itself |
 
 Touch targets: 44px for every control and link (the inline privacy link reaches 44px into the space below its
 line); the field and the button are 48px. Nothing collapses into a menu: there are only two controls.
@@ -1435,7 +1901,7 @@ line); the field and the button are 48px. Nothing collapses into a menu: there a
 ## Do's and Don'ts
 
 Do:
-- Use the pitch's lockup exactly (emblem.svg, the Brazileira Wordmark file, Cinzel capitals for its line), with the wordmark at 30px or more.
+- Use the lockup exactly (emblem.svg, the pitch's drawn wordmark.svg, Cinzel capitals for its line), with the lockup at 30px or more (the wordmark 204px wide; 120px when it stands alone).
 - Read colours through the semantic roles (`--color-*`) and the photograph's roles (`--t-*`, `--photo-lqip`,
   `--color-leaf-shade`); add new values to tokens.css first.
 - Keep one action per screen and give it the only full-ink underline there.
@@ -1463,7 +1929,8 @@ Don't:
 - Use `scroll-behavior: smooth` or hijack native scrolling; the walk-in is the only programmatic scroll.
 - Fade a flat colour over the stone or the tree: the hall's light only comes up once the doorway covers the screen.
 - Use a blend mode on a moving layer (a backdrop read-back every frame); bake the look into an RGBA layer.
-- Let the photograph read as a rectangle: its margin converges to the page colour.
+- Let the photograph read as a rectangle: it stands in the street the page draws (`.ph--street`), and its own
+  margins are that street (graded into the same composite, then faded out over its last 70 master px).
 - Put raw hex outside tokens.css (except the theme-color metas, the manifest and favicon.svg).
 - Quote private correspondence or name people in the repository.
 - Store anything about the visitor other than the Dia / Noite choice.
@@ -1484,7 +1951,7 @@ Don't:
 10. Prefer more space over more ornament.
 
 ## Agent prompt guide
-- Canvas papel #F9F0E9 / noite #1C120B · hall #F2DEC4 / #FCE7BC · text nogueira #5F3819 / linho #F3E6D6 ·
+- Canvas parede #FAECDF / parede-noite #1C140F (the photograph's wall) · hall #F2DEC4 / #FCE7BC · text nogueira #5F3819 / linho #F3E6D6 ·
   strongest tinta #2E1E14 · muted castanho #804F1E / linho-escuro #C2AE96 · brass text latao-texto #83602C
   by day, latao #DB9E42 by night · errors barro #9E3B1E on the hall only.
 - "A control in the A Brazileira system: EB Garamond 500, 17px, tracking 0.01em, sentence case, colour
@@ -1498,6 +1965,53 @@ Don't:
   aria-invalid/aria-describedby, outcomes in a role=status line."
 
 ## Roadmap and known gaps
+- The street: the paving strip is three scene widths wide wherever a screen shows more than one (fix r1), so it
+  repeats only past three: at rest on 3440 × 1440 (3.7 widths) and wider a careful eye could find a cobble cluster
+  twice, far apart. B and C are quilted from A and its mirror, so their stones are A's in a new order; a second
+  photograph of the same paving would vary them more. On an upright phone the 1-width strip (one period is wider
+  than the screen).
+  The box reaches three scene widths left and two right: enough for a 5120 × 1440 screen (2.69 and 1.84 needed); a
+  wider aspect than 32:9 would need more. The olive's crown, which the
+  source cut at its right edge, now ends on a ragged line 66–134 master px inside the frame; a crown drawn out past
+  the edge would need new foliage (not generated: no generative fill). The phone budget is exceeded at 430 × 932 @3 by
+  day (193 KB with the 1300 rung, was 223; 440 × 956 @3 212 KB; Components › entrance › Budgets). The new sentence,
+  status and description need the client's sign-off.
+- The 3D entrance's take-over frame (`?3d` only, review r1): the paving's fine detail still changes on the one frame
+  the canvas takes over (pixels over 24 levels apart, all in the paving: 1.5% at 390 × 844 @2, 2.2% at 844 × 390 @2,
+  0.35% at 1440 × 900, as measured before). It is not the filter: sampled bilinear without mips, and with a Mitchell
+  cubic in the shader (Skia's high quality), the numbers stayed the same (1.52 / 2.22 / 0.35% and 1.56 / 2.32 /
+  0.34%), so the shader keeps its mipmapped lookup. The page's repeating background is drawn in whole device pixels
+  (Blink snaps a repeating tile's size and phase), the canvas samples the plane continuously: matching it means
+  reproducing that snapping (the tile's rounded size and phase, read from the page) for the rest frame.
+- Scrolling at 2560 × 1440 by night, CSS entrance, 4× CPU throttle, software raster (review r1, weak evidence): 278–292
+  frames delivered against 321–324 for the build before the street, p95 66.7ms, no long task: the cost is in drawing
+  (likely the street box's two large color-dodge gradients). Not reproducible as a real-GPU figure here; measure on a
+  desktop GPU at 1440p and above before acting (then: draw the night lights as a pre-rendered image, or shrink the
+  street box while zoomed).
+- The facade's files grew a little with the wide fade (fix r1): AVIF +1–3% (Dia 1080 88.4 KB against 86.8, Noite
+  1080 48.0 against 47.3), WebP +4–14% even with a lossy alpha plane (quality 60; lossless it was +50% by night).
+- The 3D entrance is opt-in (`?3d`) until these are checked on real devices; then the default can flip back
+  (`want3d()` in site.js, the one line that requires `?3d`; the test's default case changes with it).
+- The 3D entrance on real GPUs: frame times (p95 ≤ 17ms at 4× throttle on a mid phone) at the device's pixel ratio
+  up to 3 (the client's iPhone), memory (the 2388 facade is 33 MB with mipmaps, the plate 9–24 MB) and context loss on
+  iOS Safari (the remount path is tested only with WEBGL_lose_context); measured here only on SwiftShader. If a phone
+  at @3 misses 60 fps, the first cuts are the hall's blur passes (up to three at half size) and a ratio of 2.5.
+- The drawing buffer stays allocated for the visit even under the flat colour (resizing it away would cost the next
+  take-over a reallocation); a 1440 × 900 @2 laptop holds ~190 MB of MSAA buffer for it (estimate).
+- Pre-existing photo-asset issues, both entrances, left for a photo-pipeline round (review r1): by night the lamplight
+  on the steps lights every tread edge to edge with jet-black risers (the spill wants lateral and depth fall-off from
+  the doorway); the night olive shows a 1–2 px bright fringe when magnified (choke and decontaminate its matte); the
+  olive's crown ends ~21 px inside the facade master's right edge on a near-vertical line, so at 320–375 px its
+  leaves sit 1.5–2 CSS px from the photograph's edge (inpaint the crown past the cut, or feather ≥ 60 px).
+- The CSS entrance keeps the closed gap's dark notch in the head of the frame as the doors open (the 3D entrance
+  replaces it); fixing it there needs a retouched overlay that fades in with the opening.
+- From the photograph's camera an inward-opening leaf shows its face, never its thickness (its free edge turns away,
+  its hinge edge hides behind the casing): the 55 mm reads in the silhouette, the panels' parallax and the knob,
+  not as a visible edge band. The hall stays the photograph's own defocused plate on its box (never in focus); a
+  photographed hall plate of the real house, at the walk-in's resolution, would be the next step.
+- The steps are part of the facade plane (their treads would be 7–9 cm deep in this camera's geometry): fine while
+  they leave the frame, flat if the camera ever lingered over them.
+
 - Real devices for the walk-in on request: iOS Safari (programmatic scroll per frame while the toolbar
   collapses) and Android Chrome (the focus at the landing may raise the keyboard, since the click's user
   activation is still valid 1.2s later). And the round 3 run on the client's iPhone: the short run is tuned on
@@ -1513,7 +2027,8 @@ Don't:
   the collapsing toolbar: the headless runs above use Chromium only (WebKit was not available here), and the
   iOS overscroll is emulated in the regression test, not reproduced.
 - Raster figures above come from headless Chromium with software raster; real GPUs raster faster, phones
-  with little GPU memory may need the promotion list trimmed (11 layers, each the photograph's box or smaller).
+  with little GPU memory may need the promotion list trimmed (11 layers, each the photograph's box or smaller; the
+  camera layer also holds the street, many screens wide but rastered only where it is on screen).
 - The walk-in's sharpness is bounded by the master: past p ≈ 0.48 (the jambs leaving the frame) even the 2388px
   facade is drawn at 0.4–0.6 source px per device px; it is itself a 2× super-resolution of a 1194px photograph.
   A sharper walk-in needs a larger original (a photograph of the house's own door, see below).

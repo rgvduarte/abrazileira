@@ -40,16 +40,22 @@
     /* the theme of a visitor who has not chosen: the sky over the house */
     function free(now) { return sol(now) ? "dia" : "noite"; }
     function sync() {
-      var t = current(), i, metas = document.querySelectorAll('meta[name="theme-color"]'), told = root.hasAttribute("data-sol") && note;
+      var t = current(), i, told = root.hasAttribute("data-sol") && note;
       for (i = 0; i < buttons.length; i++) {
         buttons[i].setAttribute("aria-pressed", String(buttons[i].getAttribute("data-theme-set") === t));
         if (told) buttons[i].setAttribute("aria-describedby", note.id); else buttons[i].removeAttribute("aria-describedby");
       }
-      if (root.hasAttribute("data-theme")) {
-        var bg = getComputedStyle(root).getPropertyValue("--color-bg").trim() || getComputedStyle(document.body).backgroundColor;
-        for (i = 0; i < metas.length; i++) metas[i].setAttribute("content", bg);
-      }
+      tint();
     }
+    /* the browser's bar takes the page's colour: the wall, or the hall's light once the screen is that colour (the
+       driver sets it on the root then, see render()) */
+    function tint() {
+      if (!root.hasAttribute("data-theme")) return;
+      var metas = document.querySelectorAll('meta[name="theme-color"]'), i,
+        bg = getComputedStyle(root).getPropertyValue(root.style.backgroundColor ? "--color-hall" : "--color-bg").trim() || getComputedStyle(document.body).backgroundColor;
+      for (i = 0; i < metas.length; i++) if (metas[i].getAttribute("content") !== bg) metas[i].setAttribute("content", bg);
+    }
+    root.__tint = tint;
     /* colour transitions on controls and links are held for this one change, so nothing catches up after it
        (under reduced motion the change is instant; inside a view transition the new snapshot is clean) */
     function apply(t, keep, sky) {
@@ -125,6 +131,33 @@
     sky();
   })();
 
+  /* The top bar with very large text (resize text to 200%, review r1): its two groups wrap to two rows and the sun
+     note to two lines. A wrapped PT · EN row then sits under the note, not on it, and the home page's stage, which
+     the bar overlays, clears the bar's real height (--bar-h). At every normal size nothing is set: the stylesheet's
+     own measure holds (and on wide screens the note hangs in the room above the crest, by design). */
+  (function () {
+    var bar = document.querySelector(".topbar"), lang = bar && bar.querySelector(".controls--lang"),
+      theme = bar && bar.querySelector("[data-theme-switch]"), note = document.getElementById("sol-note"), raf = 0;
+    if (!bar || !lang || !theme || !window.ResizeObserver) return;
+    function fit() {
+      raf = 0;
+      lang.style.marginBlockStart = "";
+      var b = bar.getBoundingClientRect(), t = theme.getBoundingClientRect(), l = lang.getBoundingClientRect(),
+        n = note ? note.getBoundingClientRect() : null, lh = note ? parseFloat(getComputedStyle(note).lineHeight) || 24 : 24,
+        wrapped = l.top > t.top + 1, tall = n && n.height > lh * 1.25, bottom = b.bottom;
+      if (n && !n.height) n = null;
+      if (!wrapped && !tall) { root.style.removeProperty("--bar-h"); return; }
+      if (n && wrapped) { lang.style.marginBlockStart = Math.ceil(n.bottom - l.top + 4) + "px"; l = lang.getBoundingClientRect(); }
+      bottom = Math.max(bottom, l.bottom, n ? n.bottom + 8 : 0);
+      root.style.setProperty("--bar-h", Math.ceil(bottom - b.top) + "px");
+    }
+    function later() { if (!raf) raf = window.requestAnimationFrame(fit); }
+    var ro = new ResizeObserver(later);
+    ro.observe(bar); ro.observe(theme); if (note) ro.observe(note);
+    new MutationObserver(later).observe(root, { attributes: true, attributeFilter: ["data-sol", "data-theme"] });
+    later();
+  })();
+
   /* ---------------------------------------------------------------- 2a. The photograph
      The entrance is a photograph in layers, each a <picture> per theme (photo.py); CSS shows the theme's own.
      Its blurred placeholder goes once the shown facade has loaded. ready(t) fetches and decodes a theme's layers
@@ -184,7 +217,7 @@
       for (i = 0; i < list.length; i++) setSizes(list[i], v);
     }
     function upgrade() { if (big) return; big = true; enlarge(); }
-    root.__photo = { ready: ready, loaded: loaded, theme: theme, upgrade: upgrade, enlarge: enlarge };
+    root.__photo = { ready: ready, loaded: loaded, theme: theme, upgrade: upgrade, enlarge: enlarge, slow: slow };
     loaded();
     /* after the page has loaded: the lamplight on the steps (Noite) joins the scene (it is not needed for the first
        paint: it is invisible until the doors open), and the shown theme is decoded before anything moves */
@@ -228,7 +261,7 @@
       list = document.getElementById("lista"), reveal = list && list.querySelector("[data-reveal]"),
       rv = function (s) { return (reveal && reveal.querySelector(s)) || document.createElement("i"); },
       shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false,
-      held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1;
+      held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1, box3 = null;
     probe.className = "porta__probe";
     probe.setAttribute("aria-hidden", "true");
     stage.appendChild(probe);
@@ -317,7 +350,7 @@
       var d = a - 1 + KNEE;
       return a - d * d / (4 * KNEE);
     }
-    function camAt(p) {
+    function camV(p) {                    /* [pan x, pan y, scale] */
       var m = E.pan(clamp((p - PAN[0]) / (PAN[1] - PAN[0]))), s = scaleAt(p), my = m, a, b;
       if (cam.k) {
         a = knee((s - 1) * cam.k);
@@ -325,7 +358,11 @@
         b = b * b * (3 - 2 * b);
         my = 1 - (1 - a) * (1 - b);
       }
-      return "translate(" + (cam.dx * m).toFixed(2) + "px," + (cam.dy * my).toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
+      return [cam.dx * m, cam.dy * my, s];
+    }
+    function camAt(p) {
+      var c = camV(p);
+      return "translate(" + c[0].toFixed(2) + "px," + c[1].toFixed(2) + "px) scale(" + c[2].toFixed(4) + ")";
     }
     /* The walk-in: log(scale) through four keyframes, made per screen in measure(): 1 at p = 0.01; a first step
        to the threshold as the doors finish opening (0.36); the scale at which the doorway covers the screen
@@ -376,6 +413,7 @@
       var sh = Math.max(vh, stage.clientHeight + stick);      /* bottom of the large viewport */
       cam.dx = vw / 2 - cx;
       cam.dy = vh / 2 - stick - cy;
+      box3 = { x: cx - hx, y: cy - hy, w: W, h: H };    /* the photograph's rest box in the stage (the 3D camera's frame) */
       /* portrait, hall point below the centre: the rise follows the growth (see camAt) */
       cam.k = vh > vw * 1.1 && cam.dy < -1 ? (1 - G.hp[1]) * H / -cam.dy : 0;
       /* the clear opening between the open leaves: each stands edge-on at OPEN inside the doorway, its free edge
@@ -416,11 +454,18 @@
          pinned stage a step behind a fast scroll, the strip it uncovers is the same light, never the hero's paper.
          An inline style on body, not a class on html: a class there restyles the whole document (35ms of style
          recalculation at the hand-off under 4x CPU throttle; this costs nothing measurable). */
-      if ((Math.max(r, p - LAG) >= COVER_AT) !== lit) { lit = !lit; document.body.style.backgroundColor = lit ? "var(--color-hall)" : ""; }
+      if ((Math.max(r, p - LAG) >= COVER_AT) !== lit) {
+        lit = !lit;
+        /* the root too: it paints the canvas beyond the body (overscroll, a viewport edge a frame uncovers), and the
+           browser's own bar takes the same colour (review r1) */
+        document.body.style.backgroundColor = root.style.backgroundColor = lit ? "var(--color-hall)" : "";
+        if (root.__tint) root.__tint();
+      }
       if (r <= 0 && p <= 0) {           /* exact rest: the CSS state, nothing inline */
         for (i = 0; i < T.length; i++) { s = T[i][0].style; s.opacity = ""; s.transform = ""; s.pointerEvents = ""; }
         scene.style.transform = "";
         plate.style.transform = "";
+        draw3d(0, 0);
         return;
       }
       for (i = 0; i < T.length; i++) {
@@ -436,22 +481,187 @@
         if (t[5] === TEXT) s.pointerEvents = v[0] < 0.5 ? "none" : "";
         else if (t[5] === LIST) s.pointerEvents = v[0] < 0.5 ? "none" : "auto";
       }
-      scene.style.transform = camAt(r);
+      scene.style.transform = low ? "none" : camAt(r);
       /* the hall beyond: zoom^kp in all, so it gets zoom^(kp - 1) inside the camera */
       plate.style.transform = "scale(" + Math.pow(scaleAt(r), cam.kp - 1).toFixed(5) + ")";
+      draw3d(r, p);
     }
+
+    /* The 3D entrance (door3d.js, an ES module, with its own three.js subset; DESIGN.md › The 3D entrance). OPT-IN for
+       now, for testing on real devices: only with ?3d in the address (?3d=force also skips the GPU probe below, for the
+       headless tests); without it the page is the CSS entrance and nothing of the 3D is probed or fetched. Not on the
+       critical path: it is fetched after the page has loaded and gone idle, or on the first sign of a scroll, never
+       with reduced motion, ?semporta, ?sem3d, a data saver or a 2G link, and only where ES modules and WebGL 2 exist.
+       It draws the SAME timeline from the same rendered progress r: the doors' angle, the pan, and a camera that walks
+       through the doorway (zc). While it draws (0 < r < the flat colour) its canvas covers the stage under the text and
+       the photograph's layers are hidden; at rest (r = 0) the page shows its own photograph, and under the flat colour
+       nothing is drawn. It takes over only at one of those two moments (never mid-shot), and whenever it cannot draw
+       (a theme whose textures are still loading, a lost context) the CSS entrance, which has been following r all
+       along, is simply shown again. */
+    var d3 = null, d3on = false, d3arm = false, d3st = "off", d3try = 0, pre = null, cap3 = /[?&]3d=force\b/.test(location.search) ? true : null;
+    try { var c3 = sessionStorage.getItem("ab-3d"); if (cap3 === null && (c3 === "1" || c3 === "0")) cap3 = c3 === "1"; } catch (e) {}
+    /* still: no scroll being followed and no flight for 400 ms, at rest or under the flat colour (where a visitor
+       reads; a pause mid-shot is often the gap between two gestures). The 3D module is evaluated, mounted and warmed
+       only then. */
+    var moved = 0;
+    function quiet() { return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT); }
+    function whenQuiet(f) {
+      var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
+      (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
+    }
+    function zcAt(r, ze) {                /* the camera's distance from the facade, in units of its rest distance */
+      if (r <= KX[1]) return 1 / scaleAt(r);
+      var z1 = Math.exp(-KY[1]), m1 = -z1 * KM[1], zm = -0.25 / 3,
+        d1 = (zm - z1) / (KX[2] - KX[1]), d2 = (ze - zm) / (KX[3] - KX[2]), mm = (d1 + d2) / 2,
+        i = r <= KX[2] ? 0 : 1, a = KX[1 + i], h = KX[2 + i] - a, t = Math.min(1, (r - a) / h), t2 = t * t, t3 = t2 * t,
+        y0 = i ? zm : z1, y1 = i ? ze : zm, s0 = i ? mm : m1, s1 = i ? 0 : mm;
+      return (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * h * s0 + (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * h * s1;
+    }
+    function view3d(r, ez) {
+      var c = camV(r), u = E.door(clamp((r - DOOR[0]) / (DOOR[1] - DOOR[0]))),
+        v = { cw: stage.clientWidth, ch: stage.clientHeight, rect: box3, tx: c[0], ty: c[1], u: u, spill: (1 - Math.cos(OPEN * u)) / COS };
+      v.zc = zcAt(r, (ez || d3.endZ)(v));
+      return v;
+    }
+    function show3d(yes) {
+      if (yes === d3on) return;
+      d3on = yes;
+      d3.canvas.style.visibility = yes ? "visible" : "";
+      scene.style.visibility = yes ? "hidden" : "";
+    }
+    function draw3d(r, p) {
+      if (!d3 || !box3) return;
+      var flat = Math.max(r, p - LAG) >= COVER_AT, ok;
+      if (!d3arm) { if (r > 0 && !flat) return; d3arm = true; }
+      ok = r > 0 && !flat && d3.draw(view3d(r));
+      if (!ok && d3on && r > 0 && !flat && !decoded()) return;
+      /* the photograph's layers come back under the flat colour, deep in the walk-in: the camera at its rest scale for
+         a few frames, out of sight, so its layer (the street in it) is made again at that scale (see tickInner()) */
+      if (!ok && d3on && flat && scaleAt(r) > STEP) { low = 3; lowT = performance.now(); scene.style.transform = "none"; }
+      show3d(ok);
+    }
+    /* The theme changed under the shown canvas (the 3D's new textures are not in yet): its last frame stays, at most
+       300 ms, until the new theme's facade and leaves are decoded, so the CSS entrance never comes back for a frame
+       without its facade, a picture it had never painted while hidden (review r1). */
+    var hold = null;
+    function decoded() {
+      var t = root.__photo.theme();
+      if (!hold || hold.t !== t) {
+        var h = (hold = { t: t, done: false, t0: performance.now() }), ps = [], i,
+          ims = scene.querySelectorAll(".ph--facade picture.t-" + t + " img, .leaf picture.t-" + t + " img");
+        for (i = 0; i < ims.length; i++) if (ims[i].decode) ps.push(ims[i].decode().catch(function () {}));
+        Promise.all(ps).then(function () { window.requestAnimationFrame(function () { h.done = true; queue(); }); });
+      }
+      return hold.done || performance.now() - hold.t0 > 300;
+    }
+    function lost3d(why) {
+      if (d3) { show3d(false); try { d3.destroy(); } catch (e) {} }
+      d3 = null;
+      d3st = why || "lost";
+      wrap.classList.remove("porta--3d");
+      if (why !== "off") ERR.push("3d: " + d3st);
+    }
+    function want3d() {
+      var c = navigator.connection;
+      return on && d3st === "off" && /[?&]3d\b/.test(location.search) && !/[?&](sem3d|semporta)\b/.test(location.search) && !(c && (c.saveData || /2g/.test(c.effectiveType || "")))
+        && "noModule" in HTMLScriptElement.prototype && !!window.WebGL2RenderingContext && !!wrap.getAttribute("data-3d");
+    }
+    /* A device with no WebGL 2 worth having (none, disabled, a blocklisted GPU, a software renderer: the slowest
+       phones) is known before a byte of the module is fetched (review r1): a throwaway context, released at once,
+       probed once per session at idle. ?3d=force skips it (the tests force SwiftShader). */
+    function cap3d() {
+      if (cap3 !== null) return cap3;
+      var ok = false;
+      try {
+        var cv = document.createElement("canvas"), gl = cv.getContext("webgl2", { failIfMajorPerformanceCaveat: true });
+        if (gl) {
+          var x = gl.getExtension("WEBGL_debug_renderer_info"), lose = gl.getExtension("WEBGL_lose_context");
+          ok = !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(gl.getParameter(x ? x.UNMASKED_RENDERER_WEBGL : gl.RENDERER)));
+          if (lose) lose.loseContext();
+        }
+      } catch (e) { ok = false; }
+      try { sessionStorage.setItem("ab-3d", ok ? "1" : "0"); } catch (e) {}
+      return (cap3 = ok);
+    }
+    /* fetched (and parsed) only: the module and three.js, as module preloads; nothing is evaluated */
+    function pre3d() {
+      if (pre) return pre;
+      var urls = [wrap.getAttribute("data-3d"), wrap.getAttribute("data-3d-dep")], ps = [], l0 = document.createElement("link");
+      if (!(l0.relList && l0.relList.supports && l0.relList.supports("modulepreload"))) return (pre = Promise.resolve());
+      urls.forEach(function (u) {
+        if (u) ps.push(new Promise(function (ok) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = u; l.onload = l.onerror = ok; document.head.appendChild(l); }));
+      });
+      return (pre = Promise.all(ps));
+    }
+    /* The 3D entrance is evaluated, mounted and warmed only while the page is still: never in the middle of a
+       gesture or of the action's flight (it would cost the hero's motion 100-300 ms frames at 4x CPU throttle; it
+       gains nothing then, since the canvas takes over only at rest or under the flat colour) (review r1). The first
+       sign of a scroll only fetches it (prime). */
+    function load3d() {
+      if (!want3d()) return;
+      if (!cap3d()) { d3st = "refused"; return; }
+      d3st = "loading";
+      pre3d().then(function () {
+        whenQuiet(function () {
+          if (d3st !== "loading") return;
+          if (root.__door3d) return mount3d();        /* mounted before (a context was lost): the module is in */
+          window.addEventListener("door3d", mount3d, { once: true });
+          var s = document.createElement("script");
+          s.type = "module";
+          s.src = wrap.getAttribute("data-3d");
+          s.onerror = function () { lost3d("module failed"); };
+          document.head.appendChild(s);
+        });
+      });
+    }
+    function mount3d() {
+      try {
+        var m = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: /[?&]3d=force\b/.test(location.search),
+          big: function () { return Math.round(scene.offsetWidth * 3) + "px"; },
+          quiet: quiet,
+          /* the first frames drawn ahead (canvas hidden), so the first frame of a scroll pays for nothing */
+          views: function (ez) { return box3 ? [view3d(0.3, ez), view3d(0.05, ez)] : []; },
+          onLost: function () { lost3d("context lost"); queue(); setTimeout(revive3d, 3000); },
+          /* a theme's textures are in: the canvas takes over again only at rest or under the flat colour */
+          onTheme: function () { d3arm = false; queue(); } });
+        m.ready.then(function () {
+          if (d3st !== "loading") { m.destroy(); return; }
+          d3 = m;
+          d3st = "on";
+          d3arm = false;
+          wrap.classList.add("porta--3d");
+          queue();
+        }, function (e) { m.destroy(); lost3d("textures: " + e); });
+      } catch (err) {         /* no WebGL 2, or only a software renderer: the CSS entrance, quietly */
+        var msg = String(err && err.message || err);
+        if (/context/i.test(msg)) { d3st = "refused"; wrap.classList.remove("porta--3d"); } else lost3d("mount: " + msg);
+      }
+    }
+    /* a lost context (iOS drops them in the background or under memory pressure): the CSS entrance at once, then the
+       3D mounted again from the cached files when the page is shown and still, twice at most */
+    function revive3d() {
+      if (d3st !== "context lost" || d3try >= 2 || document.hidden) return;
+      d3try++;
+      d3st = "off";
+      whenQuiet(load3d);
+    }
+    document.addEventListener("visibilitychange", revive3d);
+    window.addEventListener("pageshow", revive3d);
 
     /* Promote the moving layers only while they move; at rest the photograph is drawn as it is. Every layer whose
        opacity changes per frame gets its own compositor layer too (the leaves' shade, the lamplight, the hall's
        light, the text): otherwise each change repaints the doorway inside the zooming camera layer. The facade
        has a layer of its own (so a browser can composite the image as it is, without a backing store sized to
-       the zoom); its transform hint freezes its raster scale while the camera zooms. */
+       the zoom); its transform hint freezes its raster scale while the camera zooms. The street (the wall and the
+       paving round the photograph, a box many screens wide) is drawn in the camera layer, at the scale that layer
+       is made at: the rest scale (see tickInner() and render()). As a layer of its own it was made again at the
+       doorway's zoom each time it came back into view, and redrawn at that scale over the whole screen. */
     var LAYERS = [[facade, "transform"], [scene, "transform"], [plate, "transform"], [leafL, "transform"], [leafR, "transform"],
       [shadeL, "opacity"], [shadeR, "opacity"], [$(".ph--spill"), "opacity"], [intro, "transform, opacity"],
       [$(".porta__cue"), "opacity"], [$(".porta__flood"), "opacity"]],
       DRAWN = 1,           /* the facade carries the photograph's detail: it is re-rastered when the scroll rests */
       WARM = 8,            /* readied before the first frame (see warm()): every layer but the text and the cue */
-      sharp = 0, sharpT, rasterS = 1, lift = 0, STEP = 2.2, ready = false;
+      sharp = 0, sharpT, rasterS = 1, lift = 0, STEP = 2.2, ready = false, low = 0, lowT = 0;
     function promote(yes) {
       clearTimeout(sharpT);
       sharp = 0;
@@ -506,6 +716,7 @@
     function tick(now) { try { tickInner(now); } catch (err) { bail("tick", err); } }
     function tickInner(now) {
       raf = 0;
+      moved = performance.now();
       if (!on) return;
       var g = fl ? flightStep(now) : target(), dt = last ? Math.min(64, now - last) : 16.7, r;
       last = now;
@@ -515,11 +726,22 @@
       if (shown < 0 || Math.abs(g.p - shown) > JUMP) r = g.p;           /* first frame, or a jump: no replay */
       else r = shown + (g.p - shown) * (1 - Math.exp(-dt / TAU));
       if (Math.abs(g.p - r) < EPS) r = g.p;
-      if (r !== shown || g.p !== seen) {
+      if (r !== shown || g.p !== seen || low) {
         if (r > 0) {
           if (sharp === 1) promote(false);        /* moved again before the re-raster finished */
+          /* layers made under the flat colour (a jump to the list, #lista on load, a restored position): the camera
+             is drawn at its rest scale for its first frames (three, and 60ms at least), out of sight under the
+             hall's light, so its layer is made at the scale it is made at from the top (a transform hint keeps
+             that raster scale) and not at the zoom of the end. Made there, it held the street at up to 5.5x:
+             coming back up from the list redrew the wall and the paving at that scale over the whole screen
+             (frames of 83-300ms at 1440 x 900). Should the light lift before then, the true camera at once. */
+          if (!promoted && !low && Math.max(r, g.p - LAG) >= COVER_AT && scaleAt(r) > STEP) { low = 3; lowT = now; }
           promote(true);
           clearTimeout(idle);
+        }
+        if (low) {
+          if (Math.max(r, g.p - LAG) >= COVER_AT && (low > 1 || now - lowT < 60)) { if (low > 1) low--; }
+          else { low = 0; rasterS = 1; }
         }
         render(r, g.p);
         shown = r;
@@ -528,7 +750,7 @@
       } else if (lift) crisp(r);
       if (g.y !== lastY) { lastY = g.y; calm = 0; } else calm++;
       /* keep reading scrollY for a few frames after it stops: a late momentum frame is never missed */
-      if (r !== g.p || calm < 8) raf = window.requestAnimationFrame(tick);
+      if (r !== g.p || calm < 8 || low) raf = window.requestAnimationFrame(tick);
       else {
         last = 0;
         clearTimeout(idle);
@@ -634,6 +856,7 @@
        the walk-in (a press lasts about 100ms before its click): promote now, so the first frame of the sequence does
        not also pay for creating its layers (dropped again if nothing moves) */
     function prime() {
+      if (d3st === "off" && cap3 === true && want3d()) pre3d();   /* fetched only: evaluated once the page is still */
       if (!on || promoted || shown > 0) return;
       promote(true);
       clearTimeout(idle);
@@ -660,6 +883,11 @@
          at the same distance into it. */
       if (was >= 0 && !fl && (mw !== w0 || mh !== h0) && target().p < 1) window.scrollTo(0, pin + run + was);
       if (fl) { fl.y1 = fl.to(); fl.at = journey(fl.y0, fl.y1); }
+      /* a new size deep in the walk-in (a window resized over the list, a rotation): the layers are dropped and made
+         again when the page next moves (under the flat colour at the rest scale, see tickInner()). Kept, the
+         camera layer was laid out again at the zoom of the end, the street in it many screens wide: 2 to 4s on
+         the compositor at 1440 x 900 (the reverse-scroll test's E2 caught it). */
+      if (promoted && !fl && (mw !== w0 || mh !== h0) && scaleAt(Math.max(0, shown)) > STEP) promote(false);
       if (shown >= 0) render(shown, seen < 0 ? shown : seen);
       calm = 0;
       kick();
@@ -668,6 +896,7 @@
 
     function off() {
       land();
+      if (d3) show3d(false);
       on = false;
       if (raf) window.cancelAnimationFrame(raf);
       raf = 0;
@@ -721,12 +950,19 @@
       if (keyed && on && target().p > 0.01) window.scrollTo(0, pin);
     });
     try { set(); } catch (err) { bail("set", err); }
+    /* the 3D entrance: after the page has loaded and gone idle (the larger photographs are fetched by then) */
+    (function () {
+      var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1200); };
+      function go() { setTimeout(function () { idle(function () { try { load3d(); } catch (e) { lost3d("load"); } }, { timeout: 4000 }); }, 1500); }
+      if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+    })();
     /* while the sequence is moving (a flight, or the loop still following the scroll), the theme changes
        without a cross-fade (no snapshot mid-shot); parked anywhere, even in the list, it cross-fades */
     root.__portaBusy = function () { return on && (!!fl || !!raf); };
     /* geometry for the tests and the ?diag panel (read-only) */
     root.__porta = { fly: fly, land: land, geo: function () {
-      return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen };
+      return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen,
+        d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try };
     } };
   })();
   /* ---------------------------------------------------------------- 3. The waiting list
@@ -905,6 +1141,7 @@
       box.textContent = [navigator.userAgent,
         "y=" + Math.round(window.pageYOffset) + " ih=" + window.innerHeight + " vv=" + (window.visualViewport ? Math.round(window.visualViewport.height) : "-") + " docH=" + document.documentElement.scrollHeight,
         "seq=" + root.getAttribute("data-sequence") + " theme=" + root.getAttribute("data-theme") + " cls=" + root.className,
+        "3d=" + (root.__porta && root.__porta.geo().d3) + " shown=" + (root.__porta && root.__porta.geo().d3shown),
         "stage top=" + (r ? Math.round(r.top) : "-") + " h=" + (st ? st.offsetHeight : "-") + " pos=" + (st ? getComputedStyle(st).position : "-"),
         "frames/s=" + frames * 2, "errors: " + (ERR.length ? ERR.join(" | ") : "none")].join("\n");
       frames = 0;

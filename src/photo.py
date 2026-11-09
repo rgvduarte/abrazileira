@@ -4,7 +4,8 @@ assets/photo/photo.json (written by the asset pipeline) holds the geometry, the 
 LQIPs; this module only turns it into markup. Every layer is placed by its rect, as a fraction of the facade
 image, inside one box (.scene) with the facade's aspect ratio, so the layers line up at any size.
 
-  z-order   plate (the hall beyond) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent)
+  z-order   street (the wall and the paving the page draws round the photograph, edge to edge) < plate (the hall
+            beyond) < reveal (the doorway's shade) < leaf-l, leaf-r < facade (doorway transparent)
             < spill (Noite: lamplight on the steps, an RGBA overlay; after the page has loaded). The plate and the reveal sit in a box the size of
             the doorway that clips them: the plate is larger than the doorway (it must cover it while it zooms
             slower than the facade), and nothing of it may show past the facade's own edge.
@@ -26,6 +27,95 @@ ORDER = ["plate", "reveal", "leaf-l", "leaf-r", "facade", "spill"]
 RECT = {"plate": G["interiorPlate"], "reveal": G["reveal"], "leaf-l": G["leafL"], "leaf-r": G["leafR"],
         "facade": dict(x0=0, y0=0, x1=1, y1=1), "spill": G["spillNoite"]}
 FIRST = ["facade", "leaf-l", "leaf-r", "plate"]          # what the first paint needs (preloaded)
+
+# The street (POLISH_BRIEF §1): the wall and the paving run on past the photograph to the screen's edges. One box
+# inside the scene (.ph--street) reaches STREET_KL scene widths to the left, STREET_KR to the right and from
+# STREET_TOP to STREET_BOT scene heights; it moves with the camera like every layer. Those are what the screens need
+# over the whole visible walk-in, measured from 320 x 568 to 5120 x 1440 (final2/work/polish/tools/extent.js: at most
+# 2.69 widths to the left, the text column's side, 1.84 to the right, 0.47 heights below the photograph; above it the
+# page's own colour is the wall's), with a margin: the smaller the box, the less the compositor has to hold when the
+# camera layer is made or redrawn at a deep zoom (it was 11 x 3.3 scene sizes; it is 6 x 2.1). Its backgrounds, top to bottom: by night the lantern's and the
+# doorway's light (radial gains, color-dodge: B / (1 - S), so the cobbles keep their contrast), the paving strip
+# (periodic at exactly one scene width; its middle copy starts at the facade's left edge, so it IS the photograph's
+# paving there; where a screen shows more than one scene width, a strip three widths wide, [A | B | C], A that same
+# strip and B, C quilted from it with no verbatim run, so no stone repeats on screen: fix r1), and the wall: a
+# vertical gradient, the page colour up top, a touch deeper by the paving (by day).
+# The facade's own margins were graded into this same composite (final2/work/polish/pipe), so nothing marks where the
+# photograph ends. All geometry is static percentages of the box (no var() in the theme tokens).
+ST = P.get("street")
+STREET_KL, STREET_KR, STREET_TOP, STREET_BOT = 3, 2, -0.3, 1.8
+STREET_WS = [f["w"] for f in ST["dia"]["strip"]] if ST else []
+STREET3_WS = [f["w"] for f in ST["dia"].get("strip3", [])] if ST else []
+FADE = P.get("fade")              # the facade's outer fade (shares of its width / height): the LQIP is inset by it
+
+
+def _sf(y):
+    """a scene-height share as a percentage of the street box's height"""
+    return (y - STREET_TOP) / (STREET_BOT - STREET_TOP) * 100
+
+
+def _hex(c):
+    return "#%02X%02X%02X" % tuple(int(round(v)) for v in c)
+
+
+def street_wall(theme):
+    """the wall gradient: the theme's stops, then (just above the strip's end, which covers the step) the colour the
+    paving blurs into, on down the box"""
+    t = ST[theme]
+    st = [f"{_hex(c)} {_sf(y):.3f}%" for y, c in t["wall"]]
+    end = _sf(ST["yout"] - 0.004)
+    last = _hex(t["wall"][-1][1])
+    st += [f"{last} {end:.3f}%", f"{_hex(t['below'])} {end:.3f}%"]
+    return "linear-gradient(" + ", ".join(st) + ")"
+
+
+def street_glow(theme, i):
+    t = ST[theme]
+    if i >= len(t["lights"]):
+        return "none"
+    g = t["lights"][i]
+    bw, bh = STREET_KL + 1 + STREET_KR, STREET_BOT - STREET_TOP
+    rx, ry = g["rx"] / bw * 100, g["ry"] / bh * 100
+    cx, cy = (g["cx"] + STREET_KL) / bw * 100, (g["cy"] - STREET_TOP) / bh * 100
+    stops = ", ".join(f"rgb({c[0]} {c[1]} {c[2]}) {pos:.2f}%" for pos, c in g["stops"])
+    return f"radial-gradient({rx:.4f}% {ry:.4f}% at {cx:.4f}% {cy:.4f}%, {stops})"
+
+
+def street_tokens(theme, base="../photo/"):
+    """theme tokens for tokens.css (relative to assets/css/): the wall, two lights (none by day), the strip per width
+    as WebP and as an AVIF image-set"""
+    v = {"--street-wall": street_wall(theme), "--street-glow-a": street_glow(theme, 0), "--street-glow-b": street_glow(theme, 1),
+         "--street-below": _hex(ST[theme]["below"])}
+    for k, ws in (("street", STREET_WS), ("street3", STREET3_WS)):
+        for w in ws:
+            a, b = f'{base}{theme}/{k}-{w}.avif', f'{base}{theme}/{k}-{w}.webp'
+            v[f"--{k}-{w}"] = f'url("{b}")'
+            v[f"--{k}-{w}-avif"] = f'image-set(url("{a}") type("image/avif"), url("{b}") type("image/webp"))'
+    return v
+
+
+def street_vars():
+    """static geometry of the street box and its strip (inline on .scene, like the layer rects). The box starts a whole
+    number of scene widths left of the photograph, so a strip tile starts at its left edge (x 0) and one at the
+    facade's"""
+    bw, bh = STREET_KL + 1 + STREET_KR, STREET_BOT - STREET_TOP
+    img_h = ST["yout"] - ST["yg0"]
+    pos_y = (ST["yg0"] - STREET_TOP) / (bh - img_h) * 100
+    v = [f"--street-x:{-STREET_KL * 100}%", f"--street-y:{STREET_TOP * 100:.1f}%", f"--street-w:{bw * 100}%", f"--street-h:{bh * 100:.1f}%",
+         f"--street-size:{100 / bw:.5f}% {img_h / bh * 100:.5f}%", f"--street-pos:0% {pos_y:.5f}%"]
+    if STREET3_WS:            # the 3-width strip: one tile three scene widths wide (the box is 6 wide: two tiles, from x 0)
+        v.append(f"--street-size3:{300 / bw:.5f}% {img_h / bh * 100:.5f}%")
+    return v
+
+
+def lqip_vars():
+    """the placeholder's box: inset by the facade's outer fade (top and sides its widest, the bottom its own), with the
+    24 px image sized and placed so it still lines up with the scene"""
+    fx, fy, fb = (FADE["max"], FADE["maxH"], FADE["bottom"]) if FADE else (0.03, 0.027, 0.027)
+    w, h = 1 - 2 * fx, 1 - fy - fb
+    return [f"--lqip-x:{fx * 100:.3f}%", f"--lqip-y:{fy * 100:.3f}%", f"--lqip-w:{w * 100:.3f}%", f"--lqip-h:{h * 100:.3f}%",
+            f"--lqip-size:{100 / w:.3f}% {100 / h:.3f}%", f"--lqip-pos:50% {fy / (fy + fb) * 100:.3f}%"]
+
 
 # The scene's rendered width, in CSS terms, for `sizes` (site.css › The entrance), modelled on the layout and checked
 # against the rendered width at 145 viewports from 320 x 560 to 3840 x 2160 (shots/photoint-fix-r1/js/sizes.js:
@@ -78,14 +168,32 @@ def lqip_svg(uri):
     return 'url("data:image/svg+xml,' + quote(svg, safe="/:;,=' ()%") + '")'
 
 
-def geo():
+def street_geo(p=""):
+    """the street for the 3D entrance (door3d.js draws it on its facade plane exactly as the page does): the strip's
+    rows, and per theme the wall's stops, the colour below the strip, the lights (the fitted model: cx, cy, rx,
+    ry/rx, core, gain - 1 per channel, power) and the strip's files (without extension: .avif, else .webp), one and
+    three scene widths wide (src, src3)"""
+    if not ST:
+        return None
+    o = {"y": [round(ST["yg0"], 5), round(ST["yout"], 5)]}
+    for t in ("dia", "noite"):
+        o[t] = {"wall": [[round(y, 4)] + [round(v / 255, 4) for v in c] for y, c in ST[t]["wall"]],
+                "below": [round(v / 255, 4) for v in ST[t]["below"]],
+                "lights": [[round(v, 4) for v in ST[t]["fit"][k]] for k in ST[t]["fit"]],
+                "src": {str(f["w"]): f"{p}assets/photo/{t}/street-{f['w']}" for f in ST[t]["strip"]},
+                "src3": {str(f["w"]): f"{p}assets/photo/{t}/street3-{f['w']}" for f in ST[t].get("strip3", [])}}
+    return o
+
+
+def geo(p=""):
     """what site.js reads once (data-geo): hall point, doorway, leaves, plate rect, perspective, parallax, swing"""
     d = G["doorway"]; pl = G["interiorPlate"]
     c = P["camera"]
-    return json.dumps({"hp": [G["hallPoint"]["x"], G["hallPoint"]["y"]], "door": [d["x0"], d["y0"], d["x1"], d["y1"]],
+    return json.dumps({"st": street_geo(p), "hp": [G["hallPoint"]["x"], G["hallPoint"]["y"]], "door": [d["x0"], d["y0"], d["x1"], d["y1"]],
                        "gap": [G["gapAtRest"]["x0"], G["gapAtRest"]["x1"]], "plate": [pl["x0"], pl["y0"], pl["x1"], pl["y1"]],
                        "ratio": RATIO, "persp": c["perspective"], "k": c["plateParallax"], "open": c["openDeg"],
-                       "grow": c["plateGrow"], "cover": c["plateCover"], "light": c["light"]},
+                       "grow": c["plateGrow"], "cover": c["plateCover"], "light": c["light"],
+                       "spill": [G["spillNoite"]["x0"], G["spillNoite"]["y0"], G["spillNoite"]["x1"], G["spillNoite"]["y1"]]},
                       separators=(",", ":"))
 
 
@@ -107,6 +215,9 @@ def style_vars():
     pl = RECT["plate"]
     # the plate's own zoom origin is the hall point, in the plate's box
     v += [f"--plate-ox:{pct((hp['x'] - pl['x0']) / (pl['x1'] - pl['x0']))}", f"--plate-oy:{pct((hp['y'] - pl['y0']) / (pl['y1'] - pl['y0']))}"]
+    if ST:                        # (before the LQIPs: their url("...") ends a double-quoted style attribute)
+        v += street_vars()
+    v += lqip_vars()
     v += [f"--lqip-dia:{lqip_svg(P['lqip']['dia'])}", f"--lqip-noite:{lqip_svg(P['lqip']['noite'])}"]
     return ";".join(v)
 
@@ -114,7 +225,8 @@ def style_vars():
 def scene_markup(p="", lang="pt", motion=True):
     """the scene (inside .entrance). data-motion: hooks for the moving layers (attributes only, never styled)"""
     m = (lambda s: f' data-motion="{s}"') if motion else (lambda s: "")
-    return (f'<div class="scene"{m("camera")} data-geo=\'{geo()}\' style="{style_vars()}">'
+    return (f'<div class="scene"{m("camera")} data-geo=\'{geo(p)}\' style="{style_vars()}">'
+            + ('<div class="ph ph--street"></div>' if ST else '') + '<div class="ph ph--lqip"></div>' +
             f'<div class="ph ph--hall"><div class="ph ph--plate"{m("plate")}>{layer("plate", p)}</div>'
             f'<div class="ph ph--reveal">{layer("reveal", p)}</div></div>'
             f'<div class="door">'

@@ -35,15 +35,17 @@ def pairs():
     P = dict((n, h) for n, h, _ in primitives())
     # the hall tokens are stored as exact hex; they must stay the mixes they were derived from
     assert P["sala-dia"] == mix(P["latao"], P["papel"], 0.22) and P["sala-noite"] == mix(P["luz-nucleo"], P["luz"], 0.72)
-    dia = [("Texto forte · wordmark", "tinta", "papel", "texto"),
-           ("Texto · lede", "nogueira", "papel", "texto"),
-           ("Texto discreto · controlos, rodapé", "castanho", "papel", "texto"),
-           ("Latão-texto · estado", "latao-texto", "papel", "texto"),
-           ("Emblema · ponto do rótulo do logótipo", "latao-marca", "papel", "gráfico mín. 3:1"),
-           ("Foco · linha do chão", "nogueira", "papel", "não-texto mín. 3:1")]
-    noite = [("Texto · wordmark, rótulos, lede", "linho", "noite", "texto"),
-             ("Texto discreto · controlos, rodapé", "linho-escuro", "noite", "texto"),
-             ("Latão · estado, emblema, ponto do rótulo, foco", "latao", "noite", "texto")]
+    # the page is the wall (parede / parede-noite); every pair must hold AA there
+    dia = [("Logótipo · wordmark e a sua linha (Verde Torres)", "verde-torres", "parede", "texto"),
+           ("Texto forte · ação, controlo atual", "tinta", "parede", "texto"),
+           ("Texto · lede", "nogueira", "parede", "texto"),
+           ("Texto discreto · controlos, rodapé", "castanho", "parede", "texto"),
+           ("Latão-texto · estado", "latao-texto", "parede", "texto"),
+           ("Emblema · ponto do rótulo do logótipo", "latao-marca", "parede", "gráfico mín. 3:1"),
+           ("Foco · linha do chão", "nogueira", "parede", "não-texto mín. 3:1")]
+    noite = [("Texto · wordmark, rótulos, lede", "linho", "parede-noite", "texto"),
+             ("Texto discreto · controlos, rodapé", "linho-escuro", "parede-noite", "texto"),
+             ("Latão · estado, emblema, ponto do rótulo, foco", "latao", "parede-noite", "texto")]
     hall = []
     for h in ("sala-dia", "sala-noite"):
         hall += [("Título, rótulos, ligações · " + h, "tinta", h, "texto"),
@@ -60,8 +62,11 @@ def pairs():
     return rows
 
 
-def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head="", photo=None):
+def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head="", photo=None, wordmark=None):
     prims = primitives()
+    wm = wordmark() if wordmark else ""
+    wm_small = wm.replace('class="lockup__name" ', '', 1)      # the drawing alone, sized by its wrapper
+    wm_type = wm
     # the form copies link to the real notice: from /design/ that is one level up
     T_sg = dict(T["pt"], privacy_href="../" + T["pt"]["privacy_href"])
     sw = "\n".join(
@@ -155,8 +160,8 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=
 <div class="sg-panel__grid">
 <div class="sg-panel__text">
 {lockup_html('p', 'sg-' + theme)}
-<p class="lede">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</p>
-<p class="status">Abre brevemente.</p>
+<p class="lede">Estamos a restaurar um edifício antigo.</p>
+<p class="status">Abrimos brevemente.</p>
 <p class="cta-row"><a class="cta" href="#sg-lista">Entrar na lista de espera</a></p>
 <div class="sg-controls">
 <div class="controls" role="group" aria-label="Tema (exemplo)"><button class="ctl" type="button" aria-pressed="{pressed_d}">Dia</button><span class="controls__sep" aria-hidden="true">·</span><button class="ctl" type="button" aria-pressed="{pressed_n}">Noite</button></div>
@@ -241,6 +246,22 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-space li {{ display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-1); }}
 .sg-bar {{ block-size: var(--space-3); background: var(--color-text-muted); }}
 .sg-rules li {{ padding-block: var(--space-2); border-block-end: var(--hairline) solid var(--color-surface); max-inline-size: 48em; }}
+.sg-logos {{ display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); margin-block-start: var(--space-5); }}
+.sg-logo {{ margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: var(--space-5); padding: var(--space-6) var(--space-4) var(--space-4); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-ui); text-align: center; }}
+.sg-logo .lockup {{ font-size: min(4rem, 8.5vw); }}
+/* clear space: the height of RAZILEIR's capitals (0.098 of the wordmark's width) on every side, drawn as a dashed edge */
+.sg-clear {{ padding: calc(var(--lockup-wordmark) * 0.098); outline: var(--hairline) dashed var(--color-ground); }}
+/* the home page's one-line line (site.css, inside its container query), shown here as the pitch draws it */
+.sg-line .lockup__label {{ font-size: var(--lockup-label-line); margin-inline-end: calc(var(--track-label) * -1); }}
+.sg-line .lockup__kind, .sg-line .lockup__place {{ display: inline-block; margin-inline-end: 0; }}
+.sg-line .lockup__dot {{ display: inline; }}
+.sg-mins {{ display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: var(--space-6); }}
+.sg-mins figure {{ margin: 0; display: grid; justify-items: center; gap: var(--space-2); }}
+.sg-mins .lockup {{ font-size: var(--size-lockup-min); }}
+.sg-wm {{ display: block; color: var(--color-brand-ink); }}
+.sg-wm svg {{ display: block; inline-size: 100%; block-size: auto; }}
+.sg-em {{ display: block; color: var(--color-mark); }}
+.sg-em svg {{ display: block; inline-size: 100%; block-size: auto; }}
 code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.875em; }}   /* this page only: token names */
 </style>
 </head>
@@ -250,6 +271,35 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 {lockup_html('p', 'sg-head')}
 <div><h1>Sistema de design · v1.0</h1><p>Página interna, não indexada nem ligada ao site. Mostra os tokens e componentes reais (tokens.css, site.css).</p></div>
 </header>
+
+<h2>Logótipo</h2>
+<p class="sg-note">O emblema atual (a coroa, os louros e o B) sobre o wordmark do pitch de identidade e a sua linha em capitais Cinzel muito espaçadas, nas proporções do pitch. O wordmark é o próprio lettering do pitch, vetorizado: o A grande, o B ornamental com a espiral e o fio ao lado, RAZILEIR em capitais menores com as pernas dos R lançadas, o A final grande. O monograma em escudo do pitch está em pausa, por decisão do cliente: fica o emblema atual.</p>
+<div class="sg-logos">
+<figure class="sg-logo sg-line" data-theme="dia">{lockup_html('p', 'sg-logo-dia', ' sg-clear')}<figcaption>Dia · wordmark e linha em Verde Torres, emblema e « · » em latão-marca · tracejado: a área de proteção</figcaption></figure>
+<figure class="sg-logo sg-line" data-theme="noite">{lockup_html('p', 'sg-logo-noite', ' sg-clear')}<figcaption>Noite · wordmark e linha em linho, emblema e « · » em latão</figcaption></figure>
+</div>
+<div class="sg-logos">
+<figure class="sg-logo" data-theme="dia"><div class="sg-mins">
+<figure>{lockup_html('p', 'sg-min-dia')}<figcaption>logótipo no mínimo: 30px (wordmark 204px)</figcaption></figure>
+<figure><span class="sg-wm" style="inline-size:120px">{wm_small}</span><figcaption>wordmark sozinho: 120px</figcaption></figure>
+<figure><span class="sg-em" style="inline-size:32px">{emblem('sg-em32')}</span><figcaption>emblema: 32px</figcaption></figure>
+<figure><span class="sg-em" style="inline-size:16px">{emblem('sg-em16')}</span><figcaption>16px (favicon)</figcaption></figure>
+</div><figcaption>Tamanhos mínimos em ecrã</figcaption></figure>
+<figure class="sg-logo" data-theme="noite"><div class="sg-mins">
+<figure>{lockup_html('p', 'sg-min-noite')}<figcaption>30px</figcaption></figure>
+<figure><span class="sg-wm" style="inline-size:120px">{wm_small}</span><figcaption>120px</figcaption></figure>
+<figure><span class="sg-em" style="inline-size:32px">{emblem('sg-em32n')}</span><figcaption>32px</figcaption></figure>
+<figure><span class="sg-em" style="inline-size:16px">{emblem('sg-em16n')}</span><figcaption>16px</figcaption></figure>
+</div><figcaption>Os mesmos, de noite</figcaption></figure>
+</div>
+<ul class="sg-rules">
+<li><strong>Ficheiros</strong>: <code>assets/img/wordmark.svg</code> (uma forma por letra, 218 nós, 5,4 KB; medido contra o pitch: IoU 0,974) e <code>assets/img/emblem.svg</code>. O wordmark não é uma fonte: vai inline no h1, <code>aria-hidden</code>, com <code>fill="currentColor"</code>, e o nome lê-se uma vez do texto escondido «A Brazileira, Boutique Hotel, Torres Vedras».</li>
+<li><strong>Proporções</strong> (medidas no pitch; W = largura do wordmark, 2316,2 × 369, <code>--lockup-wordmark</code> 6.8em do tamanho do logótipo: 245px a 36px, 490px a 72px): emblema 0.257 W de largura (a área do monograma do pitch, 160 × 143 px em 579) · o pé do emblema desce 0.0073 W abaixo do topo do B, longe das letras · das pernas dos R às capitais da linha 0.0286 W · a linha numa só linha: capitais 0.019 W (Cinzel a 0.0271 W, nunca menos de 11,2px), tracking 0.42em, 0.81 W de largura; em duas linhas, max(0.32em, 11px).</li>
+<li><strong>Área de proteção</strong>: a altura das capitais de RAZILEIR (0.098 W) em todos os lados do logótipo; 20px no tamanho mínimo.</li>
+<li><strong>Tamanhos mínimos</strong> em ecrã: o logótipo completo a 30px (wordmark 204px, a linha presa a 11px); o wordmark sozinho a 120px de largura (o B ornamental e as pernas dos R ainda se leem); abaixo disso, só o emblema (favicon e ícones), que se aguenta a 16px.</li>
+<li><strong>Cores</strong> (do pitch, <code>colours.json</code>): Verde Torres <code>--verde-torres</code> #24281B (o círculo da paleta; o traço medido é #1A1C10) é a tinta do wordmark e da linha de dia, 13,00:1 sobre a Parede; de noite, linho (14,79:1 sobre a Parede-noite). O emblema fica em latão-marca de dia e latão de noite. O Latão Antigo do pitch (#987245) pertence ao monograma em pausa e não é usado; o fundo do quadro (#F5F2EA) não substitui a Parede. Cores forçadas: CanvasText.</li>
+<li><strong>Não</strong>: redesenhar ou compor o wordmark numa fonte, esticar, contornar, recolorir fora dos dois esquemas, pôr sobre a fotografia, juntar-lhe o monograma do pitch enquanto está em pausa, animar o emblema.</li>
+</ul>
 
 <h2>Materiais (primitivos)</h2>
 <ul class="sg-sws">
@@ -276,7 +326,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </div>
 
 <h2>A fotografia em camadas</h2>
-<p class="sg-note">A entrada é uma fotografia (a mesma porta de dia e reiluminada à noite, ficheiros próprios para cada tema), cortada em camadas que se alinham pela geometria da fachada (<code>assets/photo/photo.json</code>): a sala ao fundo &lt; a sombra da ombreira &lt; as duas folhas &lt; a fachada, com a porta transparente &lt; a luz nos degraus (Noite). As folhas rodam para dentro sobre as dobradiças exteriores, até 84°, na perspetiva da própria fotografia (o ponto de fuga da sala); escurecem ao virar (1 − 0,28 · sen do ângulo de dia, 0,40 à noite). A sala, um vestíbulo desfocado com um arco de luz ao fundo, cresce mais devagar do que a porta (zoom<sup>0,8</sup>): está mais longe. A margem da fachada converge para a cor da página (Papel de dia, Noite à noite), por isso a fotografia nunca se lê como um retângulo. Em repouso, sem JavaScript ou com movimento reduzido: a fotografia tal como é, portas fechadas, a luz da sala na frincha.</p>
+<p class="sg-note">A entrada é uma fotografia (a mesma porta de dia e reiluminada à noite, ficheiros próprios para cada tema), cortada em camadas que se alinham pela geometria da fachada (<code>assets/photo/photo.json</code>): a sala ao fundo &lt; a sombra da ombreira &lt; as duas folhas &lt; a fachada, com a porta transparente &lt; a luz nos degraus (Noite). As folhas rodam para dentro sobre as dobradiças exteriores, até 84°, na perspetiva da própria fotografia (o ponto de fuga da sala); escurecem ao virar (1 − 0,28 · sen do ângulo de dia, 0,40 à noite). A sala, um vestíbulo desfocado com um arco de luz ao fundo, cresce mais devagar do que a porta (zoom<sup>0,8</sup>): está mais longe. A página é a parede: a sua cor foi tirada do reboco da fotografia (Parede #FAECDF de dia, Parede-noite #1C140F à noite) e a parede da fachada foi graduada para esse tom (de dia, em baixa frequência, mantendo a textura e as sombras da lanterna e da oliveira; à noite, a queda da luz do crepúsculo termina nele), por isso a fotografia nunca se lê como um retângulo, nem ao aproximar nem ao afastar. Em repouso, sem JavaScript ou com movimento reduzido: a fotografia tal como é, portas fechadas, a luz da sala na frincha. Por agora em teste, só com <code>?3d</code> no endereço (por omissão a entrada é a fotografia em camadas): onde o aparelho tem GPU, a mesma entrada é desenhada em 3D (WebGL, carregado depois da página): a própria fotografia é a pele, projetada a partir da sua câmara, de modo que em repouso o desenho é a fotografia; o 3D só acrescenta a espessura das folhas, o relevo das almofadas, os puxadores, o espelho e as dobradiças em latão, a profundidade da ombreira e do vestíbulo, e uma luz que apenas modula a da fotografia. Por omissão, sem GPU, com <code>?sem3d</code> ou se o contexto se perder: a entrada em camadas.</p>
 <div class="sg-opens">
 {photo_state("dia", scene_d, style_d, "rest", "em repouso: portas fechadas")}
 {photo_state("dia", scene_d, style_d, "open", "portas abertas (84°)")}
@@ -305,14 +355,14 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
 <h2>Tipografia</h2>
 <div class="sg-type"><ul>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__name">A B<span class="lockup__sc">razileir</span><span class="lockup__end">a</span></span></span><small>Brazileira Wordmark (Cinzel Decorative Black, modificada: o B ornamental mantém-se, o R ornamental com a cauda redesenhada como um pontapé sobre a linha de base, as outras letras são as capitais romanas simples; só A a Z, 3,0 KB; renomeada como a OFL exige) · <code>--size-wordmark</code> 36 a 72px · o A, o B e o A final grandes, RAZILEIR a 72% · só no logótipo. A leitura do pitch do lettering da fachada (anos 30): romana pesada de serifas abertas, o B ornamental e os dois R de perna lançada</small></li>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__label" style="font-size:var(--lockup-label-line);margin:0"><span class="lockup__kind" style="display:inline;margin:0">Boutique Hotel</span><span class="lockup__dot" style="display:inline"> · </span><span class="lockup__place" style="display:inline;margin:0">Torres Vedras</span></span></span><small>Cinzel 400 (só capitais, 5,9 KB) · uma linha com « · » a 0.19em do wordmark (13,7px a 72px, nunca menos de 11,2px, nunca mais larga que 0.9 do wordmark) na página inicial a partir de 1024 × 700, se couber na coluna; duas linhas a 0.32em (nunca menos de 11px) em todo o lado · tracking 0.32em · junto ao wordmark (da linha de base às capitais, 0.2 da altura do B) · tinta forte, o ponto em latão</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start">{wm_type}</span><small>O wordmark não é uma fonte: é o lettering do pitch vetorizado (<code>assets/img/wordmark.svg</code>, 11 formas, 5,4 KB, inline e <code>aria-hidden</code>) · <code>--lockup-wordmark</code> 6.8em do tamanho do logótipo (<code>--size-wordmark</code> 36 a 72px): 245 a 490px de largura · só no logótipo. A leitura do pitch do lettering da fachada (anos 30): romana pesada de serifas abertas, o B ornamental e os dois R de perna lançada</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__label" style="font-size:var(--lockup-label-line);margin:0"><span class="lockup__kind" style="display:inline;margin:0">Boutique Hotel</span><span class="lockup__dot" style="display:inline"> · </span><span class="lockup__place" style="display:inline;margin:0">Torres Vedras</span></span></span><small>Cinzel 400 (só capitais, 5,9 KB) · uma linha com « · », capitais a 0.019 da largura do wordmark (13,3px a 72px, nunca menos de 11,2px; 0.81 do wordmark, como no pitch) na página inicial a partir de 1024 × 700, se couber na coluna; duas linhas a 0.32em (nunca menos de 11px) em todo o lado · tracking 0.42em, o do pitch · das pernas dos R às capitais, 0.0286 do wordmark · Verde Torres de dia, linho de noite, o ponto em latão</small></li>
 <li><span class="lista__title" style="text-align:start;margin:0">Lista de espera</span><small>Cinzel 400 · <code>--size-read</code> 19px · tracking 0.2em · capitais · o nome da secção, como o pitch nomeia as suas (nos nomes de secção da nota de privacidade, 17px)</small></li>
 <li><span class="notice__title" style="margin:0">Nota de privacidade</span><small>EB Garamond 400 · <code>--size-title</code> 28 a 38px · altura de linha 1.15 · o título de página</small></li>
-<li><span class="lede" style="margin:0">Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.</span><small>EB Garamond 400 · <code>--size-lede</code> 19px (320) a 20px (390) a 28px · linha 1em + 7.2px (20/27, 28/35) · duas linhas equilibradas; uma frase por linha em 320 a 359px</small></li>
+<li><span class="lede" style="margin:0">Estamos a restaurar um edifício antigo.</span><small>EB Garamond 400 · <code>--size-lede</code> 19px (320) a 20px (390) a 28px · linha 1em + 7.2px (20/27, 28/35) · uma linha; em 320 a 374px parte-se num só sítio, «Estamos a restaurar / um edifício antigo.»</small></li>
 <li><span style="font-family:var(--font-text);font-weight:var(--weight-text);font-size:var(--size-read);line-height:var(--leading-read);font-variant-numeric:var(--num-text);max-inline-size:var(--measure-read);text-wrap:pretty">O seu consentimento (art. 6.º, n.º 1, alínea a) do RGPD). Pode retirá-lo a qualquer momento, sem afetar o tratamento feito antes.</span><small>EB Garamond 400 · <code>--size-read</code> 19/30px · algarismos alinhados (os únicos desta fonte) · medida 27em (até 70 caracteres) · sem hifenização · texto de leitura e o email escrito no campo</small></li>
 <li><span class="cta" style="padding:0;min-block-size:0">Entrar na lista de espera</span><small>EB Garamond 500 · <code>--size-cta</code> 17px no telemóvel, 19px a partir de 900px, 21px a partir de 1200px · tracking 0.01em · sublinhado 1.5px · a ação, o botão e a ligação de regresso</small></li>
-<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abre brevemente.</span></span><small>EB Garamond 500 · <code>--size-ui</code> 17px · tracking 0.01em · frase normal; PT e EN com 0.08em · o estado mais calmo que a ação: latão, mais perto da frase (no telemóvel, de Noite, a tinta calma: a ação tem lá o mesmo tamanho)</small></li>
+<li><span>Dia · Noite · <span style="letter-spacing:var(--track-caps)">PT · EN</span> · <span style="color:var(--color-accent-text)">Abrimos brevemente.</span></span><small>EB Garamond 500 · <code>--size-ui</code> 17px · tracking 0.01em · frase normal; PT e EN com 0.08em · o estado mais calmo que a ação: latão, mais perto da frase (no telemóvel, de Noite, a tinta calma: a ação tem lá o mesmo tamanho)</small></li>
 <li><span style="font-family:var(--font-text);font-weight:var(--weight-text);color:var(--color-text-muted)">É noite em Torres Vedras.</span><small>EB Garamond 400 · <code>--size-ui</code> 17/21px · a nota do sol: uma frase da casa, por baixo de Dia · Noite, só quando o sol escolheu o tema, em todos os ecrãs</small></li>
 <li><span style="font-family:var(--font-consent);font-weight:var(--weight-text);line-height:var(--leading-text)">Aceito receber emails de A&nbsp;Brazileira sobre a abertura.</span><small>EB Garamond 400 · <code>--size-ui</code> 17/25px · o consentimento (o rótulo «Email» e as mensagens em EB Garamond 500, 17px)</small></li>
 <li><span style="line-height:var(--leading-text);color:var(--color-text-muted)">© 2026 A Brazileira · Torres Vedras, Portugal</span><small>EB Garamond 500 · <code>--size-ui</code> 17/25px</small></li>
@@ -342,7 +392,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 <h2>Regras (anti-slop)</h2>
 <ul class="sg-rules">
 <li>Três vozes, como no pitch de identidade: o wordmark (só no logótipo), capitais romanas espaçadas em Cinzel para rótulos (a linha do logótipo e os nomes de secção) e EB Garamond para tudo o que se diz (400 nas frases, 500 na interface, sempre em frase normal). No máximo cinco tamanhos de texto fora do logótipo, nada abaixo de 17px; o peso nunca separa a hierarquia (cor, espaço e tamanho separam).</li>
-<li>Fundos planos: Papel de dia, Noite (#1C120B, nogueira escura) à noite. A fotografia funde-se neles pela margem; nenhum gradiente na interface.</li>
+<li>Fundos planos: a parede da fotografia de dia (Parede #FAECDF, nunca branco), a parede ao crepúsculo à noite (Parede-noite #1C140F). A fotografia é a mesma parede; nenhum gradiente na interface.</li>
 <li>O sublinhado é só para ligações. O estado atual de um controlo é tinta forte e um traço curto em latão; o estado nunca é só cor.</li>
 <li>Sem divisores decorativos, molduras, halos de página, texturas, vidro, sombras na interface ou texto em gradiente.</li>
 <li>Sem itálicos decorativos, pontos de exclamação, emoji ou palavras de virtude.</li>

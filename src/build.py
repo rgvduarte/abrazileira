@@ -1,7 +1,7 @@
 """Build the A Brazileira site into ../docs from the sources in this folder.
 
 Portable: every path is relative to this file. The folder is self-contained (assets/ holds the emblem,
-fonts, icons, favicon, the Open Graph image and the photographic entrance in assets/photo), so
+the wordmark, fonts, icons, favicon, the Open Graph image and the photographic entrance in assets/photo), so
 `python3 src/build.py` works from any checkout with Python 3 alone (no image tools: the photo layers are encoded
 once by the asset pipeline and copied as they are). The build is deterministic and rewrites ../docs completely.
 """
@@ -39,6 +39,19 @@ def emblem(idp="ab-emblem"):
     return f'<svg viewBox="0 0 200 228" aria-hidden="true" focusable="false">{inner}</svg>'
 
 
+# ---------------------------------------------------------------- wordmark
+def wordmark():
+    """«A Brazileira» as drawn on the identity pitch (assets/img/wordmark.svg: the pitch's lettering vectorised, one
+    path per letter, filled with currentColor). Inline and aria-hidden: the lockup's hidden text carries the name.
+    The width and height attributes give it its ratio before CSS applies (no layout shift)."""
+    s = read(os.path.join(ASSETS, "img/wordmark.svg"))
+    vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', s)
+    inner = re.sub(r">\s+<", "><", re.sub(r"^<svg[^>]*>", "", s.strip()).replace("</svg>", "").strip())
+    assert "#" not in inner and "fill=" not in inner, "raw colour left in wordmark"
+    return (f'<svg class="lockup__name" viewBox="0 0 {vb[1]} {vb[2]}" width="{round(float(vb[1]))}" '
+            f'height="{round(float(vb[2]))}" fill="currentColor" aria-hidden="true" focusable="false">{inner}</svg>')
+
+
 # ---------------------------------------------------------------- the entrance (photo.py)
 def scene_markup(p="", motion=True):
     """the photograph of the entrance in layers, and the custom properties that place them (on .entrance)"""
@@ -51,12 +64,12 @@ T = {
         lang="pt-PT", og_locale="pt_PT", alt_locale="en_GB", url=BASE, prefix="", home="./",
         privacy_href="privacidade/", privacy_url=BASE + "privacidade/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
-        desc="A Brazileira, hotel em Torres Vedras. Uma casa antiga em restauro. Abre brevemente.",
+        desc="A Brazileira, hotel em Torres Vedras. Um edifício antigo em restauro. Abrimos brevemente.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: o logótipo e a fotografia de uma entrada em arco de pedra com portas de madeira, à noite.",
         skip="Saltar para o conteúdo", theme="Tema", day="Dia", night="Noite", langnav="Idioma",
         sol_day="É dia em Torres Vedras.", sol_night="É noite em Torres Vedras.",
-        lede="Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.",
-        status="Abre brevemente.",
+        lede="Estamos a restaurar um edifício antigo.",
+        status="Abrimos brevemente.",
         cta="Entrar na lista de espera",
         list_h="Lista de espera",
         list_p="Deixe-nos o seu email e avisamos quando abrirmos.",
@@ -77,11 +90,11 @@ T = {
         lang="en", og_locale="en_GB", alt_locale="pt_PT", url=BASE + "en/", prefix="../", home="./",
         privacy_href="privacy/", privacy_url=BASE + "en/privacy/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
-        desc="A Brazileira, a hotel in Torres Vedras, Portugal. An old house under restoration. Opening soon.",
+        desc="A Brazileira, a hotel in Torres Vedras, Portugal. An old building under restoration. Opening soon.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: the logo and a photograph of an arched stone entrance with wooden doors, at night.",
         skip="Skip to content", theme="Theme", day="Day", night="Night", langnav="Language",
         sol_day="It is daytime in Torres Vedras.", sol_night="It is night in Torres Vedras.",
-        lede="An old house in Torres Vedras is being restored to welcome guests.",
+        lede="We are restoring an old building.",
         status="Opening soon.",
         cta="Join the waiting list",
         list_h="Waiting list",
@@ -114,9 +127,10 @@ def nb(s):
 for _k in ("pt", "en"):
     for _f in ("lede", "list_p", "consent", "msg_ok", "msg_error", "noscript"):
         T[_k][_f] = nb(T[_k][_f])
-# the last phrase of the sentence holds together: on 320-359px phones the lede sets one phrase a line
-# («Uma casa antiga de Torres Vedras / está a ser restaurada / para receber hóspedes.», site.css)
-T["pt"]["lede"] = T["pt"]["lede"].replace("para receber hóspedes", "para\u00a0receber\u00a0hóspedes")
+# the sentence breaks in one place only, between its two halves («Estamos a restaurar / um edifício antigo.», «We are
+# restoring / an old building.»): the object holds together, so a phone sets two even lines and a desktop one line
+T["pt"]["lede"] = T["pt"]["lede"].replace("um edifício antigo", "um\u00a0edifício\u00a0antigo")
+T["en"]["lede"] = T["en"]["lede"].replace("an old building", "an\u00a0old\u00a0building")
 
 # the town is its own span: on phones it takes a second line by rule, not by a near miss in width
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
@@ -153,12 +167,12 @@ TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 
 
 def lockup_html(level="h1", idp="ab-emblem", extra=""):
-    """the crest, the wordmark (a large A and the ornamental B, RAZILEIR at 72%, a large closing A; drawn, aria-hidden,
-    its name read once from the hidden «A Brazileira») and its line in spaced capitals; the text reads «A Brazileira,
-    Boutique Hotel, Torres Vedras» (the « · » is drawn, not read)"""
+    """the crest, the wordmark (the pitch's lettering, an inline SVG, aria-hidden: its name is read once from the hidden
+    «A Brazileira») and its line in spaced capitals; the text reads «A Brazileira, Boutique Hotel, Torres Vedras»
+    (the « · » is drawn, not read)"""
     return (f'<{level} class="lockup{extra}">'
             f'<span class="lockup__emblem">{emblem(idp)}</span>'
-            f'<span class="sr">A Brazileira</span><span class="lockup__name" aria-hidden="true">A B<span class="lockup__sc">razileir</span><span class="lockup__end">a</span></span><span class="sr">, </span>'
+            f'<span class="sr">A Brazileira</span>{wordmark()}<span class="sr">, </span>'
             f'<span class="lockup__label"><span class="lockup__kind">Boutique Hotel</span>'
             f'<span class="lockup__dot" aria-hidden="true"> · </span><span class="sr">, </span>'
             f'<span class="lockup__place">Torres Vedras</span></span>'
@@ -195,12 +209,10 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 {alt}
 <meta name="robots" content="{robots}">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#F9F0E9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1C120B" media="(prefers-color-scheme: dark)">{ogm}
+{THEME_COLOR}{ogm}
 <link rel="icon" href="{p}favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{p}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="{p}site.webmanifest">
-<link rel="preload" href="{p}assets/fonts/brazileira-wordmark.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{p}assets/fonts/cinzel-caps-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{p}assets/fonts/eb-garamond-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{p}assets/fonts/eb-garamond-500.woff2" as="font" type="font/woff2" crossorigin>
@@ -280,7 +292,7 @@ def page(k):
 <a class="skip" href="#conteudo">{t['skip']}</a>
 {topbar(t, p or './', p + 'en/', k)}
 <main id="conteudo">
-<div class="porta" data-porta data-motion="wrapper">
+<div class="porta" data-porta data-motion="wrapper" data-3d="{p}assets/js/door3d.js?v={DOOR3D_V}" data-3d-dep="{p}assets/js/vendor/three.min.js?v={THREE_V}">
 <div class="porta__stage" data-motion="stage">
 <div class="porta__frame">
 <div class="stage">
@@ -408,13 +420,27 @@ def page_privacy(k):
 """
 
 
+# the browser's bar in the wall colour (site.js keeps it in step with the theme and the hall's light)
+THEME_COLOR = ('<meta name="theme-color" content="#FAECDF" media="(prefers-color-scheme: light)">\n'
+               '<meta name="theme-color" content="#1C140F" media="(prefers-color-scheme: dark)">')
+
+
 # 404.html is served at any depth (/abrazileira/a/b/c): resolve the site root first, then
-# write the base and the stylesheets as parser-inserted (render-blocking) tags.
+# write the base, the stylesheets (parser-inserted, render-blocking) and the script after it. The script is written
+# too (review r1): a page-relative <script src> in the markup was requested by the preload scanner before the <base>
+# applied (a/b/assets/js/site.js: one 404 and a console error on every deep 404).
 BASE_JS = ('<script>(function(){var p=location.pathname.split("/").filter(Boolean),'
            'b=(/\\.github\\.io$/.test(location.hostname)||p[0]==="abrazileira")&&p.length?"/"+p[0]+"/":"/";'
            'document.write(\'<base href="\'+b+\'"><link rel="stylesheet" href="assets/css/tokens.css">'
-           '<link rel="stylesheet" href="assets/css/site.css"><link rel="icon" href="favicon.svg" type="image/svg+xml">\')})();</script>\n'
-           '<noscript><link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/site.css"></noscript>')
+           '<link rel="stylesheet" href="assets/css/site.css"><link rel="icon" href="favicon.svg" type="image/svg+xml">'
+           '<script src="assets/js/site.js" defer><\\/script>\')})();</script>\n'
+           # without JS there is no <base>: from the site root, so a 404 at any depth (/a/b/x) is still styled (the
+           # production domain serves the site at /; the github.io preview at /abrazileira/ has no root stylesheet, so a
+           # no-JS 404 there is plain). Single-quoted on purpose: the repository's deploy step (tools/stamp_assets.py)
+           # fingerprints the double-quoted, page-relative references only and stopped at this root-absolute one
+           # («missing asset /assets/css/tokens.css», review r1); it leaves these alone, and the unstamped files it
+           # keeps in docs/ are this build's own. build.py's stamp() still adds ?v= to them.
+           "<noscript><link rel='stylesheet' href='/assets/css/tokens.css'><link rel='stylesheet' href='/assets/css/site.css'></noscript>")
 
 
 def page404():
@@ -429,7 +455,7 @@ def page404():
 <title>Página não encontrada · A Brazileira</title>
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
-<script src="assets/js/site.js" defer></script>
+{THEME_COLOR}
 </head>
 <body class="page-404">
 {topbar(T["pt"], "./", "en/", None)}
@@ -454,6 +480,11 @@ def tokens_css():
     css = css.replace("/*NOITE*/", "\n".join(l[2:] if l.startswith("  ") else l for l in noite.split("\n")), 1)
     # the photo's placeholders (24px, drawn blurred), one per theme, are theme tokens like any other
     css = css.replace("LQIP_DIA", photo.lqip_svg(photo.P["lqip"]["dia"])).replace("LQIP_NOITE", photo.lqip_svg(photo.P["lqip"]["noite"]))
+    # the street's tokens (photo.py): one declaration per line, in the block's own indentation
+    for th, key in (("dia", "STREET_DIA"), ("noite", "STREET_NOITE")):
+        decl = ";\n".join(f"{k}: {v}" for k, v in photo.street_tokens(th).items()) + ";"
+        css = re.sub(r"(?m)^([ \t]*)" + key + r"\n", lambda m: "\n".join(m.group(1) + l for l in decl.split("\n")) + "\n", css)
+    assert "STREET_" not in css
     return css
 
 
@@ -480,6 +511,29 @@ def min_js(js):
     return out + "\n"
 
 
+# ---------------------------------------------------------------- the 3D entrance (lazy)
+# src/door3d.js (an ES module) ships stripped like site.js, its bare `three` import pointed at the vendored subset
+# (src/assets/js/vendor/three.min.js, made by tools/vendor_three.py, copied as is). Both carry their content hash in
+# the URL (the page names the module in data-3d; the module names three), so a deploy never mixes versions.
+VENDOR = os.path.join(SRC, "assets", "js", "vendor", "three.min.js")
+
+
+def hash10(b):
+    return hashlib.sha256(b).hexdigest()[:10]
+
+
+def door3d_js():
+    three = open(VENDOR, "rb").read()
+    js = min_js(read(os.path.join(SRC, "door3d.js")))
+    assert js.count('from "three"') == 1
+    return js.replace('from "three"', f'from "./vendor/three.min.js?v={hash10(three)}"')
+
+
+DOOR3D = door3d_js()
+THREE_V = hash10(open(VENDOR, "rb").read())
+DOOR3D_V = hash10(DOOR3D.encode("utf-8"))
+
+
 def sitemap():
     groups = [[("pt-PT", BASE), ("en", BASE + "en/"), ("x-default", BASE)],
               [("pt-PT", BASE + "privacidade/"), ("en", BASE + "en/privacy/"), ("x-default", BASE + "privacidade/")]]
@@ -495,7 +549,7 @@ def sitemap():
 
 # ---------------------------------------------------------------- cache busting
 # GitHub Pages serves assets with max-age=600; ?v=<content hash> keeps HTML and CSS/JS in step.
-REF = re.compile(r'(?P<attr>href|src)="(?P<url>(?!https?:|//|data:|#|mailto:)[^"?#]+\.(?:css|js))(?:\?v=[0-9a-f]+)?"')
+REF = re.compile(r'(?P<attr>href|src)=(?P<q>["\'])(?P<url>(?!https?:|//|data:|#|mailto:)[^"\'?#]+\.(?:css|js))(?:\?v=[0-9a-f]+)?(?P=q)')
 
 
 def stamp(docs):
@@ -508,12 +562,12 @@ def stamp(docs):
             base = docs if f == "404.html" else root      # 404 resolves its links against the site root (<base>)
 
             def sub(m):
-                target = os.path.normpath(os.path.join(base, m["url"]))
+                target = os.path.normpath(os.path.join(docs if m["url"].startswith("/") else base, m["url"].lstrip("/")))
                 if not os.path.isfile(target):
                     raise SystemExit(f"{path}: missing asset {m['url']}")
                 with open(target, "rb") as fh:
                     h = hashlib.sha256(fh.read()).hexdigest()[:10]
-                return f'{m["attr"]}="{m["url"]}?v={h}"'
+                return f'{m["attr"]}={m["q"]}{m["url"]}?v={h}{m["q"]}'
             write(path, REF.sub(sub, text))
 
 
@@ -535,10 +589,13 @@ def main():
     write(os.path.join(DOCS, "assets/css/tokens.css"), min_css(tokens_css()))
     write(os.path.join(DOCS, "assets/css/site.css"), min_css(read(os.path.join(SRC, "site.css"))))
     write(os.path.join(DOCS, "assets/js/site.js"), min_js(read(os.path.join(SRC, "site.js"))))
-    for f in ["brazileira-wordmark.woff2", "cinzel-caps-400.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
-              "OFL-cinzel-decorative.txt", "OFL-cinzel.txt", "OFL-eb-garamond.txt"]:
+    write(os.path.join(DOCS, "assets/js/door3d.js"), DOOR3D)
+    for f in ["three.min.js", "three.LICENSE.txt"]:
+        copy("js/vendor/" + f, "assets/js/vendor/" + f)
+    for f in ["cinzel-caps-400.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
+              "OFL-cinzel.txt", "OFL-eb-garamond.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
-    for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "og.jpg"]:
+    for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "wordmark.svg", "og.jpg"]:
         copy("img/" + f, "assets/img/" + f)
     shipped = 0
     for theme in ("dia", "noite"):                 # the photo layers, exactly the files photo.json lists
@@ -546,6 +603,13 @@ def main():
             for f in files:
                 for fmt in ("avif", "webp"):
                     copy(f"photo/{theme}/{name}-{f['w']}.{fmt}", f"assets/photo/{theme}/{name}-{f['w']}.{fmt}")
+                    shipped += f[fmt]
+    for theme in ("dia", "noite"):                 # the street's paving strip (CSS backgrounds, photo.json › street)
+        for k in ("strip", "strip3"):             # one scene width (upright phones), three (wider screens)
+            for f in photo.ST[theme].get(k, []):
+                n = "street" if k == "strip" else "street3"
+                for fmt in ("avif", "webp"):
+                    copy(f"photo/{theme}/{n}-{f['w']}.{fmt}", f"assets/photo/{theme}/{n}-{f['w']}.{fmt}")
                     shipped += f[fmt]
     copy("favicon.svg", "favicon.svg")
     write(os.path.join(DOCS, ".nojekyll"), "")
@@ -559,8 +623,8 @@ def main():
         "lang": "pt-PT",
         "start_url": "./",
         "display": "browser",
-        "background_color": "#F9F0E9",
-        "theme_color": "#F9F0E9",
+        "background_color": "#FAECDF",
+        "theme_color": "#FAECDF",
         "icons": [
             {"src": "favicon.svg", "sizes": "any", "type": "image/svg+xml"},
             {"src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png"},
@@ -568,9 +632,9 @@ def main():
         ],
     }, ensure_ascii=False, indent=2) + "\n")
     import styleguide
-    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD, photo))
+    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD, photo, wordmark))
     stamp(DOCS)
-    fp = {t: {w: round(photo.bytes_first_paint(t, w) / 1024, 1) for w in (720, 1080, 1300)} for t in ("dia", "noite")}
+    fp = {t: {w: round(photo.bytes_first_paint(t, w) / 1024, 1) for w in (720, 1080, 1206, 1300)} for t in ("dia", "noite")}
     print("built", DOCS, "photo layers", round(shipped / 1024), "KB; first paint (AVIF KB by scene device px):", fp)
 
 

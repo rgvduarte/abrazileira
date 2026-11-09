@@ -63,8 +63,8 @@
       720,
       794
      ],
-     "avif": 42839,
-     "webp": 53104
+     "avif": 47010,
+     "webp": 60246
     },
     {
      "w": 1080,
@@ -72,8 +72,17 @@
       1080,
       1191
      ],
-     "avif": 84201,
-     "webp": 102074
+     "avif": 90510,
+     "webp": 115980
+    },
+    {
+     "w": 1300,
+     "px": [
+      1300,
+      1434
+     ],
+     "avif": 114858,
+     "webp": 147806
     },
     {
      "w": 1600,
@@ -81,8 +90,8 @@
       1600,
       1765
      ],
-     "avif": 138236,
-     "webp": 169644
+     "avif": 147305,
+     "webp": 188020
     },
     {
      "w": 2388,
@@ -90,8 +99,8 @@
       2388,
       2634
      ],
-     "avif": 205946,
-     "webp": 262702
+     "avif": 221934,
+     "webp": 296176
     }
    ],
    "leaf-l": [
@@ -228,8 +237,8 @@
       720,
       794
      ],
-     "avif": 19661,
-     "webp": 18880
+     "avif": 25297,
+     "webp": 26680
     },
     {
      "w": 1080,
@@ -237,8 +246,17 @@
       1080,
       1191
      ],
-     "avif": 39446,
-     "webp": 37540
+     "avif": 49163,
+     "webp": 50722
+    },
+    {
+     "w": 1300,
+     "px": [
+      1300,
+      1434
+     ],
+     "avif": 65160,
+     "webp": 65674
     },
     {
      "w": 1600,
@@ -246,8 +264,8 @@
       1600,
       1765
      ],
-     "avif": 68641,
-     "webp": 65984
+     "avif": 85143,
+     "webp": 86820
     },
     {
      "w": 2388,
@@ -255,8 +273,8 @@
       2388,
       2634
      ],
-     "avif": 112183,
-     "webp": 111140
+     "avif": 138040,
+     "webp": 146840
     }
    ],
    "leaf-l": [
@@ -407,8 +425,8 @@
   }
  },
  "lqip": {
-  "dia": "data:image/webp;base64,UklGRioEAABXRUJQVlA4TB0EAAAvF0AGAA0oaNvI0e2Rf/6A/0FE9H8CIiQzCZOICo7qKgc+2hdQeRkwaiPJkbWvyB/p7uVrHGwbSVJU+Yd5DM9kvaG4bSQl13+Zd29mnP5HAFrVOkA42xS+IksDov98g3xH2JMH+lFI2P1RISLxGlopVnKIaCHDPKkbRrKOCTEBXECOtW2KrLz/X9WKu7u7O+yBQ0auOYtgAUTsgZxD6izAXa+7dk9PVf3pXYLESJIUSYqo7p65Z2ZG/fV4KZgZF6arJLmR5EiSWWTlrBb/f+Pe9FZ3p0VOn/oHLF1AVEREScFURKuIRjmpoAKIggCCIgCAOnGo4kjNgWJD8+XI5hBq4KASREQBETGRAgQEHYCIoDBCIxhJw8kNCdZ1kyarc4maAABgaAggAARAChMd01F52tbj2iIbRreObTk6TrmJoogIAAIASpFBMWtDUOTr3PVnL7yi1h+n/HKrB9xdtKA1phhIDAQBQIHy05yBvJpgVbh3YQWuaq9yeSamS/719ffh2XzqzFaFqiMoKAAChjn7+Yv70as1hssHy1eb6xctTr3kYtOgx8rdvLmy63VWDJN6QMRQEBDzMuCfldd/+G6T9qOBs7x73hp6vyDrHB/OP7q3P+7P1oetcXB5KEAAACTEM+OjNx6H+lqT197RwFna2Ml1+eO9zeeT666GYlKGa4e1CCCQEABIEH31y8FfH3eFy/VQsKxbXlhzrEPk2nwdT2W7bVYN1/SWQScKHgEAkMgaeetyopKCHdBqtkA/2nXYSjaezeFjQHWCvcifv35jdf78WgAgEMTKxOVyAhgotNNe4nLQPi/XV5r54l9do8V3OVAfBn0cye8A4DCHYiqhacFyXCGJRYSMS6smIQDzwpyJemtr/+YeqOU9ACDgPKApKOYRCBYaUHJiCOWYdLLWd8fBp7mPNBZzAMAcD1JAUADAT3q/mB0hzOI/ux3LLxoaXUHMWP+2qniR3PYLAABeUBAEEvQx7fX/8FXczNPUr0WlrqNrN4I5VzPenT35slYBAPFmKmCQzIhOvl6jFLq21VB1apeRYa/meLZl1+Hx4Wb7dpQPAICqWgiYKKYELS86OFG0cekpJQq/E5IoxETXqW3/sfV7AABNgYmpkjONKBb+G3d1NWqyaYkuKzkKrvA1broiMQUABHOSwk6nO5mW9YrfXTy1ForZ3XF/4XslR3ktMsY03fcvZ/rfRAYAJHIRgsx3Q89Y7W7s1HbB/HHKRLPIWfjjAlOhmzy7x/v+9fupD5NzAwCSrA9oB8D05M4bCm1U50APx1ZtJl2d8X6m7NuZYX2NFnMHAICAyCJzvlnKlZdr0DEB2sCw7npNWuY02/x0xv86+qrpl1RtAKCTjiKMipBSUMABkCCCRwiVKkpVfMGxs21qZAeApQMA",
-  "noite": "data:image/webp;base64,UklGRkYDAABXRUJQVlA4TDkDAAAvF0AGAA2gbds2kKcklf9/uEdE9D/QtgIz9pnU5H+p770UgIGSSJKcrkPnX+ELeJwDehFq2jaCzB9fx/umw6EokqSmyfhXiAS+ufqfAAaAaucyUQCuvMun6qkCVJpchGcGS6cz8Kz0AQx5yf4f8EGObNuqrcy19znvPvsfjTx0Io1I6SItcmKHyN3hyX3n7o1LDyQ3kuRIkkXW7nH2PP1lXL7dGZAjSVIkedQc0++EOP1145upmIDdP37gv6sUwmSFgPgLlWEqOcd2dHY8UN+ioqWAAPEr61oYxpA1U2atZ51RZ9M2MlGZSALET24rRVWE06ZPyt4InONudOiYERT6hduqMeNmGdMqPb0edr++ze8btDhePZ6TQwgXolQ/zdmusZSDLNs9D/ueX/fa8fmz9PnaL51b8+9GzYySiqQAgH1oenjmiEwv29vr7eyryZfPPFezZXd93dy8WI+u47KuAAEgdowL9uLT9eDv7W0t1pfHvf1vZzycc81RN20c/pysnpQbkyoTgGy1w0yXg/FhG3I8+7rrPfj4PR+7cnMpF/kj14hiSseaSQIAMqvuLS5/7+Bb0xyNOjfzL0e/juTweHA+TU2eqryZrFlTFwDe1/ttz94+zlECWvmXmzY3JZSb5RzuZFdlzdTnN50WCYDUWK7GpJU0DlasvOx4f9/tgRsJpLX9kr+v1XIt5goAIETHKyWHIhZ3+e7U/XH6v3xPAgNFkVbRiwQgIe0QSCWyAhaWoBKgWvcrQ6dXCQpAhVEONchQD93yEzcAVl6jFhHyRJRYrwSApKYOUoJUdLgDFUWpRUKz7DbDWTR+WMsCAE2GoIEAZqlIWawcGqkhU40d3eiwAICUGlkMiS5dDjBriWCWSmWAbGmbAABIgyjCbCqVF3g+HhWRWyoIKRsRgf0pK0UWOyQv1XAPx/Xz34VGXEOvsC1EnHrbOhkAkI3CRkqXEs2jG+Opi1FyO5hmdSZs/WPxqO9QABBKZXmumo3+7zPdzMS+31ulo1qk/anVkCK7nlGUswQAiCyyso5GwXK18Ri6lrFsnWugVX9bvNGdo/aTAnmXMMxaGJBAVkS0ADZKLMwCAKGAfwoA"
+  "dia": "data:image/webp;base64,UklGRkQEAABXRUJQVlA4TDgEAAAvF0AGAA0oaNtGUvdvOf6Ej0RE/8OM8jBzZZrx7MN/pAGZEkgDRpEkKcrXxPpXuCqYDkwwiiRJUb7Xv0DmPZDAtm0kR+y/yk0v9f6//5klwv/5N0GAX32nf+YB1P+8zsvER2WUPvQR808AbStdEOGHSLQ606oZv3dBcm3tieS8X6rqgjYzMzOzE/CWAmDvHYQD4CC8cwjMzMw4WOPuIkl/GpJk204j6d4vJTRz9xD3v6geMXe6SJYe5UiSHEmSWlb1Yv7ZWxL27rWwyyMG+A4AoYBgIgUAIlGAOAhoCMMAABoqZQBAOBGAiRlrWWsxpI4CqRGAIABMAAgVTJgCWKtVugEbkHVQTAABBVAoNAAACAYJwFAbsMy0SZlmQJkAIBgAQKAGwWBqQZINt39kf3SFzu232LTDdXCeOftVWCwxCBJQJIBkEBEjibItzhF6N0++tfOiq3fN68dOk++VSkwNCQQioEVk6C3eWlHraPHpmkATeXLfwatMX/HllVldn2ITEwAggAVkw/V09u711Me0DZz+lk8uAfXIecNkx5K7rj2+uq3JprCZQBwcBCRcld37uf/NrwnH/dUHz/cH59Zbk+lZz/Sznsb6Wfi1L+5FewZ6xoJBCBCCphpPE+us8kyapurH/Spfvu7dX37PyXP54+fJ46RzKU2xFEqh0SISAZivZ8J48es1Yd/4Wpd1u/RJY9wrfeLs9cNsLjPOxGoyy+eqSioLnBdQI5uAI7ylaourKk98HP0xPcOpXdzf5fjsyHCC7vUfhX8yuuv/QQA0Iuok8IzMqBrVk82xnJBJo1kUX/GH9wf+/So36v3UxucAWKxEFFWS23K7yYdHXHeCMBeyEJ1MPUPrKrkLzo98qtq/DgMKcSolIC4i4JgrsGBtnbaSEmwovXcW39eXmXqb11AFYASAwRxAFPVfRQ2x5i+V37NjrmmA10B9i6on89PndncroALqYAAEtRRuizbRmp+nM4TD3T8i99pmH1fhXZzulcdStsBghAIAZaGmGV3neP9lrqf7yi7rd7qmVHGtWWfmOHo6B2w1V14HqKkUQGVSAJY+6edkkh5uc06c2wCRqzxSfOv38nnUAC5IpSZkYBzRu87frMkxTEa6mMOlZMLAUsPpNxOprSAAJAV5NtLySvPX//rbP796a8U+e4nf0vlecPfUHEUX9y8G1pl4vDEYMIAJKmvbAqe6pucPtvb/Tjpm5jxP7/rM3NeFWefpq9fD55++PeP6xuUAhUIBBdhlcDn++b9EZZgV7MwnhsqoeIqj9NrXw8bun6/39bgm5xZEiGQl7Ft4hJjMomhRSSmnKAWz6/So3s7vS782v7fmeE9otRiqR+HteTLOsgbIkmQixxxKiVQumxJX6fmTtjx5ju4nSoH+oUHMfrC6Zpg4S56JJAMdilmLPgU2yUX7XXGNO6xrngA=",
+  "noite": "data:image/webp;base64,UklGRoADAABXRUJQVlA4THQDAAAvF0AGAA0obNu2QbNTuf9f3B8i+h+gngExw5PMWjLLH7DTBQwYNJKkqA78a2X8F8I0kq1IHQISSf7BINFI5Ln3CrVtGzksLu0/6fUf0P8AMqQAJbUa/pAHKLEJPZQECvyyg42UMACPkwHw3/WENgQGeNiOgOxIkhTJiqzqnZl9zMz8xSTEE/BpRBowM+PSXHfVQx0kRJLkSJJHz+t/AM8fpN7tlB1JkmsrWXOuQNqE/2bgAF+ae+6ZmIAdX14AAEwGBAgAyEACIOCfBBgii8DQ1uLRqEAAQPKXtQISBoRBunP159rQaQoY+K8oVmESEG4rhS5J3xZGM0oIhgEQILpWYbELOXkUzU8v3Rb3KfAe3usmjBopiwIAZVqFPJv4VmXMTu9ezyO/vm58Q/NP3n+/phFCAgAQrk0MAJfgiduznpd+Pe3rs37+a/XD9fPMEjdaviQiQFi2tzvaT3muk67JM+/u7Pj/2N/P2ee/i47anupa3ePo37Ed/calCAHC2WkOZP//L9d/u/vjfW/Pnx5rz/n8W/Y6Ht37ijPU4/D/K2ck5UsBACBFthlk3t88WvPws+ees3/ntW8/ttaNPtCLro5iysZkAwCRj/bFnf79uPnxfuT/0T+aug/1n17jcz/677u3D57/RpXXRGVMkpCFpo95xqbXc+/LUw/KcOsftjmGvdSxODd3cldjyxi9ohXjxASmkfEaNWVih+fsm5BuW15ft3nwRoG0sj+ds4FVu0JHWKldsRQzZcupYOTL2f5f+nnm3wQYqIlqVEDKRWJYYIdJWPIMuzgIkwBTtzPaZu1UakxNkkqxaA0QZeIiPANc+RpNJORFTCMhL8jkkhhJJiPZllYwjCYKrWeT2Zikf9bbEgAQCYCWHZzlLU45XHnobKo1k3usuwfnW5dyqP6KYquwNfgQb9ZaCGeZVBJHs7QVjwBIIJHVJkvFa+ENz4vkLRVEJaE4RQz4O20cgY+mvePpzufpoyNew65o66GJD63RNpl/xWSXiuXVZzj16cptM7W1QPlh/rm5qSX+aljXpI2d+6ZvpvbLHqozmtf+quSHzWv8MIRHCwBASi3WXdYWyjlaXjYZa+zo2nqqjGbxf/NdLgOwScI2RtMqoAQ0onTValNVJ9v2h1751m1rhbkSs00gMsC2TYUh0NSIgaHdFqwlCw=="
  },
  "alt": {
   "pt": "Entrada em arco de pedra calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro.",
@@ -430,5 +448,610 @@
    0.1158
   ],
   "note": "plateGrow: the plate is the doorway grown 1.84x about hallPoint, so with zoom^0.8 it covers the doorway to zoom 1.84^5 = 21 (plateCover keeps a margin). light: the far arch, within dRGB 4 of the hall colour: half width, reach above and below hallPoint (fractions of the facade)."
+ },
+ "wall": {
+  "dia": "#FAECDF",
+  "noite": "#1C140F",
+  "note": "the page colour = the plaster (tokens --parede / --parede-noite). Dia: the facade wall is graded to this tone at low frequency (texture and cast shadows kept, door3d/tools/wallgrade.py); Noite: the dusk falloff converges to it. The outer edge of the facade is exactly this colour."
+ },
+ "street": {
+  "note": "The street around the photograph (polish pass): the page draws the wall (a vertical gradient), the paving strip (periodic at exactly one scene width, phase 0 at the facade's left edge) and, by night, the lights (radial gains, background-blend-mode color-dodge); the facade's margins are that same composite (final2/work/polish/pipe). y values are shares of the facade's height.",
+  "yg0": 0.9377372817008353,
+  "yout": 1.5,
+  "yb": 0.9453302961275627,
+  "dia": {
+   "wall": [
+    [
+     0.12,
+     [
+      250.0,
+      236.0,
+      223.0
+     ]
+    ],
+    [
+     0.2576,
+     [
+      250.0,
+      236.0,
+      223.0
+     ]
+    ],
+    [
+     0.3951,
+     [
+      250.0,
+      235.0,
+      222.0
+     ]
+    ],
+    [
+     0.5327,
+     [
+      249.0,
+      234.0,
+      220.0
+     ]
+    ],
+    [
+     0.6702,
+     [
+      248.0,
+      232.0,
+      217.0
+     ]
+    ],
+    [
+     0.8078,
+     [
+      248.0,
+      231.0,
+      216.0
+     ]
+    ],
+    [
+     0.9453,
+     [
+      248.0,
+      231.0,
+      216.0
+     ]
+    ]
+   ],
+   "below": [
+    218,
+    204,
+    192
+   ],
+   "lights": [],
+   "fit": {},
+   "strip": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      447
+     ],
+     "avif": 25896,
+     "webp": 45172
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      670
+     ],
+     "avif": 43922,
+     "webp": 76848
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      992
+     ],
+     "avif": 67686,
+     "webp": 119064
+    }
+   ],
+   "strip3": [
+    {
+     "w": 720,
+     "px": [
+      2160,
+      447
+     ],
+     "avif": 76611,
+     "webp": 132800
+    },
+    {
+     "w": 1080,
+     "px": [
+      3240,
+      670
+     ],
+     "avif": 130861,
+     "webp": 228128
+    },
+    {
+     "w": 1600,
+     "px": [
+      4800,
+      992
+     ],
+     "avif": 202747,
+     "webp": 356492
+    }
+   ]
+  },
+  "noite": {
+   "wall": [
+    [
+     0.0,
+     [
+      28.0,
+      20.0,
+      15.0
+     ]
+    ],
+    [
+     1.0,
+     [
+      28.0,
+      20.0,
+      15.0
+     ]
+    ]
+   ],
+   "below": [
+    27,
+    22,
+    15
+   ],
+   "lights": [
+    {
+     "cx": 0.10424054127482263,
+     "cy": 0.34534809647674425,
+     "rx": 0.42008401930559774,
+     "ry": 0.33606721544447826,
+     "stops": [
+      [
+       0.0,
+       [
+        214,
+        218,
+        216
+       ]
+      ],
+      [
+       0.83,
+       [
+        214,
+        218,
+        216
+       ]
+      ],
+      [
+       2.51,
+       [
+        213,
+        218,
+        215
+       ]
+      ],
+      [
+       4.81,
+       [
+        212,
+        216,
+        214
+       ]
+      ],
+      [
+       7.61,
+       [
+        210,
+        214,
+        212
+       ]
+      ],
+      [
+       10.88,
+       [
+        206,
+        211,
+        208
+       ]
+      ],
+      [
+       14.57,
+       [
+        200,
+        205,
+        203
+       ]
+      ],
+      [
+       18.64,
+       [
+        192,
+        198,
+        195
+       ]
+      ],
+      [
+       23.08,
+       [
+        182,
+        189,
+        185
+       ]
+      ],
+      [
+       27.87,
+       [
+        170,
+        177,
+        174
+       ]
+      ],
+      [
+       32.99,
+       [
+        156,
+        164,
+        160
+       ]
+      ],
+      [
+       38.42,
+       [
+        140,
+        148,
+        144
+       ]
+      ],
+      [
+       44.16,
+       [
+        123,
+        130,
+        126
+       ]
+      ],
+      [
+       50.2,
+       [
+        103,
+        111,
+        107
+       ]
+      ],
+      [
+       56.51,
+       [
+        83,
+        90,
+        86
+       ]
+      ],
+      [
+       63.11,
+       [
+        63,
+        69,
+        66
+       ]
+      ],
+      [
+       69.98,
+       [
+        43,
+        48,
+        45
+       ]
+      ],
+      [
+       77.1,
+       [
+        26,
+        29,
+        27
+       ]
+      ],
+      [
+       84.49,
+       [
+        12,
+        14,
+        13
+       ]
+      ],
+      [
+       92.12,
+       [
+        3,
+        4,
+        3
+       ]
+      ],
+      [
+       100.0,
+       [
+        0,
+        0,
+        0
+       ]
+      ]
+     ]
+    },
+    {
+     "cx": 0.4794963854292188,
+     "cy": 0.5353496058620498,
+     "rx": 0.41737611787751255,
+     "ry": 0.5616261878298681,
+     "stops": [
+      [
+       0.0,
+       [
+        195,
+        211,
+        219
+       ]
+      ],
+      [
+       0.83,
+       [
+        195,
+        211,
+        219
+       ]
+      ],
+      [
+       2.51,
+       [
+        195,
+        211,
+        219
+       ]
+      ],
+      [
+       4.81,
+       [
+        195,
+        211,
+        218
+       ]
+      ],
+      [
+       7.61,
+       [
+        195,
+        211,
+        218
+       ]
+      ],
+      [
+       10.88,
+       [
+        194,
+        210,
+        218
+       ]
+      ],
+      [
+       14.57,
+       [
+        193,
+        210,
+        217
+       ]
+      ],
+      [
+       18.64,
+       [
+        192,
+        208,
+        216
+       ]
+      ],
+      [
+       23.08,
+       [
+        190,
+        207,
+        214
+       ]
+      ],
+      [
+       27.87,
+       [
+        187,
+        204,
+        212
+       ]
+      ],
+      [
+       32.99,
+       [
+        183,
+        201,
+        210
+       ]
+      ],
+      [
+       38.42,
+       [
+        177,
+        197,
+        206
+       ]
+      ],
+      [
+       44.16,
+       [
+        170,
+        191,
+        201
+       ]
+      ],
+      [
+       50.2,
+       [
+        161,
+        183,
+        193
+       ]
+      ],
+      [
+       56.51,
+       [
+        149,
+        172,
+        183
+       ]
+      ],
+      [
+       63.11,
+       [
+        132,
+        157,
+        169
+       ]
+      ],
+      [
+       69.98,
+       [
+        110,
+        135,
+        148
+       ]
+      ],
+      [
+       77.1,
+       [
+        81,
+        104,
+        118
+       ]
+      ],
+      [
+       84.49,
+       [
+        47,
+        64,
+        75
+       ]
+      ],
+      [
+       92.12,
+       [
+        15,
+        22,
+        26
+       ]
+      ],
+      [
+       100.0,
+       [
+        0,
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   ],
+   "fit": {
+    "lantern": [
+     0.10424054127482263,
+     0.34534809647674425,
+     0.42008401930559774,
+     0.8000000000000002,
+     0.20164650805595205,
+     5.1942301338200405,
+     5.875286473346878,
+     5.498202980775233,
+     0.7344277139587214
+    ],
+    "door": [
+     0.4794963854292188,
+     0.5353496058620498,
+     0.41737611787751255,
+     1.3456117007506612,
+     0.9999999999999999,
+     3.2846339013251704,
+     4.855308139750177,
+     5.999999999999999,
+     0.30000000000000004
+    ]
+   },
+   "strip": [
+    {
+     "w": 720,
+     "px": [
+      720,
+      447
+     ],
+     "avif": 11144,
+     "webp": 10244
+    },
+    {
+     "w": 1080,
+     "px": [
+      1080,
+      670
+     ],
+     "avif": 21578,
+     "webp": 20144
+    },
+    {
+     "w": 1600,
+     "px": [
+      1600,
+      992
+     ],
+     "avif": 33370,
+     "webp": 35822
+    }
+   ],
+   "strip3": [
+    {
+     "w": 720,
+     "px": [
+      2160,
+      447
+     ],
+     "avif": 31125,
+     "webp": 27652
+    },
+    {
+     "w": 1080,
+     "px": [
+      3240,
+      670
+     ],
+     "avif": 62606,
+     "webp": 57686
+    },
+    {
+     "w": 1600,
+     "px": [
+      4800,
+      992
+     ],
+     "avif": 96792,
+     "webp": 105990
+    }
+   ]
+  },
+  "note3": "strip3 (fix r1): the paving three scene widths wide, [A | B | C], A the 1-width strip (the photograph's paving under the facade), B and C quilted from A and its mirror with no verbatim continuation (final2/work/fix-r1/py/ground3.py); used where a screen shows more than one scene width (tablets, landscape, desktops). `w` is per scene width."
+ },
+ "fade": {
+  "note": "the facade layer's outer fade (fix r1, final2/work/fix-r1/py/facade_export.py): on the top and the sides it begins 0-30% of `max` in and ends 70-100% of `max` in (shares of the facade's width; `maxH` is `max` as a share of its height), both lines wandering along each side; `min` is its narrowest width; the bottom over `bottom` (a share of the height). The LQIP is inset by `max` so it never shows through the fade.",
+  "max": 0.1,
+  "min": 0.04,
+  "bottom": 0.026575550493545937,
+  "maxH": 0.0906605922551253
  }
 }
