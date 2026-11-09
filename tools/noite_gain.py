@@ -49,6 +49,8 @@ def scale(c): return [int(min(255, round(v * K))) for v in c]
 st = P["street"]["noite"]
 st["wall"] = [[y, scale(c)] for y, c in st["wall"]]
 st["below"] = scale(st["below"])
+if "rows" in st:                         # the strip's mean colour by row (fix r2): the band under the strip
+    st["rows"] = [[y, [min(255.0, round(v * K, 1)) for v in c]] for y, c in st["rows"]]
 old = P["wall"]["noite"]; rgb = [int(old[i:i + 2], 16) for i in (1, 3, 5)]
 new = "#" + "".join(f"{v:02X}" for v in scale(rgb)); P["wall"]["noite"] = new
 uri = P["lqip"]["noite"]; raw = base64.b64decode(uri.split(",", 1)[1]); li = Image.open(io.BytesIO(raw)); li.load()
