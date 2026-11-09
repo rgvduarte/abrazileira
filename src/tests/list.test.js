@@ -93,7 +93,7 @@ const [, , dir] = process.argv;
     await c.close();
   }
 
-  // C. scroll from the top to the readable form, in viewport heights
+  // C. scroll from the top to the readable form, in viewport heights  (0.6-1.0 since 9 Nov: the client found the walk-in too long; it was 0.9-1.2)
   for (const [n, w, h] of [["m390", 390, 844], ["m430", 430, 932], ["m375", 375, 667], ["land", 844, 390], ["d1440", 1440, 900], ["d1920", 1920, 1080]]) {
     const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
     const g = await geo(pg);
@@ -104,7 +104,7 @@ const [, , dir] = process.argv;
     const reach = await ok(hi);
     while (reach && hi - lo > 2) { const mid = Math.round((lo + hi) / 2); if (await ok(mid)) hi = mid; else lo = mid; }
     const vh = +(hi / h).toFixed(3);
-    report(reach && vh >= 0.9 && vh <= 1.2, n, "C scroll to the readable form", JSON.stringify({ px: hi, vh, endOfRun: g.listY, endVh: +(g.listY / h).toFixed(3) }));
+    report(reach && vh >= 0.6 && vh <= 1.0, n, "C scroll to the readable form", JSON.stringify({ px: hi, vh, endOfRun: g.listY, endVh: +(g.listY / h).toFixed(3) }));
     await c.close();
   }
 
@@ -146,8 +146,10 @@ const [, , dir] = process.argv;
       if (r.ok) { ys.push(r.y); ps.push(r.p); }
     }
     const v = (i) => (ys[i] - ys[i - 1]) / (ps[i] - ps[i - 1]) * 0.004;     /* px per 0.004 of progress, whatever the rounding of scrollY */
+    /* 1.8 (was 1.5) since 9 Nov: the walk-in is shorter (keys 0.34-0.54 instead of 0.36-0.58), so the same curve is
+       compressed by 0.91 in p, and a change of speed per step grows by 1 / 0.91^2 = 1.21 */
     let dv = 0, at = 0; for (let i = 2; i < ys.length; i++) { const d = Math.abs(v(i) - v(i - 1)); if (d > dv) { dv = d; at = ps[i]; } }
-    report(ys.length >= 70 && isFinite(dv) && dv <= 1.5, n, "F doorway foot: largest change of speed per 0.004 of progress (px)", JSON.stringify({ samples: ys.length, dv: +dv.toFixed(2), at: +at.toFixed(3) }));
+    report(ys.length >= 70 && isFinite(dv) && dv <= 1.8, n, "F doorway foot: largest change of speed per 0.004 of progress (px)", JSON.stringify({ samples: ys.length, dv: +dv.toFixed(2), at: +at.toFixed(3) }));
     await c.close();
   }
 

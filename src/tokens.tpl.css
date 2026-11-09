@@ -88,11 +88,11 @@
   --noite: #1C120B;          /* walnut night, never #000: night surfaces and hairlines are mixed from it */
   /* the page is the wall: sampled from the photograph's plaster, and the photograph's wall is graded to it */
   --parede: #FAECDF;         /* the wall in soft daylight: the page by day (never white) */
-  --parede-noite: #1C140F;   /* the dusk wall beyond the lantern: the page by night */
+  --parede-noite: #34251C;   /* the dusk wall beyond the lantern: the page by night (1.85x brighter since 9 Nov) */
   /* (sampled #F8EADF / #1C150F, moved 1-4 levels to the nearest colour AVIF decodes unchanged: the photo's flat
      outer wall and the page are then the same pixel) */
-  --linho: #F3E6D6;          /* linen: text on the night wall (14.79:1)  */
-  --linho-escuro: #C2AE96;   /* secondary text on the night wall (8.47:1) */
+  --linho: #F3E6D6;          /* linen: text on the night wall (11.98:1)  */
+  --linho-escuro: #C2AE96;   /* secondary text on the night wall (6.86:1) */
   --luz-nucleo: #FFF2D6;     /* lamplight: core (form fields by night)   */
   --luz: #F4C978;            /* lamplight: body                          */
   --barro: #9E3B1E;          /* terracotta (handmade ceramics): form errors on the hall surface */
@@ -242,14 +242,14 @@
   --dur-out: 160ms;          /* form controls give way to the success line */
   --dur-success: 240ms;      /* the success line                         */
   /* scroll sequence: lengths are scroll distance, curves are evaluated on the scroll progress p */
-  --porta-run: 115svh;       /* pinned stretch (wrapper = stage + run): the whole walk-in, list included */
+  --porta-run: 95svh;        /* pinned stretch (wrapper = stage + run): the whole walk-in, list included */
   --rise-list: 16px;         /* the list rises this much (plus the scroll itself) as it comes in on the light */
   --scroll-tau: 90ms;        /* rendered progress follows the scroll: exponential, frame-rate independent */
   --curve-copy: cubic-bezier(0.33, 1, 0.68, 1);        /* text leaves as the doors start (easeOutCubic) */
   --curve-door: cubic-bezier(0.3, 0.55, 0.35, 1);      /* the doors move from the first pixel     */
   --curve-pan: cubic-bezier(0.35, 0.4, 0.3, 1);        /* the doorway travels to the centre early */
   --curve-light: cubic-bezier(0.55, 0, 0.75, 0.55);    /* the hall's light fills the screen: slow, then all at once */
-  --dur-flight: 1250ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
+  --dur-flight: 1000ms;      /* the hero action walks in through the door (whole way; shorter ways scale down) */
   --curve-flight: cubic-bezier(0.45, 0, 0.3, 1);      /* its time curve: soft start, long gentle settle */
   --flight-weight: 2;        /* the walk-in weighs 3x a plain pixel: the doorway is crossed at a readable pace */
   --flight-weight-list: 1.2; /* and the list's arrival (its change of opacity) weighs too: it rises in over about 300ms */

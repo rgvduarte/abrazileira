@@ -1138,6 +1138,32 @@ CSS/JS references exist (it fails on the build before this fix). The two `theme-
 
 ## Motion
 
+### Client review on iPhone, 9 Nov (supersedes the numbers below where they differ)
+- **«As portas aumentam de tamanho quando se entra»** (the 3D path, `?3d`): the 3D camera dollied to the threshold and
+  on into the hall, so the open leaves, which reach about a metre into the hall, swept wider and wider as it neared
+  them. The 3D camera now follows the CSS camera's zoom s exactly on the door's plane, mostly with the lens: it moves in
+  only to s^-0.12 of its rest distance (`DOLLY` in site.js) and narrows its field for the rest (door3d.js `frame()`:
+  focal x s·zc). The leaves grow with the doorway, as on the CSS path; the hall keeps a little parallax.
+- **«A entrada na porta faz demasiado zoom e muito demorado»**: the walk-in ends a short step past the doorway
+  (end = 1.15 x the scale at which the doorway covers the screen; it went on before to the arch of light, 1.5x past
+  the doorway at least, up to 9x on a phone); keys `KX = [0.01, 0.34, 0.54, 0.66]`, doors 0 → 0.34, the hall's light
+  0.52 → 0.66, `COVER_AT` 0.66, the list 0.645 → 0.87; `--porta-run` 115svh → 95svh; `--dur-flight` 1250 → 1000ms.
+  From the top to the readable form: about 0.75 screens (was 0.95).
+- **«À noite está demasiado escura»**: the Noite photograph is 1.85x brighter (sRGB values x 1.85, clipped;
+  `tools/noite_gain.py`): the facade, the leaves, the street strips, the street's wall stops and the
+  colour below the strip (the night lights are colour-dodge gains, so K x base gives K x the composite and the street
+  still meets the photograph with no edge), the LQIP and the page's wall, `--parede-noite` #1C140F → #34251C. The hall,
+  the plate, the doorway's shade and the lamplight are the interior's own light and are unchanged, so the hall colour
+  hand-off stays exact. Text on the night wall: linho 11.98:1, linho-escuro 6.86:1, latão 6.29:1; the hairline
+  (`--color-ground`, pedra 56%) 3.59:1.
+- **«Tira o texto “estamos a restaurar um edifício antigo”»**: the first screen says one sentence, «Brevemente,
+  abrimos as portas.» / «Soon, we open our doors.» (the double door is the entrance; «abrir as portas» is also what a
+  house does when it opens to guests). The status line («Abrimos brevemente.») is gone: the sentence says it.
+- **«Nota-se um retângulo à volta da imagem original da porta»**: the iPhone showed the previous deploy's facade
+  (same file name, cached for up to 10 minutes by GitHub Pages) inside the new street. `tools/stamp_assets.py` now
+  versions the photographs as a set: a copy under `assets/photo/v<hash>/` and every page points there, so a page can
+  never be paired with a photograph from another deploy.
+
 ### The door sequence (scroll-linked)
 Client, round 3 (after testing on an iPhone): too many scrolls, the waiting list took too long to appear, and the
 background "being removed" read wrong; zoom further in, until it is one colour, and then show the list, all in a
@@ -1705,9 +1731,9 @@ pt-PT first, EN second. Facts only.
 | Key | PT | EN |
 |---|---|---|
 | title | A Brazileira · Boutique Hotel · Torres Vedras | A Brazileira · Boutique Hotel · Torres Vedras |
-| description | A Brazileira, hotel em Torres Vedras. Um edifício antigo em restauro. Abrimos brevemente. | A Brazileira, a hotel in Torres Vedras, Portugal. An old building under restoration. Opening soon. |
-| lede | Estamos a restaurar um edifício antigo. (polish pass; was «Uma casa antiga de Torres Vedras está a ser restaurada para receber hóspedes.») | We are restoring an old building. (was «An old house in Torres Vedras is being restored to welcome guests.») |
-| status | Abrimos brevemente. (was «Abre brevemente.») | Opening soon. |
+| description | A Brazileira, hotel em Torres Vedras. Brevemente, abrimos as portas. | A Brazileira, a hotel in Torres Vedras, Portugal. Soon, we open our doors. |
+| lede | Brevemente, abrimos as portas. (9 Nov, client: «tira o texto “estamos a restaurar um edifício antigo”… mete só abrimos em breve ou algo mais teasing»; was «Estamos a restaurar um edifício antigo.») | Soon, we open our doors. |
+| status | (removed 9 Nov: the lede says it) | (removed) |
 | action | Entrar na lista de espera | Join the waiting list |
 | list title | Lista de espera | Waiting list |
 | list sentence | Deixe-nos o seu email e avisamos quando abrirmos. | Leave your email and we will let you know when we open. |

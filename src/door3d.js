@@ -18,8 +18,10 @@
    behind the door by day, 4.0 m by night), so the plate, projected from C0, lies on it exactly.
 
    The camera is the page's: the driver (site.js) gives the scene's rest rect on the canvas, the pan of the hall point
-   (tx, ty, the CSS camera's translate) and the camera's distance zc (in units of the rest distance: 1 at rest, 1/s
-   while the CSS camera zooms by s, then on through the doorway into the hall). Rendering happens only in frame(). */
+   (tx, ty, the CSS camera's translate), the CSS camera's zoom s and the camera's distance zc (in units of the rest
+   distance: 1 at rest; site.js keeps it near, s^-0.12, and the lens makes up the rest, so the door's plane is
+   magnified exactly s, as on the page, and the open leaves never sweep wider than the doorway they stand in).
+   Without s (an older page) the camera dollies, zc = 1/s. Rendering happens only in frame(). */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Mesh, Group, BufferGeometry, Float32BufferAttribute, ShaderMaterial,
   Texture, LinearMipmapLinearFilter, LinearFilter, ClampToEdgeWrapping, Vector2, Vector3, Vector4, Matrix4,
@@ -767,7 +769,7 @@ export function create(canvas, G, opt) {
     const dpr = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR), key = v.cw + "x" + v.ch + "@" + dpr;
     if (key !== lastSize) { renderer.setPixelRatio(dpr); renderer.setSize(v.cw, v.ch, false); lastSize = key; }
     pose(v.u);
-    const zc = v.zc * D, f = D * v.rect.w / WM, n = 0.02, far = 60;
+    const zc = v.zc * D, f = D * v.rect.w / WM * (v.s ? v.s * v.zc : 1), n = 0.02, far = 60;
     const px = v.rect.x + G.hp[0] * v.rect.w + v.tx, py = v.rect.y + G.hp[1] * v.rect.h + v.ty;
     proj.makePerspective(-px * n / f, (v.cw - px) * n / f, py * n / f, -(v.ch - py) * n / f, n, far);
     camera.projectionMatrix.copy(proj);

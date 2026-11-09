@@ -64,12 +64,11 @@ T = {
         lang="pt-PT", og_locale="pt_PT", alt_locale="en_GB", url=BASE, prefix="", home="./",
         privacy_href="privacidade/", privacy_url=BASE + "privacidade/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
-        desc="A Brazileira, hotel em Torres Vedras. Um edifício antigo em restauro. Abrimos brevemente.",
+        desc="A Brazileira, hotel em Torres Vedras. Brevemente, abrimos as portas.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: o logótipo e a fotografia de uma entrada em arco de pedra com portas de madeira, à noite.",
         skip="Saltar para o conteúdo", theme="Tema", day="Dia", night="Noite", langnav="Idioma",
         sol_day="É dia em Torres Vedras.", sol_night="É noite em Torres Vedras.",
-        lede="Estamos a restaurar um edifício antigo.",
-        status="Abrimos brevemente.",
+        lede="Brevemente, abrimos as portas.",
         cta="Entrar na lista de espera",
         list_h="Lista de espera",
         list_p="Deixe-nos o seu email e avisamos quando abrirmos.",
@@ -90,12 +89,11 @@ T = {
         lang="en", og_locale="en_GB", alt_locale="pt_PT", url=BASE + "en/", prefix="../", home="./",
         privacy_href="privacy/", privacy_url=BASE + "en/privacy/",
         title="A Brazileira · Boutique Hotel · Torres Vedras",
-        desc="A Brazileira, a hotel in Torres Vedras, Portugal. An old building under restoration. Opening soon.",
+        desc="A Brazileira, a hotel in Torres Vedras, Portugal. Soon, we open our doors.",
         og_alt="A Brazileira, Boutique Hotel, Torres Vedras: the logo and a photograph of an arched stone entrance with wooden doors, at night.",
         skip="Skip to content", theme="Theme", day="Day", night="Night", langnav="Language",
         sol_day="It is daytime in Torres Vedras.", sol_night="It is night in Torres Vedras.",
-        lede="We are restoring an old building.",
-        status="Opening soon.",
+        lede="Soon, we open our doors.",
         cta="Join the waiting list",
         list_h="Waiting list",
         list_p="Leave your email and we will let you know when we open.",
@@ -127,10 +125,11 @@ def nb(s):
 for _k in ("pt", "en"):
     for _f in ("lede", "list_p", "consent", "msg_ok", "msg_error", "noscript"):
         T[_k][_f] = nb(T[_k][_f])
-# the sentence breaks in one place only, between its two halves («Estamos a restaurar / um edifício antigo.», «We are
-# restoring / an old building.»): the object holds together, so a phone sets two even lines and a desktop one line
-T["pt"]["lede"] = T["pt"]["lede"].replace("um edifício antigo", "um\u00a0edifício\u00a0antigo")
-T["en"]["lede"] = T["en"]["lede"].replace("an old building", "an\u00a0old\u00a0building")
+# the one sentence of the first screen (client, 9 Nov: only «abrimos em breve», a little teasing; the double door is
+# the page's entrance, and «abrir as portas» is also what a house does when it opens to guests). Where it breaks, it
+# breaks after the comma: the object holds together.
+T["pt"]["lede"] = T["pt"]["lede"].replace("abrimos as portas", "abrimos\u00a0as\u00a0portas")
+T["en"]["lede"] = T["en"]["lede"].replace("we open our doors", "we\u00a0open\u00a0our\u00a0doors")
 
 # the town is its own span: on phones it takes a second line by rule, not by a near miss in width
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
@@ -299,7 +298,6 @@ def page(k):
 <div class="intro" data-motion="copy">
 {lockup_html()}
 <p class="lede">{t['lede']}</p>
-<p class="status">{t['status']}</p>
 <p class="cta-row"><a class="cta" href="#lista">{t['cta']}</a></p>
 </div>
 <div class="entrance" role="img" aria-label="{photo.alt(k)}" style="{scene_style}">
@@ -422,7 +420,7 @@ def page_privacy(k):
 
 # the browser's bar in the wall colour (site.js keeps it in step with the theme and the hall's light)
 THEME_COLOR = ('<meta name="theme-color" content="#FAECDF" media="(prefers-color-scheme: light)">\n'
-               '<meta name="theme-color" content="#1C140F" media="(prefers-color-scheme: dark)">')
+               '<meta name="theme-color" content="#34251C" media="(prefers-color-scheme: dark)">')
 
 
 # 404.html is served at any depth (/abrazileira/a/b/c): resolve the site root first, then

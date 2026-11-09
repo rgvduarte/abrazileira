@@ -646,7 +646,7 @@ if (!ready) return false;
 const dpr = Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR), key = v.cw + "x" + v.ch + "@" + dpr;
 if (key !== lastSize) { renderer.setPixelRatio(dpr); renderer.setSize(v.cw, v.ch, false); lastSize = key; }
 pose(v.u);
-const zc = v.zc * D, f = D * v.rect.w / WM, n = 0.02, far = 60;
+const zc = v.zc * D, f = D * v.rect.w / WM * (v.s ? v.s * v.zc : 1), n = 0.02, far = 60;
 const px = v.rect.x + G.hp[0] * v.rect.w + v.tx, py = v.rect.y + G.hp[1] * v.rect.h + v.ty;
 proj.makePerspective(-px * n / f, (v.cw - px) * n / f, py * n / f, -(v.ch - py) * n / f, n, far);
 camera.projectionMatrix.copy(proj);

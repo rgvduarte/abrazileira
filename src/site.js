@@ -296,12 +296,12 @@
 
     /* The timeline: [element, from p, to p, curve, value(u) -> [opacity, transform], progress].
        One short run (--porta-run, about one screen of scroll) in three overlapping beats:
-         the doors swing inwards from the first pixel (0 -> 0.36) and the camera starts with them;
-         the camera walks in through the doorway, towards the hall point (the photo's vanishing point): by 0.58
+         the doors swing inwards from the first pixel (0 -> 0.34) and the camera starts with them;
+         the camera walks in through the doorway, towards the hall point (the photo's vanishing point): by 0.54
            the doorway covers the screen and the leaves, edge-on, have passed out of frame; it keeps walking, into
            the arch of light at the end of the hall (the room beyond, which the photograph clips to the hall
-           colour), while the hall's light, one flat --color-hall, fades in over the whole stage (0.6 -> 0.76);
-         at 0.76 the screen is that one colour, exactly the token, and the list (title + sentence, then the form)
+           colour), while the hall's light, one flat --color-hall, fades in over the whole stage (0.52 -> 0.66);
+         at 0.66 the screen is that one colour, exactly the token, and the list (title + sentence, then the form)
            rises in on it at once, over the last quarter of the run, and is at rest when the run ends.
        Progress: the rendered (smoothed) r, except
          TEXT  the crest and the cue take min(r, p): they leave with the doors, but come back with the scroll
@@ -311,8 +311,8 @@
                rising over a photograph the smoothing has not caught up with.
        The list (LIST) reads r, so it never shows before the light (which reads max(r, p - LAG)): its words
        only ever rise over the flat colour. */
-    var DOOR = [0, 0.36], PAN = [0, 0.3], CENTRE = [0.36, 0.56], KX = [0.01, 0.36, 0.58, 0.76], LIGHT = [0.6, 0.76],
-      COVER_AT = 0.76, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
+    var DOOR = [0, 0.34], PAN = [0, 0.28], CENTRE = [0.32, 0.5], KX = [0.01, 0.34, 0.54, 0.66], LIGHT = [0.52, 0.66],
+      COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
       lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
     var T = [
       [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
@@ -328,9 +328,9 @@
       [$(".porta__flood"), LIGHT[0], LIGHT[1], E.light, function (u) { return [u, null]; }, COVER],   /* the hall's light */
       /* the list: title, sentence and form all begin as the screen turns one colour (so none of them is ever an
          empty field on it) and settle one after the other: the stagger is in how long each takes */
-      [rv(".lista__title"), 0.745, 0.88, E.rise, lift(1), LIST],
-      [rv(".lista__lede"), 0.75, 0.9, E.rise, lift(1), LIST],
-      [rv(".form"), 0.755, 0.94, E.rise, lift(0.6), LIST]
+      [rv(".lista__title"), 0.645, 0.8, E.rise, lift(1), LIST],
+      [rv(".lista__lede"), 0.65, 0.83, E.rise, lift(1), LIST],
+      [rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST]
     ];
     /* The camera: the hall point travels to the centre of the screen while the text leaves, and the walk-in scales
        the scene around it. Scale is geometric (constant perceived speed); the hall point moves on a straight line.
@@ -365,8 +365,9 @@
       return "translate(" + c[0].toFixed(2) + "px," + c[1].toFixed(2) + "px) scale(" + c[2].toFixed(4) + ")";
     }
     /* The walk-in: log(scale) through four keyframes, made per screen in measure(): 1 at p = 0.01; a first step
-       to the threshold as the doors finish opening (0.36); the scale at which the doorway covers the screen
-       (0.58); the end, inside the arch of light (0.76). Between them a monotone cubic (Fritsch-Carlson): it never
+       to the threshold as the doors finish opening (0.34); the scale at which the doorway covers the screen
+       (0.54); the end, a step past it (0.66), while the hall's light comes up over the whole stage. The walk-in
+       stops there: the client found the long push into the hall too much zoom and too slow (9 Nov). Between them a monotone cubic (Fritsch-Carlson): it never
        goes back, never overshoots, starts softly (zero slope) and keeps going into the light (no landing: the
        screen is one colour by then). Equal steps of log(scale) read as equal steps forward. */
     var KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
@@ -423,11 +424,10 @@
       /* the doorway covers the whole (large) viewport in every orientation and aspect ratio */
       var inDoor = Math.max(vw / 2 / Math.min(hx - xl, xr - hx), vh / 2 / ((G.hp[1] - G.door[1]) * H),
         (sh - vh / 2) / ((G.door[3] - G.hp[1]) * H)) * 1.05;
-      /* the end: the arch of light at the end of the hall (G.light: its half width, its reach above and below the
-         hall point, as shares of the photo, where it is within a few levels of the hall colour) fills the screen,
-         seen through the plate's slower zoom; at least 1.5x past the doorway, at most what the plate covers */
-      var L = G.light, zl = Math.max(vw / 2 / (L[0] * W), vh / 2 / (L[1] * H), (sh - vh / 2) / (L[2] * H)),
-        end = Math.max(inDoor * 1.5, Math.min(Math.pow(zl, 1 / G.k), G.cover));
+      /* the end: a short step past the doorway (1.15x), at most what the plate covers. It went on before into the
+         arch of light at the end of the hall (G.light), 1.5x past the doorway at least: up to 9x on a phone, which
+         read as too much zoom and too long (client, 9 Nov). The hall's light now comes up over that last step. */
+      var end = Math.min(inDoor * 1.15, G.cover);
       /* the plate always covers the doorway: its zoom is end^kp with kp raised on very wide screens if needed */
       cam.kp = Math.max(G.k, 1 - Math.log(G.grow * 0.97) / Math.log(end));
       cam.s = end;
@@ -509,18 +509,18 @@
       var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
       (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
     }
-    function zcAt(r, ze) {                /* the camera's distance from the facade, in units of its rest distance */
-      if (r <= KX[1]) return 1 / scaleAt(r);
-      var z1 = Math.exp(-KY[1]), m1 = -z1 * KM[1], zm = -0.25 / 3,
-        d1 = (zm - z1) / (KX[2] - KX[1]), d2 = (ze - zm) / (KX[3] - KX[2]), mm = (d1 + d2) / 2,
-        i = r <= KX[2] ? 0 : 1, a = KX[1 + i], h = KX[2 + i] - a, t = Math.min(1, (r - a) / h), t2 = t * t, t3 = t2 * t,
-        y0 = i ? zm : z1, y1 = i ? ze : zm, s0 = i ? mm : m1, s1 = i ? 0 : mm;
-      return (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * h * s0 + (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * h * s1;
-    }
+    /* The 3D camera follows the CSS camera's zoom s exactly on the door's plane, mostly with the lens: it moves in
+       only s^-DOLLY of its rest distance (DOLLY 0.12: 0.79 of it at 7x) and narrows its field for the rest. A real
+       dolly to the threshold (it went on through the doorway into the hall before) made the open leaves, which
+       reach a metre into the hall, sweep wider and wider as the camera neared them (client, 9 Nov: «as portas
+       aumentam de tamanho quando se entra»). Now they grow with the doorway, as on the CSS path, and the hall
+       keeps a little parallax. */
+    var DOLLY = 0.12;
     function view3d(r, ez) {
       var c = camV(r), u = E.door(clamp((r - DOOR[0]) / (DOOR[1] - DOOR[0]))),
         v = { cw: stage.clientWidth, ch: stage.clientHeight, rect: box3, tx: c[0], ty: c[1], u: u, spill: (1 - Math.cos(OPEN * u)) / COS };
-      v.zc = zcAt(r, (ez || d3.endZ)(v));
+      v.s = scaleAt(r);
+      v.zc = Math.pow(v.s, -DOLLY);
       return v;
     }
     function show3d(yes) {

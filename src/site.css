@@ -488,6 +488,11 @@ picture.t-noite { display: var(--t-noite); }
 }
 .leaf--l { inset-inline-start: var(--leaf-l-x); transform-origin: 0 50%; }
 .leaf--r { inset-inline-start: var(--leaf-r-x); transform-origin: 100% 50%; }
+/* one px of the frame's walnut beyond each hinge edge, under the facade: at some fractional positions (844 x 390 @3,
+   Dia, 9 Nov) the compositor drew a leaf up to a device px short of its hinge edge, and the hall's light showed there
+   as a pale pinstripe. On the hinge it turns with the leaf about its own axis, so it never shows when the doors open. */
+.leaf--l { box-shadow: -1px 0 0 var(--color-door-ring); }
+.leaf--r { box-shadow: 1px 0 0 var(--color-door-ring); }
 /* a leaf turning away from the street darkens (site.js: opacity = sin of the angle; the depth is the theme's) */
 .leaf__shade { position: absolute; inset: 0; background: var(--color-leaf-shade); opacity: 0; }
 

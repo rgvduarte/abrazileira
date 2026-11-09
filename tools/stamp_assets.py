@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fingerprint local CSS/JS in every HTML page under docs/.
+"""Fingerprint local CSS/JS, and version the photographs, in every HTML page under docs/.
 
 GitHub Pages and its CDN cache files for 10 minutes (`max-age=600`), and some caches ignore query
 strings. A browser could then pair a new page with an old stylesheet or script (seen on iOS Safari).
@@ -46,6 +46,36 @@ for page in sorted(DOCS.rglob("*.html")):
         page.write_text(new, encoding="utf-8")
         changed += 1
         print(f"stamped {page.relative_to(DOCS)}")
+
+# The photographs (assets/photo/<theme>/...): many files, and paths the scripts build from a stem (door3d.js adds
+# ".avif" / ".webp"), so they are versioned as a set: a copy under assets/photo/v<hash>/, the hash of every file in
+# the set, and every page points there. A page from this deploy can then never be paired with a photograph cached
+# from an earlier one (seen on iOS Safari, 9 Nov: the previous facade, same file name, framed by the new street).
+PHOTO = DOCS / "assets" / "photo"
+PREF = re.compile(r"assets/photo/(?:v[0-9a-f]{10}/)?(dia|noite)/")
+if PHOTO.is_dir():
+    files = sorted(f for f in PHOTO.rglob("*") if f.is_file() and f.relative_to(PHOTO).parts[0] in ("dia", "noite"))
+    h = hashlib.sha256()
+    for f in files:
+        h.update(str(f.relative_to(PHOTO)).encode() + b"\0" + f.read_bytes())
+    ver = "v" + h.hexdigest()[:10]
+    if not (PHOTO / ver).is_dir():
+        for f in files:
+            target = PHOTO / ver / f.relative_to(PHOTO)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(f, target)
+    for page in sorted(DOCS.rglob("*.html")):
+        text = page.read_text(encoding="utf-8")
+        new = PREF.sub(lambda m: f"assets/photo/{ver}/{m[1]}/", text)
+        if new != text:
+            page.write_text(new, encoding="utf-8")
+            print(f"photos {ver} in {page.relative_to(DOCS)}")
+    used = set()
+    for page in DOCS.rglob("*.html"):
+        used.update(re.findall(r"assets/photo/(v[0-9a-f]{10})/", page.read_text(encoding="utf-8")))
+    for d in PHOTO.iterdir():
+        if d.is_dir() and re.fullmatch(r"v[0-9a-f]{10}", d.name) and d.name not in used:
+            shutil.rmtree(d)
 
 # drop fingerprinted copies that no page references any more (keeps docs/ from growing on every deploy)
 referenced = set()

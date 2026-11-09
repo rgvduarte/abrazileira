@@ -237,8 +237,8 @@
       720,
       794
      ],
-     "avif": 25297,
-     "webp": 26680
+     "avif": 25287,
+     "webp": 26682
     },
     {
      "w": 1080,
@@ -246,8 +246,8 @@
       1080,
       1191
      ],
-     "avif": 49163,
-     "webp": 50722
+     "avif": 48795,
+     "webp": 51250
     },
     {
      "w": 1300,
@@ -255,8 +255,8 @@
       1300,
       1434
      ],
-     "avif": 65160,
-     "webp": 65674
+     "avif": 64719,
+     "webp": 65132
     },
     {
      "w": 1600,
@@ -264,8 +264,8 @@
       1600,
       1765
      ],
-     "avif": 85143,
-     "webp": 86820
+     "avif": 85388,
+     "webp": 87030
     },
     {
      "w": 2388,
@@ -273,8 +273,8 @@
       2388,
       2634
      ],
-     "avif": 138040,
-     "webp": 146840
+     "avif": 137522,
+     "webp": 147892
     }
    ],
    "leaf-l": [
@@ -284,8 +284,8 @@
       96,
       394
      ],
-     "avif": 1246,
-     "webp": 1012
+     "avif": 1257,
+     "webp": 1000
     },
     {
      "w": 1080,
@@ -293,8 +293,8 @@
       144,
       591
      ],
-     "avif": 2195,
-     "webp": 1762
+     "avif": 2202,
+     "webp": 1768
     },
     {
      "w": 1600,
@@ -302,8 +302,8 @@
       214,
       875
      ],
-     "avif": 3483,
-     "webp": 3264
+     "avif": 3477,
+     "webp": 3272
     },
     {
      "w": 2388,
@@ -311,8 +311,8 @@
       319,
       1306
      ],
-     "avif": 6298,
-     "webp": 5278
+     "avif": 6280,
+     "webp": 5282
     }
    ],
    "leaf-r": [
@@ -322,8 +322,8 @@
       96,
       394
      ],
-     "avif": 1172,
-     "webp": 862
+     "avif": 1156,
+     "webp": 866
     },
     {
      "w": 1080,
@@ -331,8 +331,8 @@
       144,
       591
      ],
-     "avif": 1928,
-     "webp": 1592
+     "avif": 1930,
+     "webp": 1586
     },
     {
      "w": 1600,
@@ -340,8 +340,8 @@
       214,
       875
      ],
-     "avif": 3328,
-     "webp": 2714
+     "avif": 3369,
+     "webp": 2788
     },
     {
      "w": 2388,
@@ -349,8 +349,8 @@
       319,
       1306
      ],
-     "avif": 5814,
-     "webp": 4834
+     "avif": 5746,
+     "webp": 4852
     }
    ],
    "plate": [
@@ -426,7 +426,7 @@
  },
  "lqip": {
   "dia": "data:image/webp;base64,UklGRkQEAABXRUJQVlA4TDgEAAAvF0AGAA0oaNtGUvdvOf6Ej0RE/8OM8jBzZZrx7MN/pAGZEkgDRpEkKcrXxPpXuCqYDkwwiiRJUb7Xv0DmPZDAtm0kR+y/yk0v9f6//5klwv/5N0GAX32nf+YB1P+8zsvER2WUPvQR808AbStdEOGHSLQ606oZv3dBcm3tieS8X6rqgjYzMzOzE/CWAmDvHYQD4CC8cwjMzMw4WOPuIkl/GpJk204j6d4vJTRz9xD3v6geMXe6SJYe5UiSHEmSWlb1Yv7ZWxL27rWwyyMG+A4AoYBgIgUAIlGAOAhoCMMAABoqZQBAOBGAiRlrWWsxpI4CqRGAIABMAAgVTJgCWKtVugEbkHVQTAABBVAoNAAACAYJwFAbsMy0SZlmQJkAIBgAQKAGwWBqQZINt39kf3SFzu232LTDdXCeOftVWCwxCBJQJIBkEBEjibItzhF6N0++tfOiq3fN68dOk++VSkwNCQQioEVk6C3eWlHraPHpmkATeXLfwatMX/HllVldn2ITEwAggAVkw/V09u711Me0DZz+lk8uAfXIecNkx5K7rj2+uq3JprCZQBwcBCRcld37uf/NrwnH/dUHz/cH59Zbk+lZz/Sznsb6Wfi1L+5FewZ6xoJBCBCCphpPE+us8kyapurH/Spfvu7dX37PyXP54+fJ46RzKU2xFEqh0SISAZivZ8J48es1Yd/4Wpd1u/RJY9wrfeLs9cNsLjPOxGoyy+eqSioLnBdQI5uAI7ylaourKk98HP0xPcOpXdzf5fjsyHCC7vUfhX8yuuv/QQA0Iuok8IzMqBrVk82xnJBJo1kUX/GH9wf+/So36v3UxucAWKxEFFWS23K7yYdHXHeCMBeyEJ1MPUPrKrkLzo98qtq/DgMKcSolIC4i4JgrsGBtnbaSEmwovXcW39eXmXqb11AFYASAwRxAFPVfRQ2x5i+V37NjrmmA10B9i6on89PndncroALqYAAEtRRuizbRmp+nM4TD3T8i99pmH1fhXZzulcdStsBghAIAZaGmGV3neP9lrqf7yi7rd7qmVHGtWWfmOHo6B2w1V14HqKkUQGVSAJY+6edkkh5uc06c2wCRqzxSfOv38nnUAC5IpSZkYBzRu87frMkxTEa6mMOlZMLAUsPpNxOprSAAJAV5NtLySvPX//rbP796a8U+e4nf0vlecPfUHEUX9y8G1pl4vDEYMIAJKmvbAqe6pucPtvb/Tjpm5jxP7/rM3NeFWefpq9fD55++PeP6xuUAhUIBBdhlcDn++b9EZZgV7MwnhsqoeIqj9NrXw8bun6/39bgm5xZEiGQl7Ft4hJjMomhRSSmnKAWz6/So3s7vS782v7fmeE9otRiqR+HteTLOsgbIkmQixxxKiVQumxJX6fmTtjx5ju4nSoH+oUHMfrC6Zpg4S56JJAMdilmLPgU2yUX7XXGNO6xrngA=",
-  "noite": "data:image/webp;base64,UklGRoADAABXRUJQVlA4THQDAAAvF0AGAA0obNu2QbNTuf9f3B8i+h+gngExw5PMWjLLH7DTBQwYNJKkqA78a2X8F8I0kq1IHQISSf7BINFI5Ln3CrVtGzksLu0/6fUf0P8AMqQAJbUa/pAHKLEJPZQECvyyg42UMACPkwHw3/WENgQGeNiOgOxIkhTJiqzqnZl9zMz8xSTEE/BpRBowM+PSXHfVQx0kRJLkSJJHz+t/AM8fpN7tlB1JkmsrWXOuQNqE/2bgAF+ae+6ZmIAdX14AAEwGBAgAyEACIOCfBBgii8DQ1uLRqEAAQPKXtQISBoRBunP159rQaQoY+K8oVmESEG4rhS5J3xZGM0oIhgEQILpWYbELOXkUzU8v3Rb3KfAe3usmjBopiwIAZVqFPJv4VmXMTu9ezyO/vm58Q/NP3n+/phFCAgAQrk0MAJfgiduznpd+Pe3rs37+a/XD9fPMEjdaviQiQFi2tzvaT3muk67JM+/u7Pj/2N/P2ee/i47anupa3ePo37Ed/calCAHC2WkOZP//L9d/u/vjfW/Pnx5rz/n8W/Y6Ht37ijPU4/D/K2ck5UsBACBFthlk3t88WvPws+ees3/ntW8/ttaNPtCLro5iysZkAwCRj/bFnf79uPnxfuT/0T+aug/1n17jcz/677u3D57/RpXXRGVMkpCFpo95xqbXc+/LUw/KcOsftjmGvdSxODd3cldjyxi9ohXjxASmkfEaNWVih+fsm5BuW15ft3nwRoG0sj+ds4FVu0JHWKldsRQzZcupYOTL2f5f+nnm3wQYqIlqVEDKRWJYYIdJWPIMuzgIkwBTtzPaZu1UakxNkkqxaA0QZeIiPANc+RpNJORFTCMhL8jkkhhJJiPZllYwjCYKrWeT2Zikf9bbEgAQCYCWHZzlLU45XHnobKo1k3usuwfnW5dyqP6KYquwNfgQb9ZaCGeZVBJHs7QVjwBIIJHVJkvFa+ENz4vkLRVEJaE4RQz4O20cgY+mvePpzufpoyNew65o66GJD63RNpl/xWSXiuXVZzj16cptM7W1QPlh/rm5qSX+aljXpI2d+6ZvpvbLHqozmtf+quSHzWv8MIRHCwBASi3WXdYWyjlaXjYZa+zo2nqqjGbxf/NdLgOwScI2RtMqoAQ0onTValNVJ9v2h1751m1rhbkSs00gMsC2TYUh0NSIgaHdFqwlCw=="
+  "noite": "data:image/webp;base64,UklGRkIEAABXRUJQVlA4TDYEAAAvF0AGAE2QTdrmSNqtNKL/Af1kAgsFbSQpk/MvluFBiFgwmT9pEB0K2rZhoffX//j9WkitJwruLQEASLK1bYmch68+oDh0tbvrMO4L8JluQLeTua7BPZm5ezJy1+4kpAT4+VoXIUmSJEWSLDyqa5l5H7D7/wftiRl6eCbSXY5s26qtzLX2foK7u7SEon/Wox+Skrlr5M67e8UETO1bAAAAHGsDggBBAABYARgAgACwJDKAA8CABWkoBZUQbqWQnAAAADBYpCAAWIkASPCrtNTCtLaCzO/0NGmAgQGwpKAIpEywAhAUOFYTU/2oeUNFsuot+cXMEgAPHgAQAIS0q6SEQwIKLGv8qrT5op1lKwj+tUy7rBxtaozJyAAASGmMCrNYezb4S6LS8Ld5GI/9vNl9cQg8fefbq6dv2/TfgQDGAAAAAR+tj1oyACOvil1MXby9W/n55tTsa+l/qnxb+tE6+exFyIrYdxmYEAAEFO9FU+h15fbtbD5ztK1fyK/n+L6P59puf7PDLq0lnE7m8Il7X1voeDmITGNEABDwK5sOm9EvbP5wdevxdn515+L7bz+oH/uXM88edravzadf/rOzL/2a+rR9s1BVrBxYIgAAAEZuVeexxPvhga5b/x79ctTj/UNyveEshx4ei1WHj58ZuCKGcrrsUqwOAAAF5OT/W8+8/Hzv/v3RR0/k24F8EW3r7odTvfK2e8fbRHTPOkovCEoRDq0S5VECwgAZ1PD0iriWXR27zs/Ztsjpkn9/0laoRKp0U7TGNGLUUlLVr6IXgSq44Er1UG3Xon9xkc5iBYbixnbJ4PFs75/iBlSAV5Vo+b79+cVkyW+TTFtTkKzIV/IuL+Wynl0qut2Ya9uR2fNPcNpOqTwyoAGUE+TE1JdVCx7DeWERkZcGm5u1d+nhUxczwAAYqwCEBsvPToaTWocHGqyqrK2wuGh5Vqla3MbeLJLr2DncAAAs7Lpk5HoKCMoU5Vr+3VRhBewAhJgIOka+t5Y24dKqAGAAI4PrAneifrpX5ZVbdzUdEsoAAITQNg68MRcYYAMDAzDYwSJmQ9braHXHVFO7IloOLWoAAIKk4vbXGhqDh4MAMIBEB2NoNlO0skpIUqQgDAAYKMSucK3EZXi2ZNcA6e1H8BDJbCs7cGqDIjitkAEAAAwEIlspc6vthfzK7DryzhWQprgw3rmi0W6U3V51k40NLQLKDm6H/WpsX6qIls2VIi77TJ5Kk9m1FEn4OtN39k+PUyywSIwSXxJ7lWnaVm3M++v9XtcO6re8uhTuO9vHsVS3RmZfZRgAAAPDyigT184vlR3tycl9ywpVayeuxDuRFjb+/Bu7XGxQAsAYGOCxOMjIZp8JRMQEhTBOlplGV77SKKcGSOzp2WD6bv8VENDsrCiRxCvxqEaEQMkREAWDAPI4K5wBAgGG0RrD"
  },
  "alt": {
   "pt": "Entrada em arco de pedra calcária com portas duplas de madeira, bandeira em leque, lanterna de parede e uma oliveira num vaso de barro.",
@@ -451,7 +451,7 @@
  },
  "wall": {
   "dia": "#FAECDF",
-  "noite": "#1C140F",
+  "noite": "#34251C",
   "note": "the page colour = the plaster (tokens --parede / --parede-noite). Dia: the facade wall is graded to this tone at low frequency (texture and cast shadows kept, door3d/tools/wallgrade.py); Noite: the dusk falloff converges to it. The outer edge of the facade is exactly this colour."
  },
  "street": {
@@ -589,24 +589,24 @@
     [
      0.0,
      [
-      28.0,
-      20.0,
-      15.0
+      52,
+      37,
+      28
      ]
     ],
     [
      1.0,
      [
-      28.0,
-      20.0,
-      15.0
+      52,
+      37,
+      28
      ]
     ]
    ],
    "below": [
-    27,
-    22,
-    15
+    50,
+    41,
+    28
    ],
    "lights": [
     {
@@ -993,8 +993,8 @@
       720,
       447
      ],
-     "avif": 11144,
-     "webp": 10244
+     "avif": 11111,
+     "webp": 10294
     },
     {
      "w": 1080,
@@ -1002,8 +1002,8 @@
       1080,
       670
      ],
-     "avif": 21578,
-     "webp": 20144
+     "avif": 21597,
+     "webp": 20162
     },
     {
      "w": 1600,
@@ -1011,8 +1011,8 @@
       1600,
       992
      ],
-     "avif": 33370,
-     "webp": 35822
+     "avif": 33468,
+     "webp": 35962
     }
    ],
    "strip3": [
@@ -1022,8 +1022,8 @@
       2160,
       447
      ],
-     "avif": 31125,
-     "webp": 27652
+     "avif": 31368,
+     "webp": 27374
     },
     {
      "w": 1080,
@@ -1031,8 +1031,8 @@
       3240,
       670
      ],
-     "avif": 62606,
-     "webp": 57686
+     "avif": 62317,
+     "webp": 57750
     },
     {
      "w": 1600,
@@ -1040,8 +1040,8 @@
       4800,
       992
      ],
-     "avif": 96792,
-     "webp": 105990
+     "avif": 96909,
+     "webp": 105870
     }
    ]
   },
@@ -1053,5 +1053,9 @@
   "min": 0.04,
   "bottom": 0.026575550493545937,
   "maxH": 0.0906605922551253
+ },
+ "noiteGain": {
+  "k": 1.85,
+  "note": "Noite brightened x K in sRGB (client, 9 Nov: «à noite está demasiado escura»); hotfix tools/noite_gain.py"
  }
 }

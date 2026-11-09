@@ -1,13 +1,13 @@
     color-scheme: dark;
     --color-bg: var(--parede-noite);         /* the night wall: the photograph's dusk falloff ends in it */
-    --color-text-strong: var(--linho);       /* 14.79:1 on parede-noite */
+    --color-text-strong: var(--linho);       /* 11.98:1 on parede-noite */
     --color-text: var(--linho);
-    --color-text-muted: var(--linho-escuro); /*  8.47:1 */
-    --color-accent-text: var(--latao);       /*  7.77:1 */
+    --color-text-muted: var(--linho-escuro); /*  6.86:1 */
+    --color-accent-text: var(--latao);       /*  6.29:1 */
     --color-status-small: var(--color-text-muted);   /* «Abrimos brevemente.» on phones: quieter than the action */
     --color-mark: var(--latao);
-    --color-brand-ink: var(--linho);         /* 14.79:1 on parede-noite: the wordmark and its line, light by night */
-    --color-ground: color-mix(in srgb, var(--pedra) 46%, var(--noite));   /* 3.37:1 on parede-noite, hairline rules */
+    --color-brand-ink: var(--linho);         /* 11.98:1 on parede-noite: the wordmark and its line, light by night */
+    --color-ground: color-mix(in srgb, var(--pedra) 56%, var(--noite));   /* 3.59:1 on parede-noite, hairline rules */
     --color-focus: var(--latao);
     --color-selection: color-mix(in srgb, var(--latao) 28%, var(--noite));
     --color-surface: color-mix(in srgb, var(--pedra) 10%, var(--noite));
@@ -22,6 +22,6 @@
     --t-spill: block;
     --photo-lqip: LQIP_NOITE;
     --color-leaf-shade: color-mix(in srgb, var(--noite) 40%, transparent);   /* the lantern side turns away: 1 - 0.40 sin(angle) */
-    --color-door-ring: #090200;              /* the door frame at night, behind the doorway's edge */
+    --color-door-ring: #110400;              /* the door frame at night, behind the doorway's edge */
     /* the street by night: the dusk wall, the lantern's and the doorway's light on it and on the paving */
     STREET_NOITE

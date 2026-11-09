@@ -229,8 +229,8 @@ flight: curve("--curve-flight", [0.45, 0, 0.3, 1])
 var FLIGHT = num("--dur-flight", 1250), WEIGHT = num("--flight-weight", 2), WLIST = num("--flight-weight-list", 1.2),
 RISE = num("--rise-list", 16);
 function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-var DOOR = [0, 0.36], PAN = [0, 0.3], CENTRE = [0.36, 0.56], KX = [0.01, 0.36, 0.58, 0.76], LIGHT = [0.6, 0.76],
-COVER_AT = 0.76, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
+var DOOR = [0, 0.34], PAN = [0, 0.28], CENTRE = [0.32, 0.5], KX = [0.01, 0.34, 0.54, 0.66], LIGHT = [0.52, 0.66],
+COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
 lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
 var T = [
 [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
@@ -241,9 +241,9 @@ var T = [
 [shadeR, DOOR[0], DOOR[1], E.door, function (u) { return [Math.sin(OPEN * u), null]; }],
 [$(".ph--spill"), DOOR[0], DOOR[1], E.door, function (u) { return [(1 - Math.cos(OPEN * u)) / COS, null]; }],
 [$(".porta__flood"), LIGHT[0], LIGHT[1], E.light, function (u) { return [u, null]; }, COVER],
-[rv(".lista__title"), 0.745, 0.88, E.rise, lift(1), LIST],
-[rv(".lista__lede"), 0.75, 0.9, E.rise, lift(1), LIST],
-[rv(".form"), 0.755, 0.94, E.rise, lift(0.6), LIST]
+[rv(".lista__title"), 0.645, 0.8, E.rise, lift(1), LIST],
+[rv(".lista__lede"), 0.65, 0.83, E.rise, lift(1), LIST],
+[rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST]
 ];
 var KNEE = 0.25;
 function knee(a) {
@@ -309,8 +309,7 @@ var d = G.persp * H, lw = (G.gap[0] - G.door[0]) * W, f = d / (d + lw * Math.sin
 xl = hx + (G.door[0] * W + lw * Math.cos(OPEN) - hx) * f, xr = hx + (G.door[2] * W - lw * Math.cos(OPEN) - hx) * f;
 var inDoor = Math.max(vw / 2 / Math.min(hx - xl, xr - hx), vh / 2 / ((G.hp[1] - G.door[1]) * H),
 (sh - vh / 2) / ((G.door[3] - G.hp[1]) * H)) * 1.05;
-var L = G.light, zl = Math.max(vw / 2 / (L[0] * W), vh / 2 / (L[1] * H), (sh - vh / 2) / (L[2] * H)),
-end = Math.max(inDoor * 1.5, Math.min(Math.pow(zl, 1 / G.k), G.cover));
+var end = Math.min(inDoor * 1.15, G.cover);
 cam.kp = Math.max(G.k, 1 - Math.log(G.grow * 0.97) / Math.log(end));
 cam.s = end;
 keys(Math.pow(inDoor, 0.3), inDoor, end);
@@ -362,18 +361,12 @@ function whenQuiet(f) {
 var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
 (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
 }
-function zcAt(r, ze) {
-if (r <= KX[1]) return 1 / scaleAt(r);
-var z1 = Math.exp(-KY[1]), m1 = -z1 * KM[1], zm = -0.25 / 3,
-d1 = (zm - z1) / (KX[2] - KX[1]), d2 = (ze - zm) / (KX[3] - KX[2]), mm = (d1 + d2) / 2,
-i = r <= KX[2] ? 0 : 1, a = KX[1 + i], h = KX[2 + i] - a, t = Math.min(1, (r - a) / h), t2 = t * t, t3 = t2 * t,
-y0 = i ? zm : z1, y1 = i ? ze : zm, s0 = i ? mm : m1, s1 = i ? 0 : mm;
-return (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * h * s0 + (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * h * s1;
-}
+var DOLLY = 0.12;
 function view3d(r, ez) {
 var c = camV(r), u = E.door(clamp((r - DOOR[0]) / (DOOR[1] - DOOR[0]))),
 v = { cw: stage.clientWidth, ch: stage.clientHeight, rect: box3, tx: c[0], ty: c[1], u: u, spill: (1 - Math.cos(OPEN * u)) / COS };
-v.zc = zcAt(r, (ez || d3.endZ)(v));
+v.s = scaleAt(r);
+v.zc = Math.pow(v.s, -DOLLY);
 return v;
 }
 function show3d(yes) {

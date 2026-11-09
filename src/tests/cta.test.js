@@ -111,7 +111,7 @@ const STATE = () => {
       // a stall: three or more frames without movement in the middle of the flight (a restart from rest)
       let stall = 0, run0 = 0; for (let i = moving[0] || 0; i < (moving[moving.length - 1] || 0); i++) { run0 = ys[i + 1] === ys[i] ? run0 + 1 : 0; stall = Math.max(stall, run0); }
       if (["click", "enter", "space", "cue", "click-en", "click-other", "click-sun", "hold-space", "hold-enter", "dblclick"].includes(mode)) {
-        ok = land && !backwards && moving.length >= 40 && mids >= 20 && dur >= 1100 && dur <= 1300 && stall < 3;
+        ok = land && !backwards && moving.length >= 40 && mids >= 15 && dur >= 900 && dur <= 1100 && stall < 3;   /* --dur-flight 1000ms since 9 Nov (shorter, client) */
         Object.assign(info, { scrollFrames: moving.length, flightMs: dur, sceneMidFrames: mids, S: Smax, backwards, stall, theme: await pg.evaluate(() => document.documentElement.dataset.theme) });
       } else {   // tab, reduced motion, hash: a jump, never a replay
         const distinct = [...new Set(ys.map(Math.round))].length;
