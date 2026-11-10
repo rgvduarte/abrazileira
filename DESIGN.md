@@ -1574,10 +1574,13 @@ either can take over from the other at the same frame. site.js, «The 3D entranc
 - **The gate**, in this order; the first that answers names the reason (`?diag`, `geo().d3why`). Known without WebGL:
   reduced motion; `?semporta`; `?sem3d`; a data saver (`navigator.connection.saveData`); a 2G link (`effectiveType`
   `slow-2g` / `2g`); no ES modules; no `WebGL2RenderingContext` (WebGL 1 is not a path: three.js dropped it in r163, and
-  Safari has had WebGL 2 since 15); a hand-back or a GPU refusal earlier in the same session (`sessionStorage["ab-3d"]`
-  = `0|<why>`); then the soft heuristics, only for clearly weak devices: `navigator.deviceMemory` under 2 GB (Chromium
-  reports 0.25–8 in powers of two; a 3–4 GB phone reports 2 and passes), fewer than 4 cores (`hardwareConcurrency`;
-  not on iOS, where WebKit may report fewer than the device has). Then the GPU probe, once per session at idle: a
+  Safari has had WebGL 2 since 15); a refusal earlier in the same session (`sessionStorage["ab-3d"]` = `0|<why>`: the
+  GPU probe's, a failure that says the device cannot draw it, or a second slow hand-back in a row; what the build
+  before 10 Nov wrote for one slow hand-back, `0|a frame of …`, `0|median frame …` or `0|the GPU … behind …`, counts
+  as one, and the probe runs again); then the soft heuristics,
+  only for clearly weak devices: `navigator.deviceMemory` under 2 GB (Chromium reports 0.25–8 in powers of two; a
+  3–4 GB phone reports 2 and passes), fewer than 4 cores (`hardwareConcurrency`; not on iOS, where WebKit may report
+  fewer than the device has). Then the GPU probe, once per session at idle: a
   throwaway WebGL 2 context with `failIfMajorPerformanceCaveat` (none: refused), its renderer's name
   (`WEBGL_debug_renderer_info`): a software renderer (SwiftShader, llvmpipe, softpipe, «Basic Render»: refused), a
   `MAX_TEXTURE_SIZE` under 4096 (refused), and the soft list `WEAK` of entry-level GPUs from 2014–2018 (Mali-400/450,
@@ -1638,13 +1641,24 @@ either can take over from the other at the same frame. site.js, «The 3D entranc
   the frame limit (120 ms) with 3 or more waiting hands back («the GPU 124 ms behind, 8 frames (limit 120)»). In
   Chromium a WebGL canvas can queue seconds of GPU work before its main thread feels it: on the iPhone emulation the
   frame rule caught SwiftShader only after ~1 s of frames, with ~5 s of work queued that went on draining after the
-  hand-back. One stale answer after a stall (a single frame waiting) is not counted. A loop that stopped (the page at rest) starts the count afresh; after a tab switch or
-  a page restored from the back/forward cache the next two intervals are not counted (the first frame after a stall
-  can carry the time stamp of a frame scheduled before it). So do a lost context while the page is shown (memory
-  pressure, a GPU reset) and any exception in a draw. The hand-back is at the same progress, for the rest of the
-  session (`0|<why>`; the next load is refused before anything is probed or fetched), and `?diag` says why. When the
-  canvas still shows a frame (the timing rules), the CSS layers are shown under it at once and it dissolves into
-  them over `--dur-handback` (180ms, linear, opacity on the compositor) with its last frame frozen: the slow 3D is not
+  hand-back. A lost context while the page is shown (memory pressure, a GPU reset) and any exception in a draw hand
+  back too. One stale answer after a stall (a single frame waiting) is not counted. A loop that stopped (the page at
+  rest) starts the count afresh. Only the 3D's own frames count (`uncount()`, 10 Nov): around a take-over (on an
+  iPhone the first frame of the first scroll, as Safari's toolbar starts to go), the end of a take-over's cross-fade
+  (and the fade itself), a resize (`resize`, `visualViewport` `resize`: a toolbar, a rotation, a pinch), a theme
+  change (its textures swapped) and a return from the background or the back/forward cache, the interval that holds
+  the event and the next one at least are left out (the first frame after a stall can carry the time stamp of a
+  frame scheduled before it), and the GPU-lag rule does not judge the frames drawn until then (`lag(since)`: a frame
+  queued behind them waits from when the GPU was seen done with them). The hand-back is at the same progress, for
+  the rest of that page view (nothing mounts the 3D again in it, even when the context is lost during the dissolve
+  and taken for a loss in the background), and `?diag` says why. A timing hand-back (frame, median, GPU lag) is
+  counted for the session (`sessionStorage["ab-3d-slow"]`): the next load tries the 3D again (the probe's
+  `1|<renderer>` stays: no new probe); a clean first second clears the count, and a second slow hand-back in a row
+  refuses it for the session (`0|slow hand-back 2/2: <why>`). A lost context while shown or an exception is remembered at once (`0|<why>`): the device cannot draw
+  it. Until 10 Nov any hand-back refused the 3D for the tab's session: on the client's iPhone one slow frame had
+  turned the main page to CSS while a fresh tab, the `?diag` address, drew it («?diag funciona! Mete na main page»).
+  When the canvas still shows a frame (the timing rules), the CSS layers are shown under it at once and it dissolves
+  into them over `--dur-handback` (180ms, linear, opacity on the compositor) with its last frame frozen: the slow 3D is not
   drawn again (review, door finish: drawn through a 400ms dissolve it gave 3 more slow frames; now none, and with a
   50 ms frame injected the frames return to 17 ms at once); a lost context or an exception cannot draw, and the swap
   is immediate. A hand-back disposes every texture, target, geometry and program at once, and lets the context go
@@ -1679,9 +1693,10 @@ either can take over from the other at the same frame. site.js, «The 3D entranc
   stay); `?3d=force` also skips the probe (the headless tests draw with SwiftShader); `?guard[=MED,MAX]` turns the
   frame-time rule on in any mode with those limits in ms; `?sem3d` forces the CSS entrance. `?diag` shows
   `path=3D|CSS 3d=<state> why=<reason> dpr=<ratio>` (while loading, the stage, its step and the ms since the load
-  began: `3d=loading:upload 5/19 840ms`), then `3d steps: load@<ms> gate@<ms> … on@<ms> held=<ms>` (when each stage
-  began, ms since navigation; how long the steps waited for the page to be still) and, once mounted, `guard=on|off
-  frames=<n> <ms> median= worst= gpu lag= cadence=`. States: `off`, `loading`, `on`, `refused`, `handing back`, `handed back`, `context lost`. The testing
+  began: `3d=loading:upload 5/19 840ms`) and the session's `slow hand-backs <n>/2` (not with `?3d`), then `3d steps:
+  load@<ms> gate@<ms> … on@<ms> held=<ms>` (when each stage began, ms since navigation; how long the steps waited for
+  the page to be still) and, once mounted, `guard=on|off frames=<n> <ms> median= worst= gpu lag= cadence= not
+  counted=<intervals left out>`. States: `off`, `loading`, `on`, `refused`, `handing back`, `handed back`, `context lost`. The testing
   switches belong to the address: the PT · EN links do not carry them.
 
 The client saw the CSS leaves as flat cut-outs («parece um jogo da Sega Saturn»: no thickness, a painted knob, no
@@ -1899,11 +1914,11 @@ the door may be lost.**
   transitions are held for that frame), so the control just pressed never flickers through a low-contrast mix.
 - 3D entrance (above): wherever the gate refuses it (known before anything is fetched: reduced motion, `?sem3d`,
   `?semporta`, a data saver or 2G, no ES modules or WebGL 2, no GPU-backed context, a software renderer, a clearly weak
-  device or GPU, a hand-back earlier in the session), before it is ready, while the other theme's textures load,
-  after a context lost in the background (until it is rebuilt), and for the rest of the session after the live
-  safeguard hands back (a slow first second, a context lost while shown, an exception), the CSS entrance (the
-  photograph in layers) runs the same timeline at the same progress; nothing waits for the 3D, and the page never
-  shows neither.
+  device or GPU, a failure or a second slow hand-back in a row earlier in the session), before it is ready, while
+  the other theme's textures load, after a context lost in the background (until it is rebuilt), and for the rest of
+  the page view after the live safeguard hands back (a slow first second; a context lost while shown or an exception,
+  for the session), the CSS entrance (the photograph in layers) runs the same timeline at the same progress; nothing
+  waits for the 3D, and the page never shows neither.
 - Keyboard: Enter or Space on the action plays the walk-in and lands in the email field; Tab from the action
   lands on the email field with the list in view at once; focusing anything in the pinned first screen
   mid-sequence rewinds to the rest state, so focus is never on an invisible element. A tap or a click never
@@ -2226,7 +2241,7 @@ accessibility tree (nothing is made inert or hidden).
   `serve.ios` (the client's 390 × 796 / 836, 393 × 695 / 735, 375 × 553 / 627), where the hero action and `#lista`
   land at the page's end; and a failed check grows the form downwards;
   K: reduced motion and no JavaScript put the list right after the photograph, centred at `#lista`). `src/tests/png.js` decodes the screenshots (Node's zlib only).
-- The 3D entrance: `node src/tests/door3d.test.js docs` (113 checks). Headless Chromium has no GPU, so the default
+- The 3D entrance: `node src/tests/door3d.test.js docs` (123 checks). Headless Chromium has no GPU, so the default
   page refuses its SwiftShader renderer, as it should; the 3D path is driven with `?3d=force` (no probe, no frame-time
   rule) or, for the default path, with a capable GPU spoofed in an init script (the renderer's name, the
   major-performance-caveat flag dropped, 8 cores and 8 GB) and `?guard=MED,MAX` limits SwiftShader can meet.
@@ -2248,13 +2263,19 @@ accessibility tree (nothing is made inert or hidden).
   session (no probe on the next load); `?3d` on a weak GPU draws (soft heuristics skipped), `?3d` on a software
   renderer is refused (the probe stays); a capable GPU gets the 3D by default, requested within 2.5 s of the load
   event, before any scroll.
-  3. The live safeguard (capable GPU spoofed): a 2.5 s frame in the first second of motion dissolves into the CSS
-  entrance at the same progress (mean |ΔRGB| against the 3D frame at p 0.3 < 6; the canvas mid-dissolve over 180ms;
-  no draw call while handing back), remembered
-  for the session (the next load neither probes nor requests) and named in `?diag`; a slow median (50 ms of work a
-  frame) and an exception in a draw hand back too; a tab switch's 2.5 s is not counted; a page restored from the
-  back/forward cache with its context keeps the same 3D; `?diag` names the path and reason on a software renderer and
-  on a capable GPU (with the guard's numbers).
+  3. The live safeguard (capable GPU spoofed): a 2.5 s frame in the first second of motion (the 8th frame of the
+  scroll) dissolves into the CSS entrance at the same progress (mean |ΔRGB| against the 3D frame at p 0.3 < 6; the
+  canvas mid-dissolve over 180ms; no draw call while handing back), named in `?diag` and counted for the session
+  (`slow hand-backs 1/2`, the probe's answer kept); the next load of the tab draws the 3D again without a new probe;
+  a second slow hand-back refuses it for the session (`earlier in this session: slow hand-back 2/2: …`; the next
+  load neither probes nor requests). A slow median (50 ms of work a frame) hands back too (counted, 1/2); an
+  exception in a draw hands back and is refused for the session at once. In one tab: the old build's
+  `0|a frame of 142 ms (limit 120)` counts as 1/2 and the 3D draws (probed again); a clean first second clears the
+  count; the next slow hand-back is 1/2, not refused; a context lost during its dissolve, the page hidden, leaves it
+  handed back (no new WebGL context 5 s later); the next load draws the 3D. Not counted, the 3D staying: a 2.5 s stall
+  in a take-over's frames, in a resize's frame and in a theme change's frame (each with the guard still counting),
+  a tab switch's 2.5 s; a page restored from the back/forward cache with its context keeps the same 3D; `?diag`
+  names the path and reason on a software renderer and on a capable GPU (with the guard's numbers).
   4. iOS (iPhone user agent, DPR 3) and Android Chrome at DPR 3: the canvas at 3, no MSAA.
   5. The take-over frame (1 px of scroll) as sharp as the page's photograph (3D ÷ CSS gradient energy 0.95–1.3) and
   equal to it (mean |ΔRGB| < 2) at 390 × 844 @3 and 1440 × 900 @1; at p 0.15 and 0.3 (390 Dia, 1440 Noite) the facade

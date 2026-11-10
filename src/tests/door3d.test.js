@@ -22,9 +22,14 @@
 //   gets the 3D by default, fetched after the first paint, before any scroll.
 // 3. The live safeguard (capable GPU spoofed): an injected 2.5 s frame (?guard=100000,1500), a slow median (?guard=25,..
 //   with 50 ms of work in every frame) and an exception in a draw each hand back to the CSS entrance at the same
-//   progress (the slow cases dissolve over --dur-handback), remember it for the session (the next load is refused before
-//   any request) and say why in ?diag; a tab switch's frame is not counted; a page restored from the back/forward cache
-//   with its context keeps the 3D without a rebuild.
+//   progress (the slow cases dissolve over --dur-handback) and say why in ?diag. A slow hand-back is counted for the
+//   session (?diag «slow hand-backs 1/2»): the next load draws the 3D again, without a new probe; a second one refuses it
+//   for the session, with the reason (client's iPhone, 10 Nov: «?diag funciona! Mete na main page»). An exception is
+//   refused for the session at once. In one tab: the old build's memo for one slow frame counts as 1/2 (probed again,
+//   the 3D on); a clean first second clears the count; the next slow hand-back is 1/2; a context lost during its
+//   dissolve (the page hidden) rebuilds nothing in that page view; the next load draws the 3D. Not the 3D's own work, not counted: a 2.5 s stall in a take-over's frames, in a
+//   resize's frame, in a theme change's frame, a tab switch; a page restored from the back/forward cache with its
+//   context keeps the 3D without a rebuild.
 // 4. iOS (iPhone user agent, DPR 3) and Android Chrome at DPR 3: the canvas at the device's ratio, 3, no MSAA (iOS was
 //    capped at 2 until 9 Nov: softer than the photograph).
 // 5. The take-over frame (1 px of scroll) is as sharp as the page's photograph (gradient energy, 3D / CSS) and equals it
@@ -306,26 +311,34 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
 
   // ---------------------------------------------------------------- 3. the live safeguard
   /* The guard watches the first second of 3D motion: each case starts that motion from rest, freshly mounted. A
-     slow frame is injected while the driver's loop runs (the frame after the first one of a scroll blocks). The 3D
+     slow frame is injected while the driver's loop runs (the 8th frame of a scroll blocks: the frames of the take-over,
+     the first, are not the 3D's own work and are not counted; until 10 Nov the 2nd was the one that blocked). The 3D
      frame the canvas showed at p 0.3 comes from a ?3d=force page left to settle (SwiftShader draws it identically
      each time; a frame read too soon after a scroll is one it has not presented yet). */
   const toP = (pg, p, inject) => pg.evaluate(([p, inject]) => { const g = document.documentElement.__porta.geo(); scrollTo(0, Math.round(g.pin + p * g.run)); if (inject) (new Function(inject))(); }, [p, inject || ""]);
-  const SLOW = "requestAnimationFrame(() => requestAnimationFrame(() => { const t = performance.now(); while (performance.now() - t < 2500) {} }));";
+  /* a 2.5 s stall in the k-th frame after the scroll (the first is the take-over: the canvas shown, the photograph's
+     layers hidden; it and the next two intervals are not the 3D's own work and are not counted) */
+  const stallAt = (k) => "let k = " + k + "; const f = () => { if (--k > 0) return requestAnimationFrame(f); window.__stall = document.documentElement.__porta.geo().d3guard; const t = performance.now(); while (performance.now() - t < 2500) {} }; requestAnimationFrame(f);";
+  const SLOW = stallAt(8), TAKEOVER = stallAt(2);
   const nudge = async (pg, k) => { for (let i = 0; i < (k || 6); i++) { await pg.evaluate(() => scrollBy(0, 1)); await pg.waitForTimeout(40); } };
   const handing = (pg) => pg.waitForFunction(() => /hand/.test(document.documentElement.__porta.geo().d3), null, { timeout: 15000, polling: "raf" }).catch(() => {});
   const still3d = (pg, st) => pg.waitForFunction((st) => { const g = document.documentElement.__porta.geo(); return g.r === g.p && g.d3 === st; }, st, { timeout: 15000 }).catch(() => {});
+  const diagText = (pg) => pg.evaluate(() => { const d = [...document.querySelectorAll("pre")].pop(); return d ? d.textContent : ""; });
+  const memo2 = (pg) => pg.evaluate(() => [sessionStorage.getItem("ab-3d"), sessionStorage.getItem("ab-3d-slow")]);
   for (const [n, w, h, dpr, theme] of [["m390", 390, 844, 2, "dia"], ["d1440", 1440, 900, 1, "noite"]]) {
     let A, rA;
     { const o = await ctx({ w, h, dpr, theme }); await o.pg.goto(base + "?3d=force", { waitUntil: "load" }); await onAt(o.pg); await go(o.pg, 0.3); await o.pg.waitForTimeout(1500);
       A = await shot(o.pg); rA = (await state(o.pg)).r; await o.c.close(); }
-    /* a frame over the limit: dissolves into the CSS entrance at the same progress, remembered, said in ?diag */
+    /* a frame over the limit: dissolves into the CSS entrance at the same progress, counted for the session (1/2), said
+       in ?diag; the next load of the tab draws the 3D again (no new probe); a second slow hand-back refuses it for the
+       session (client's iPhone, 10 Nov: one slow frame had refused it for the tab's session) */
     const { c, pg, reqs, errs } = await ctx({ w, h, dpr, theme, spoof: { gpu: GPU } });
     /* draws while the 3D hands back: none (its last frame is frozen and dissolves; review, door finish) */
     await pg.addInitScript(() => { window.__hb = 0; const P = WebGL2RenderingContext.prototype;
       for (const k of ["drawArrays", "drawElements"]) { const o = P[k]; P[k] = function () { const r = document.documentElement.__porta; if (r && r.geo().d3 === "handing back") window.__hb++; return o.apply(this, arguments); }; } });
     await pg.goto(base + "?guard=100000,1500&diag", { waitUntil: "load" }); await settled(pg, 60000);
     await pg.waitForTimeout(600);
-    const g0 = (await geo(pg)).d3guard;
+    const g0 = (await geo(pg)).d3guard, gl1 = await pg.evaluate(() => window.__gl);
     await toP(pg, 0.3, SLOW);
     await handing(pg);
     const mid = await pg.evaluate(() => { const c = document.querySelector(".porta__3d"), g = document.documentElement.__porta.geo();
@@ -335,7 +348,8 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     const hb = await pg.evaluate(() => window.__hb);
     report(hb === 0, n, theme, "handing back: the slow 3D is not drawn again (draw calls while handing back: " + hb + ")");
     /* ?diag's own overlay is read, then hidden for the frame */
-    const memo = await pg.evaluate(() => sessionStorage.getItem("ab-3d")), diag = await pg.evaluate(() => { const d = [...document.querySelectorAll("pre")].pop(); if (!d) return ""; const t = d.textContent; d.style.visibility = "hidden"; return t; });
+    const memo = await memo2(pg), diag = await diagText(pg);
+    await pg.evaluate(() => { const d = [...document.querySelectorAll("pre")].pop(); if (d) d.style.visibility = "hidden"; });
     await pg.waitForTimeout(100);
     const B = await shot(pg);
     let s = await state(pg);
@@ -343,11 +357,69 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     report(g0 && g0.n === 0 && /^a frame of \d+ ms \(limit 1500\)$/.test(s.why) && s.d3 === "handed back" && s.canvas === "none" && s.scene === "visible" && Math.abs(s.r - rA) < 0.002 && jump < 6
       && mid.d3 === "handing back" && mid.opacity === "0" && /opacity 0\.18s|opacity 180ms/.test(mid.transition) && mid.scene === "visible",
       n, theme, "a 2.5 s frame in the first second: the 3D dissolves into the CSS entrance, the same progress (mean |dRGB| at p 0.3 " + jump.toFixed(2) + ")", JSON.stringify({ ...s, rA, g0, mid }));
-    report(/^0\|a frame of/.test(memo || "") && /path=CSS 3d=handed back why=a frame of/.test(diag), n, theme, "remembered for the session; ?diag says why", JSON.stringify({ memo, diag: diag.split("\n").filter((l) => /path=/.test(l)) }));
+    report(/^1\|ANGLE \(Apple/.test(memo[0] || "") && memo[1] === "1" && /path=CSS 3d=handed back why=a frame of \d+ ms \(limit 1500\) slow hand-backs 1\/2/.test(diag), n, theme,
+      "one slow hand-back: counted for the session (1/2), not refused; ?diag says why and «slow hand-backs 1/2»", JSON.stringify({ memo, diag: diag.split("\n").filter((l) => /path=/.test(l)) }));
+    /* the next load of the tab (from the top): the 3D again, without a new probe; ?diag shows 1/2 */
+    await go(pg, 0);
+    await pg.reload({ waitUntil: "load" }); await settled(pg, 60000);
+    await pg.waitForTimeout(700);
+    s = await state(pg);
+    const gl2 = await pg.evaluate(() => window.__gl), diag2 = await diagText(pg);
+    report(s.d3 === "on" && /^passed the gate: ANGLE \(Apple/.test(s.why) && gl2 === gl1 - 1 && /path=CSS 3d=on why=passed the gate: .* slow hand-backs 1\/2/.test(diag2) && !errs.length, n, theme,
+      "the next load of the tab after one slow hand-back: the 3D again (on), no new probe, ?diag «slow hand-backs 1/2»", JSON.stringify({ ...s, gl: [gl1, gl2], diag: diag2.split("\n").filter((l) => /path=/.test(l)) }));
+    /* a second slow hand-back: the CSS entrance for this view and refused for the session, with the reason */
+    const g1 = (await geo(pg)).d3guard;
+    await toP(pg, 0.3, SLOW);
+    await handing(pg);
+    await still3d(pg, "handed back");
+    await pg.waitForTimeout(600);
+    const memoB = await memo2(pg), diagB = await diagText(pg);
+    s = await state(pg);
+    report(g1 && g1.n === 0 && s.d3 === "handed back" && /^a frame of \d+ ms \(limit 1500\)$/.test(s.why) && s.scene === "visible" && /^0\|slow hand-back 2\/2: a frame of \d+ ms \(limit 1500\)$/.test(memoB[0] || "") && memoB[1] === "2"
+      && /path=CSS 3d=handed back why=a frame of .* slow hand-backs 2\/2/.test(diagB), n, theme, "a second slow hand-back in the session: handed back, refused for the session, «slow hand-backs 2/2»",
+      JSON.stringify({ d3: s.d3, why: s.why, memo: memoB, diag: diagB.split("\n").filter((l) => /path=/.test(l)) }));
     const before = reqs.length;
+    await go(pg, 0);
     await pg.reload({ waitUntil: "load" }); await pg.waitForTimeout(2500);
     s = await pg.evaluate(() => ({ d3: document.documentElement.__porta.geo().d3, why: document.documentElement.__porta.geo().d3why, gl: window.__gl }));
-    report(s.d3 === "refused" && /^earlier in this session: a frame of/.test(s.why) && s.gl === 0 && reqs.length === before && !errs.length, n, theme, "the next load of the tab: the CSS entrance, nothing probed or requested", JSON.stringify({ ...s, reqs: reqs.length - before }));
+    report(s.d3 === "refused" && /^earlier in this session: slow hand-back 2\/2: a frame of \d+ ms \(limit 1500\)$/.test(s.why) && s.gl === 0 && reqs.length === before && !errs.length, n, theme,
+      "the load after the second: the CSS entrance, refused with the reason, nothing probed or requested", JSON.stringify({ ...s, reqs: reqs.length - before }));
+    await c.close();
+  }
+  {
+    /* Not the 3D's own work, not counted (?guard=100000,1500), each on a fresh mount (a fresh guard): a 2.5 s stall in
+       the frames of a take-over (the frame after the one in which the canvas was first shown: on an iPhone, the first
+       frame of the first scroll, as Safari's toolbar starts to go), in the frame of a resize (a mobile toolbar, a
+       rotation: a listener after the page's own, in the frame's resize steps), and in the frame of a theme change (the
+       canvas cannot draw the new theme until its textures are in, then takes over again). The guard is still counting
+       when it stalls (not done); the 3D stays, nothing is counted for the session */
+    const { c, pg, errs } = await ctx({ spoof: { gpu: GPU } });
+    await pg.goto(base + "?guard=100000,1500", { waitUntil: "load" });
+    const run = (ms) => pg.evaluate((ms) => { const t0 = performance.now(), id = setInterval(() => { scrollBy(0, 1); if (performance.now() - t0 > ms) clearInterval(id); }, 30); }, ms);
+    const STALL = "window.__stall = document.documentElement.__porta.geo().d3guard; const t = performance.now(); while (performance.now() - t < 2500) {}";
+    const rows = [];
+    for (const kind of ["take-over", "resize", "theme"]) {
+      if (kind !== "take-over") { await go(pg, 0); await pg.reload({ waitUntil: "load" }); }
+      await settled(pg, 60000); await pg.waitForTimeout(600);
+      if (kind === "take-over") await toP(pg, 0.3, TAKEOVER);
+      else {
+        await toP(pg, 0.25); await run(1200); await pg.waitForTimeout(350);
+        if (kind === "resize") {
+          await pg.evaluate((st) => window.addEventListener("resize", () => (new Function(st))(), { once: true }), STALL);
+          await pg.setViewportSize({ width: 390, height: 800 });
+        } else await pg.evaluate((st) => requestAnimationFrame(() => { document.documentElement.setAttribute("data-theme", "noite"); (new Function(st))(); }), STALL);
+      }
+      await pg.waitForTimeout(3500); await still3d(pg, "on");
+      if (kind === "theme") {       /* the new theme's textures in: the canvas takes over again */
+        await pg.waitForFunction(() => document.documentElement.__porta.geo().d3ok, null, { timeout: 30000 }).catch(() => {});
+        await go(pg, 0); await go(pg, 0.3);
+      }
+      const s = await state(pg), at = await pg.evaluate(() => window.__stall || null), g = (await geo(pg)).d3guard;
+      rows.push({ kind, d3: s.d3, canvas: s.canvas, why: s.why, atStall: at && { n: at.n, ms: at.ms, done: at.done }, worst: g && g.worst, off: g && g.off });
+    }
+    const memo = await memo2(pg);
+    report(rows.every((x) => x.d3 === "on" && x.atStall && !x.atStall.done && x.worst < 1500 && x.off >= 2) && rows[2].canvas === "visible" && memo[1] === null && /^1\|/.test(memo[0] || "") && !errs.length,
+      "a 2.5 s stall in a take-over's frames, in a resize's frame, in a theme change's frame (the guard counting): not counted, the 3D stays (and takes over again in the new theme), nothing counted for the session", JSON.stringify({ rows, memo }));
     await c.close();
   }
   {
@@ -358,21 +430,80 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     await pg.evaluate(() => { const t0 = performance.now(); (function f() { const t = performance.now(); while (performance.now() - t < 50) {} if (performance.now() - t0 < 3000) requestAnimationFrame(f); })(); });
     for (let i = 0; i < 40; i++) { await pg.evaluate(() => scrollBy(0, 4)); await pg.waitForTimeout(30); }
     await pg.waitForTimeout(1500);
-    const s = await state(pg), g = await geo(pg);
-    report(s.d3 === "handed back" && /^median frame \d+\.\d ms \(limit 25\)$/.test(s.why) && s.canvas === "none" && s.scene === "visible", "a slow median (50 ms of work a frame): handed back to the CSS entrance", JSON.stringify({ ...s, guard: g.d3guard }));
+    const s = await state(pg), g = await geo(pg), memo = await memo2(pg);
+    report(s.d3 === "handed back" && /^median frame \d+\.\d ms \(limit 25\)$/.test(s.why) && s.canvas === "none" && s.scene === "visible" && /^1\|/.test(memo[0] || "") && memo[1] === "1",
+      "a slow median (50 ms of work a frame): handed back to the CSS entrance, counted for the session (1/2), not refused", JSON.stringify({ ...s, guard: g.d3guard, memo }));
     await c.close();
   }
   {
-    /* an exception in a draw: handed back at once, at the same progress */
-    const { c, pg } = await ctx({ spoof: { gpu: GPU } });
+    /* an exception in a draw: handed back at once, at the same progress, and refused for the session at once (the device
+       cannot draw it: not counted as a slow hand-back) */
+    const { c, pg, reqs } = await ctx({ spoof: { gpu: GPU } });
     await pg.goto(base + "?guard=100000,100000", { waitUntil: "load" }); await settled(pg, 60000);
     await go(pg, 0); await go(pg, 0.3);
     const r0 = (await state(pg)).r;
     await pg.evaluate(() => { const P = WebGL2RenderingContext.prototype; for (const k of ["drawArrays", "drawElements"]) { const o = P[k]; P[k] = function () { if (window.__boom) throw new Error("boom"); return o.apply(this, arguments); }; } window.__boom = true; });
     await nudge(pg, 3);
     await pg.waitForTimeout(400);
-    const s = await state(pg);
+    const s = await state(pg), memo = await memo2(pg), n1 = reqs.length;
     report(s.d3 === "handed back" && /^exception: boom$/.test(s.why) && s.canvas === "none" && s.scene === "visible" && Math.abs(s.r - r0) < 0.01, "an exception in a draw: handed back at once, at the same progress", JSON.stringify({ ...s, r0 }));
+    await go(pg, 0);
+    await pg.reload({ waitUntil: "load" }); await pg.waitForTimeout(2500);
+    const s2 = await state(pg);
+    report(/^0\|exception: boom$/.test(memo[0] || "") && memo[1] === null && s2.d3 === "refused" && /^earlier in this session: exception: boom$/.test(s2.why) && reqs.length === n1,
+      "an exception: refused for the session at once (no slow count); the next load asks for nothing", JSON.stringify({ memo, next: [s2.d3, s2.why], requestedAfter: reqs.length - n1 }));
+    await c.close();
+  }
+  {
+    /* The session memory (review, 10 Nov), one tab: what the build before 10 Nov wrote for one slow frame is read as one
+       slow hand-back (the probe asked again, the 3D on); a clean first second of 3D motion clears the count; the next
+       load's slow hand-back is then 1/2, not refused; a context lost during its dissolve with the page hidden (taken
+       for a loss in the background, as on iOS) ends the hand-back and rebuilds nothing in that page view; the load
+       after it draws the 3D again */
+    const { c, pg, errs } = await ctx({ spoof: { gpu: GPU } });
+    const MQ = "?guard=100000,1500&diag";
+    await pg.goto(base + "?sem3d", { waitUntil: "load" });
+    await pg.evaluate(() => sessionStorage.setItem("ab-3d", "0|a frame of 142 ms (limit 120)"));
+    await pg.goto(base + MQ, { waitUntil: "load" }); await settled(pg, 60000);
+    await pg.waitForTimeout(700);
+    let s = await state(pg), m = await memo2(pg);
+    const gl0 = await pg.evaluate(() => window.__gl), d0 = await diagText(pg);
+    report(s.d3 === "on" && /^passed the gate: ANGLE \(Apple/.test(s.why) && gl0 === 2 && /^1\|ANGLE \(Apple/.test(m[0] || "") && m[1] === "1" && /slow hand-backs 1\/2/.test(d0), "the old build's memo for one slow frame («0|a frame of 142 ms (limit 120)»): one slow hand-back (1/2), probed again, the 3D on",
+      JSON.stringify({ d3: s.d3, why: s.why, gl: gl0, memo: m }));
+    /* a clean first second: scrolled to and fro between p 0.2 and 0.4 until the guard is done */
+    await toP(pg, 0.25);
+    await pg.evaluate(() => { const g = document.documentElement.__porta.geo(), lo = g.pin + 0.2 * g.run, hi = g.pin + 0.4 * g.run, t0 = performance.now(); let dir = 1;
+      const id = setInterval(() => { const q = document.documentElement.__porta.geo().d3guard; if ((q && q.done) || performance.now() - t0 > 10000) return clearInterval(id);
+        if (scrollY > hi) dir = -1; else if (scrollY < lo) dir = 1; scrollBy(0, 4 * dir); }, 20); });
+    await pg.waitForFunction(() => { const q = document.documentElement.__porta.geo().d3guard; return q && q.done; }, null, { timeout: 15000 }).catch(() => {});
+    await pg.waitForTimeout(400);
+    s = await state(pg); m = await memo2(pg);
+    const gq = (await geo(pg)).d3guard;
+    report(s.d3 === "on" && gq && gq.done && gq.ms >= 1000 && /^1\|/.test(m[0] || "") && m[1] === null, "a clean first second of 3D motion: the slow count cleared", JSON.stringify({ d3: s.d3, guard: gq, memo: m }));
+    /* the next load: slow (8th frame); as soon as it is handing back, the page hidden, the context lost, the page shown
+       again 300 ms later */
+    await go(pg, 0);
+    await pg.reload({ waitUntil: "load" }); await settled(pg, 60000);
+    await pg.waitForTimeout(600);
+    await pg.evaluate(() => {
+      const hide = (h) => { Object.defineProperty(document, "hidden", { configurable: true, get: () => h });
+        Object.defineProperty(document, "visibilityState", { configurable: true, get: () => (h ? "hidden" : "visible") }); document.dispatchEvent(new Event("visibilitychange")); };
+      const f = () => { const g = document.documentElement.__porta.geo(); if (g.d3 !== "handing back") return requestAnimationFrame(f);
+        hide(true); document.querySelector(".porta__3d").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();
+        window.__lostGl = window.__gl; window.__lostIn = g.d3; setTimeout(() => hide(false), 300); };
+      requestAnimationFrame(f); });
+    await toP(pg, 0.3, SLOW);
+    await pg.waitForFunction(() => window.__lostIn, null, { timeout: 15000 }).catch(() => {});
+    await pg.waitForTimeout(5000);
+    s = await state(pg); m = await memo2(pg);
+    const lo = await pg.evaluate(() => ({ lostIn: window.__lostIn || null, gl: [window.__lostGl, window.__gl], tries: document.documentElement.__porta.geo().d3try }));
+    report(lo.lostIn === "handing back" && s.d3 === "handed back" && /^a frame of \d+ ms \(limit 1500\)$/.test(s.why) && s.canvas === "none" && s.scene === "visible" && lo.gl[0] === lo.gl[1] && lo.tries === 0
+      && /^1\|ANGLE \(Apple/.test(m[0] || "") && m[1] === "1", "slow, clean, slow: 1/2, not refused; a context lost during the dissolve (page hidden): handed back 5 s later, nothing rebuilt (no new WebGL context)",
+      JSON.stringify({ ...s, ...lo, memo: m }));
+    await go(pg, 0);
+    await pg.reload({ waitUntil: "load" }); await settled(pg, 60000);
+    s = await state(pg);
+    report(s.d3 === "on" && !errs.length, "the load after it: the 3D again", JSON.stringify({ d3: s.d3, why: s.why, errs }));
     await c.close();
   }
   {

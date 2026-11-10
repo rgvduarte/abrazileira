@@ -1406,6 +1406,7 @@ export function mount(env) {
   const mo = new MutationObserver(function () { const t = env.theme(); if (t !== have && t !== want) use(t).catch(() => {}); });
   mo.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
   const fq = [];                          /* [when, fence] after each frame drawn, oldest first (lag()) */
+  let freed = 0;                          /* when the GPU was last seen done with a frame drawn before lag()'s since */
   return {
     ready: use(env.theme()),
     canvas,
@@ -1425,10 +1426,12 @@ export function mount(env) {
        waiting (a fence after each frame, polled, never waited on; [0, 0] when it has caught up). The page's live
        safeguard reads it once a frame: in Chromium a WebGL canvas can queue seconds of GPU work before its main
        thread feels it (iPhone emulation on SwiftShader: ~1 s of frames, ~5 s of GPU work, before a frame interval
-       over 120 ms) */
-    lag() {
-      try { while (fq.length && gl.getSyncParameter(fq[0][1], gl.SYNC_STATUS) === gl.SIGNALED) gl.deleteSync(fq.shift()[1]); } catch (e) { return [0, 0]; }
-      return fq.length ? [performance.now() - fq[0][0], fq.length] : [0, 0];
+       over 120 ms). since: frames drawn before it are not the page's to judge ([0, 0] while the GPU is still on one),
+       and the first drawn after it waits from when the GPU was seen done with them (site.js uncount()) */
+    lag(since) {
+      const t = performance.now();
+      try { while (fq.length && gl.getSyncParameter(fq[0][1], gl.SYNC_STATUS) === gl.SIGNALED) { const x = fq.shift(); gl.deleteSync(x[1]); if (x[0] < since) freed = t; } } catch (e) { return [0, 0]; }
+      return fq.length && !(fq[0][0] < since) ? [t - Math.max(fq[0][0], freed), fq.length] : [0, 0];
     },
     /* the context is gone, with or without its event (a page back from the background) */
     lost() { return dead || gl.isContextLost(); },

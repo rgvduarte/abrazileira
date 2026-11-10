@@ -1138,6 +1138,7 @@ if (env.onTheme) env.onTheme(t);
 const mo = new MutationObserver(function () { const t = env.theme(); if (t !== have && t !== want) use(t).catch(() => {}); });
 mo.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
 const fq = [];
+let freed = 0;
 return {
 ready: use(env.theme()),
 canvas,
@@ -1151,9 +1152,10 @@ try { ok = core.frame(v); } catch (e) { if (env.onError) env.onError(e); return 
 if (ok && fq.length < 64) { try { const f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); if (f) fq.push([performance.now(), f]); } catch (e) {} }
 return ok;
 },
-lag() {
-try { while (fq.length && gl.getSyncParameter(fq[0][1], gl.SYNC_STATUS) === gl.SIGNALED) gl.deleteSync(fq.shift()[1]); } catch (e) { return [0, 0]; }
-return fq.length ? [performance.now() - fq[0][0], fq.length] : [0, 0];
+lag(since) {
+const t = performance.now();
+try { while (fq.length && gl.getSyncParameter(fq[0][1], gl.SYNC_STATUS) === gl.SIGNALED) { const x = fq.shift(); gl.deleteSync(x[1]); if (x[0] < since) freed = t; } } catch (e) { return [0, 0]; }
+return fq.length && !(fq[0][0] < since) ? [t - Math.max(fq[0][0], freed), fq.length] : [0, 0];
 },
 lost() { return dead || gl.isContextLost(); },
 dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); },

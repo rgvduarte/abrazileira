@@ -368,16 +368,20 @@ gq = /[?&]guard(?:=(\d+)(?:,(\d+))?)?(?:&|$)/.exec(Q),
 GUARD = { on: !!gq || (!F3 && !T3), med: gq && gq[1] ? +gq[1] : 25, max: gq && gq[2] ? +gq[2] : 120 },
 SOFT = /swiftshader|llvmpipe|softpipe|software|basic render/i,
 WEAK = /mali-(4\d\d|t[678]\d\d|g31)\b|adreno \(tm\) ([1-4]\d\d|50\d)\b|powervr (sgx|rogue ge8[0-3]\d\d)|\bgma ?\d|hd graphics (2000|3000)\b|videocore|vivante|tegra [234]\b/i,
-d3 = null, d3on = false, d3arm = false, d3st = "off", d3why = "", d3try = 0, pre = null, gpu = "", visAt = -1e9, awayAt = -1e9,
+d3 = null, d3on = false, d3arm = false, d3st = "off", d3why = "", d3try = 0, backed = false, pre = null, gpu = "", visAt = -1e9, awayAt = -1e9,
 cad = 0, gd = null, fnow = 0, cur = null, fading = 0, FADE = num("--dur-handback", 180);
 function asc(a, b) { return a - b; }
-function mem(v) {
+var SLOWS = 2;
+function mem(v, k) {
 try {
-if (v === undefined) return F3 || T3 ? "" : sessionStorage.getItem("ab-3d") || "";
-if (!F3 && !T3) sessionStorage.setItem("ab-3d", v);
+if (v === undefined) return F3 || T3 ? "" : sessionStorage.getItem(k || "ab-3d") || "";
+if (F3 || T3) return "";
+if (v === null) sessionStorage.removeItem(k || "ab-3d");
+else sessionStorage.setItem(k || "ab-3d", v);
 } catch (e) {}
 return "";
 }
+function slows() { return +mem(undefined, "ab-3d-slow") || 0; }
 var moved = 0, touched = 0, CALM = 150;
 function quiet() {
 var sc = navigator.scheduling, t = performance.now();
@@ -413,10 +417,11 @@ if (m === d3m) return;
 xstop();
 d3m = m;
 d3on = m === 1;
+if (d3on) uncount();
 d3.canvas.style.visibility = m === 1 ? "visible" : "";
 if (m === 1 && xin && d3.canvas.animate) {
 var a = (xf = d3.canvas.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE, easing: "linear" }));
-a.onfinish = function () { if (xf === a) { xf = null; if (d3m === 1 && !fading) scene.style.visibility = "hidden"; } };
+a.onfinish = function () { if (xf === a) { xf = null; uncount(); if (d3m === 1 && !fading) scene.style.visibility = "hidden"; } };
 xin = false;
 scene.style.visibility = "";
 return;
@@ -439,17 +444,18 @@ if (ok && gd) gd.drew = true;
 }
 function watch3d() {
 if (!gd || gd.done || !fnow) return;
-var drew = gd.drew;
+var drew = gd.drew, th = root.getAttribute("data-theme");
 gd.drew = false;
-if (!d3on) { gd.prev = 0; gd.last = false; return; }
-if (gd.skip > 0) gd.skip--;
+if (th !== gd.th) { gd.th = th; uncount(); }
+if (!d3on || xf) { gd.prev = 0; gd.last = false; return; }
+if (gd.skip > 0) { if (gd.prev) gd.off++; if (!--gd.skip) gd.from = moved; }
 else if (gd.prev && gd.last && fnow > gd.prev) {
 var d = fnow - gd.prev, s, lim;
 gd.t.push(d);
 gd.sum += d;
 if (d > gd.worst) gd.worst = d;
 if (GUARD.on && d > GUARD.max) { handBack("a frame of " + Math.round(d) + " ms (limit " + GUARD.max + ")", true); return; }
-var lg = d3.lag ? d3.lag() : [0, 0];
+var lg = d3.lag ? d3.lag(gd.from) : [0, 0];
 if (lg[0] > gd.lag) gd.lag = lg[0];
 if (GUARD.on && lg[0] > GUARD.max && lg[1] >= 3) { handBack("the GPU " + Math.round(lg[0]) + " ms behind, " + lg[1] + " frames (limit " + GUARD.max + ")", true); return; }
 if (gd.sum >= 1000) {
@@ -458,11 +464,15 @@ gd.med = s[s.length >> 1];
 gd.done = true;
 lim = Math.max(GUARD.med, 1.5 * (cad || 16.7));
 if (GUARD.on && gd.med > lim) { handBack("median frame " + gd.med.toFixed(1) + " ms (limit " + Math.round(lim) + ")", true); return; }
+if (GUARD.on && slows()) mem(null, "ab-3d-slow");
 }
 }
 gd.prev = fnow;
 gd.last = drew;
 }
+function uncount() { if (gd && !gd.done) { gd.prev = 0; gd.skip = 3; } }
+window.addEventListener("resize", uncount);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", uncount);
 function cadence() {
 var ts = [], t0 = 0;
 function f(t) {
@@ -495,10 +505,13 @@ if (why) d3why = why;
 wrap.classList.remove("porta--3d");
 ERR.push("3d: " + st + (why ? " (" + why + ")" : ""));
 }
-function handBack(why, soft) {
-mem("0|" + why);
+function handBack(why, slow) {
+var n = slow ? slows() + 1 : 0;
+backed = true;
+if (slow) mem(String(n), "ab-3d-slow");
+if (!slow || n >= SLOWS) mem("0|" + (slow ? "slow hand-back " + n + "/" + SLOWS + ": " : "") + why);
 if (gd) gd.done = true;
-if (!soft || !d3 || !d3on || fading || xf) { lost3d("handed back", why); queue(); return; }
+if (!slow || !d3 || !d3on || fading || xf) { lost3d("handed back", why); queue(); return; }
 d3st = "handing back";
 d3why = why;
 fading = performance.now();
@@ -547,6 +560,7 @@ if (!window.WebGL2RenderingContext) return "no WebGL 2";
 if (!wrap.getAttribute("data-3d")) return "no 3D module on this page";
 if (F3 || T3) return "";
 m = mem();
+if (/^0\|(a frame of|median frame|the GPU )/.test(m)) { if (!slows()) mem("1", "ab-3d-slow"); mem(null); m = ""; }
 if (m.charAt(0) === "0") return "earlier in this session: " + m.slice(2);
 if (dm && dm < 2) return "weak device (deviceMemory " + dm + " GB)";
 if (!IOS && hc && hc < 4) return "weak device (" + hc + " cores)";
@@ -631,6 +645,7 @@ step: function (s, i, n) { if (d3st === "loading" && (m === undefined || m === c
 views: function (ez) { return box3 ? [view3d(0.3, ez), view3d(0.05, ez)] : []; },
 onLost: function () {
 if (m !== cur) return;
+if (backed) { lost3d("handed back", d3why); queue(); return; }
 if (document.hidden || awayAt > visAt || performance.now() - visAt < 3000) {
 lost3d("context lost", "lost in the background: rebuilt when shown");
 queue();
@@ -645,7 +660,7 @@ d3 = m;
 d3st = "on";
 stg("on");
 d3arm = false;
-gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, worst: 0, med: 0, lag: 0, done: false };
+gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, off: 0, from: 0, th: root.getAttribute("data-theme"), worst: 0, med: 0, lag: 0, done: false };
 wrap.classList.add("porta--3d");
 queue();
 }, function (e) {
@@ -662,6 +677,7 @@ if (/context/i.test(msg)) { refuse("mount: context: " + msg); wrap.classList.rem
 }
 }
 function revive3d() {
+if (backed) return;
 if (d3 && d3.lost()) lost3d("context lost", "lost in the background: rebuilt when shown");
 if (d3st !== "context lost" || d3try >= 2 || document.hidden) return;
 d3try++;
@@ -669,7 +685,7 @@ d3st = "off";
 whenQuiet(load3d);
 }
 function back3d(e) {
-if (gd) { gd.prev = 0; gd.skip = 2; }
+uncount();
 if (e.type === "pagehide" || (e.type === "visibilitychange" && document.hidden)) { awayAt = performance.now(); return; }
 if (e.type === "pageshow" ? e.persisted : !document.hidden) { visAt = wdT = performance.now(); wdAct = 0; revive3d(); }
 }
@@ -925,7 +941,8 @@ root.__portaBusy = function () { return on && (!!fl || !!raf); };
 root.__porta = { fly: fly, land: land, d3probe: function () { return d3 && d3.probe ? d3.probe() : null; }, geo: function () {
 return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen,
 d3: d3st, d3stage: d3stg + (d3n ? " " + d3n : ""), d3ms: d3t0 ? Math.round(performance.now() - d3t0) : 0, d3log: d3log.slice(), d3times: cur && cur.times ? cur.times() : d3 && d3.times ? d3.times() : null, d3quiet: quiet(), d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try, d3why: d3why, d3gpu: gpu, d3dpr: d3 ? d3.dpr() : 0,
-d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), lag: Math.round(gd.lag), done: gd.done, cadence: +cad.toFixed(1) } : null };
+d3slow: F3 || T3 ? null : [slows(), SLOWS],
+d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), lag: Math.round(gd.lag), off: gd.off, done: gd.done, cadence: +cad.toFixed(1) } : null };
 } };
 })();
 (function () {
@@ -1111,9 +1128,9 @@ document.body.appendChild(box);
 var diag3d = function () {
 var g = root.__porta && root.__porta.geo(), q = g && g.d3guard, nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0], t = g && g.d3times;
 if (!g) return "path=CSS (the sequence stepped aside)";
-return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + (g.d3 === "loading" ? ":" + g.d3stage + " " + g.d3ms + "ms" : "") + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") +
+return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + (g.d3 === "loading" ? ":" + g.d3stage + " " + g.d3ms + "ms" : "") + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") + (g.d3slow ? " slow hand-backs " + g.d3slow.join("/") : "") +
 (g.d3log && g.d3log.length ? "\n3d steps: load@" + (nav && nav.loadEventStart ? Math.round(nav.loadEventStart) : "-") + " " + g.d3log.join(" ") + (t ? " held=" + t.held + "ms" : "") : "") +
-(q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms gpu lag=" + q.lag + "ms cadence=" + q.cadence + "ms" + (q.done ? " (done)" : "") : "");
+(q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms gpu lag=" + q.lag + "ms cadence=" + q.cadence + "ms not counted=" + q.off + (q.done ? " (done)" : "") : "");
 };
 setInterval(function () {
 var st = document.querySelector(".porta__stage"), r = st && st.getBoundingClientRect();
