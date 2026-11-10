@@ -224,7 +224,7 @@ svg { display: block; }
   /* trailing tracking taken back, so the line is optically centred under the wordmark */
   margin-inline-end: calc(var(--track-label) * -1);
   font-family: var(--font-label-lockup);
-  font-weight: var(--weight-label);
+  font-weight: var(--weight-label-lockup);
   font-size: var(--lockup-label);
   line-height: var(--leading-label);
   letter-spacing: var(--track-label);
@@ -233,19 +233,21 @@ svg { display: block; }
 }
 
 /* ---- The crest's colours (one drawing, its colours from the tokens) -------------------------------------
-   «ouro»: the board's reference, metallic gold in relief: the body is a gradient of three stops, a lit edge top left
-   and a shadow edge bottom right (the shape minus itself shifted, built inside the crest's filter: no clip paths,
-   which Chromium paints on the main thread), the leaf veins in the shadow tone, a soft cast shadow. It is the same gold by day and by night (on parede-noite each body stop is 4.12:1 or more).
+   «ouro»: the board's reference, metallic gold in relief: the body is a gradient of three stops; the crest's filter
+   (build.py › _gold_svg) softens the shape's alpha at the strokes' own scale and compares it with itself seen from the
+   top left, so every stroke, leaf and letter is lit on the slope that faces the light (--ouro-luz) and shaded on the
+   one that faces away (--ouro-fundo), its flat top in the gradient, as the board's embossed gold; the leaf veins in the
+   shadow tone; a faint cast shadow. Raster work only (no clip paths, which Chromium paints on the main thread). It is
+   the same gold by day and by night (on parede-noite each body stop is 4.12:1 or more).
    «plano»: one ink (currentColor) with the leaf veins cut in the ground's colour (--crest-ground), as the board's
    white-on-black and black versions. */
 .crest__s1 { stop-color: var(--ouro-claro); }
 .crest__s2 { stop-color: var(--ouro); }
 .crest__s3 { stop-color: var(--ouro-escuro); }
 .crest__fl { flood-color: var(--ouro-luz); }
-.crest__fd { flood-color: var(--ouro-sombra); }
+.crest__fd { flood-color: var(--ouro-fundo); }
 .crest__veios { fill: var(--ouro-sombra); fill-opacity: 0.55; }
 .crest__fs { flood-color: var(--ouro-fundo); }
-.crest__fe { flood-color: var(--ouro-sombra); }
 .crest__forma { fill: currentColor; }
 .crest__recorte { fill: var(--crest-ground, var(--color-bg)); }
 
@@ -1046,10 +1048,11 @@ picture.t-noite { display: var(--t-noite); }
   /* the column's optical centre sits a little above the middle of the wall (from the top of the screen to the paving's
      line), not of the stage, which runs on below the paving: the padding under it grows with the height (10svh),
      never so far that a short laptop pushes the crown under the top bar */
+  :root { --intro-end: max(var(--space-8), min(calc(var(--space-8) + 10svh), calc(100svh - 40rem))); }
   .intro {
     align-self: center;
     margin-block: 0;
-    padding-block-end: max(var(--space-8), min(calc(var(--space-8) + 10svh), calc(100svh - 40rem)));
+    padding-block-end: var(--intro-end);
   }
   .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }
   .scene { inset-inline-start: 0; }
@@ -1079,9 +1082,41 @@ picture.t-noite { display: var(--t-noite); }
   }
 }
 
+/* Split windows from 501px tall (the home page): the board's vertical lockup is taller than the old lockup was at the
+   same em (about 0.5em: 21px at a 41px em, 28px at 55px), and where the text column is what sets the stage's row (short
+   windows: 900-1680 x 501-570, 1920 x 501-620, 2560 x 501-725) the row grew with it: the photograph beside it grew by
+   as much, the paving went down and the scroll cue under the screen's edge, so site.js hid it (review of the identity
+   round). Here the lockup's em is held so that the column is never taller than the larger of what the old lockup made
+   it and what the stage gives it: the lockup's height may be the old lockup's at this em (3.22051em, its one-line
+   label 1.045 x max(0.18428em, 0.7rem)) or the room the screen leaves it (the small viewport, less the top bar, the
+   band, the stage's padding, the break, the sentence, the interval, the action's row and the padding under the
+   column), whichever is larger, and the em is the one that gives the board's lockup that height (3.73678em + 1.045 x
+   its line's size, max(0.23922em, 0.6875rem); inverted on both branches). So on a short window the photograph, the
+   paving and the cue are where they were to the pixel and the lockup is a little smaller (0.86 of its em); with the
+   height it grows back to its full em, continuously; nothing changes where the column already fitted. Measured
+   heights: DESIGN.md › Logo usage › Short split windows. */
+@media (min-width: 56.25em) and (min-aspect-ratio: 1/1) and (min-height: 31.26em), (orientation: landscape) and (min-width: 35em) and (min-height: 31.26em) {
+  .porta .lockup {
+    --lockup-e: var(--size-wordmark);
+    --lockup-old: calc(3.22051 * var(--lockup-e) + 1.045 * max(0.18428 * var(--lockup-e), 0.7rem));
+    --lockup-room: calc(100svh - max(calc(var(--topbar-pad) + var(--target) + var(--sol-h, 0px)), var(--bar-h, 0px))
+      - var(--space-4) - max(var(--space-4), env(safe-area-inset-bottom)) - var(--leading-text) * var(--size-ui)
+      - var(--space-6) - var(--hairline) - var(--rhythm-break) - var(--size-lede) - 0.45rem - var(--rhythm-apart)
+      - var(--target) - var(--intro-end));
+    --lockup-fit: max(var(--lockup-old), var(--lockup-room));
+    font-size: clamp(var(--size-lockup-min), min((var(--lockup-fit) - 1.045 * 0.6875rem) / 3.73678, var(--lockup-fit) / 3.98676), var(--lockup-e));
+  }
+}
+
 /* Landscape phones: compact split; the page may scroll a little. */
 @media (orientation: landscape) and (max-height: 31.25em) {
+  /* the break gives back what the board's lockup adds to the old one's height here (the old line was two lines, BOUTIQUE
+     HOTEL / TORRES VEDRAS at max(0.32em, 11px)): 3.73678e + 1.045 x max(0.23922e, 11px) less 3.22051e + 2.345 x
+     max(0.32e, 11px), 1.2px at the 30px em, 3.4px at 34.4px, 3.1px at 36px; the sentence, the action and the
+     photograph beside them stay where they were (review of the identity round: +2.7 to +3.4px, the cue sliced at
+     667 x 375). The home page's lockup only (the plain pages set theirs at --size-lockup-plain) */
   :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); --rhythm-pair: var(--space-1); --rhythm-apart: 0px; --rhythm-break: var(--space-5); }
+  .porta { --rhythm-break: calc(var(--space-5) - (0.51627 * var(--size-lockup-short) + 1.045 * max(0.23922 * var(--size-lockup-short), 0.6875rem) - 2.345 * max(0.32 * var(--size-lockup-short), 0.6875rem))); }
   .stage { padding-block-start: var(--space-2); column-gap: var(--space-6); }
   .lockup { font-size: var(--size-lockup-short); }   /* never under the logo's minimum */
   .intro { padding-block-end: var(--space-7); }      /* the action stays on the wall, clear of the paving */
@@ -1126,7 +1161,7 @@ picture.t-noite { display: var(--t-noite); }
   .crest__forma { fill: CanvasText; }
   .crest__fl, .crest__fd { flood-color: CanvasText; }
   .crest__veios, .crest__recorte { fill: Canvas; fill-opacity: 1; }
-  .crest__fs, .crest__fe { flood-color: transparent; }
+  .crest__fs { flood-color: transparent; }
   .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
   /* forced colours: the photograph stays (images keep their colours); the light layers go */
   .ph--spill, .leaf__shade, .porta__flood { display: none; }

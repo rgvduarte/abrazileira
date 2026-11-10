@@ -40,13 +40,14 @@ CREST_MIRROR = f'matrix(-1 0 0 1 {CREST_W} 0)'
 
 
 def _gold_svg(name, w, h, shapes, veins=()):
-    """one of the identity's gold drawings (assets/img/*-gold.svg) as (defs, body) for inlining. The file draws its
-    relief with two clipPaths (the shape, and the shape shifted up-left: a shadow rim, a lit rim and the gradient body);
-    Chromium paints clips of paths this large on the main thread (a 70-100 ms task at 4x CPU on a phone, review of the
-    identity round), so the same relief is rebuilt here inside the filter, from the shape's alpha shifted by the same
-    amount (raster work, off the main thread): shadow rim = shape out (shape up-left), lit rim = (shape in up-left)
-    out (shape down-right), body = the gradient in both. The file's cast shadow and inner edge follow unchanged. Every
-    colour becomes a class (site.css › .crest__*: the tokens). shapes / veins: (id, transform) the file draws."""
+    """one of the identity's gold drawings (assets/img/*-gold.svg) as (defs, body) for inlining, the file's own drawing:
+    the shapes filled with the gold gradient under one filter that models the relief at the strokes' own scale (the
+    shape's alpha softened by a blur in drawing units, compared with itself seen from the top left: the slopes facing
+    the light take the lit gold, those facing away the shadow, the flat tops keep the gradient; then a soft cast
+    shadow). Every value is in viewBox units, so the relief keeps its proportions at every size (the 102px crest of a
+    phone as the 205px one of a desktop); filters are raster work, off the main thread (clip paths of paths this large
+    were a 70-100 ms main-thread paint at 4x CPU, review of the identity round). Every colour becomes a class
+    (site.css › .crest__*: the tokens). shapes / veins: (id, transform) the file draws."""
     src = read(os.path.join(ASSETS, "img", name)).strip()
     vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', src)
     assert (float(vb[1]), float(vb[2])) == (w, h), name + " viewBox changed"
@@ -54,25 +55,18 @@ def _gold_svg(name, w, h, shapes, veins=()):
     grad = re.search(r"<linearGradient .*?</linearGradient>", src)[0]
     filt = re.search(r"<filter .*?</filter>", src)[0]
     paths = "".join(re.findall(r'<path id="[^"]+" d="[^"]+"/>', src))
-    shift = float(re.search(r'translate\((\.?[\d.]+) ', src)[1])      # the file's own relief offset (its body's shift)
-    dd = f"{shift:g}".replace("0.", ".")
-    rims = (f'<feOffset in="SourceAlpha" dx="-{dd}" dy="-{dd}" result="up"/><feOffset in="SourceAlpha" dx="{dd}" dy="{dd}" result="dn"/>'
-            '<feComposite in="SourceAlpha" in2="up" operator="out" result="rd"/>'
-            '<feComposite in="SourceAlpha" in2="up" operator="in" result="ri"/><feComposite in="ri" in2="dn" operator="out" result="rl"/>'
-            '<feComposite in="SourceGraphic" in2="ri" operator="in"/><feComposite in2="dn" operator="in" result="bd"/>'
-            '<feFlood class="crest__fd"/><feComposite in2="rd" operator="in" result="rd2"/>'
-            '<feFlood class="crest__fl"/><feComposite in2="rl" operator="in" result="rl2"/>'
-            '<feMerge result="gold"><feMergeNode in="rd2"/><feMergeNode in="rl2"/><feMergeNode in="bd"/></feMerge>')
-    assert filt.count('<feMergeNode in="SourceGraphic"/>') == 1
-    filt = re.sub(r"(<filter [^>]*>)", lambda m: m[1] + rims, filt, count=1).replace('<feMergeNode in="SourceGraphic"/>', '<feMergeNode in="gold"/>')
+    assert "clipPath" not in src and filt.count("<feFlood") == 3, name + ": not the relief filter build.py knows"
     defs = grad + filt + paths
-    uses = "".join(f'<use href="#{pre}-{i}"{f" transform={chr(34)}{t}{chr(34)}" if t else ""}/>' for i, t in shapes)
-    body = f'<g filter="url(#{pre}-f)"><g fill="url(#{pre}-g)">{uses}</g></g>'
+    use = lambda i, t: f'<use href="#{pre}-{i}"' + (f' transform="{t}"' if t else "") + "/>"
+    body = f'<g filter="url(#{pre}-f)"><g fill="url(#{pre}-g)">{"".join(use(i, t) for i, t in shapes)}</g></g>'
     if veins:
-        body += '<g class="crest__veios">' + "".join(f'<use href="#{pre}-{i}"{f" transform={chr(34)}{t}{chr(34)}" if t else ""}/>' for i, t in veins) + "</g>"
+        body += '<g class="crest__veios">' + "".join(use(i, t) for i, t in veins) + "</g>"
+        assert '<g fill="#7a5c27" fill-opacity=".55">' + "".join(use(i, t) for i, t in veins) + "</g>" in src, name + ": veins changed"
+    assert src.endswith(body.replace('class="crest__veios"', 'fill="#7a5c27" fill-opacity=".55"') + "</svg>"), name + ": the file draws something else"
+    # the cast shadow first (its flood carries an opacity), then the relief's two floods
     for a, b in (('stop-color="#dcbd7a"', 'class="crest__s1"'), ('stop-color="#c09e5e"', 'class="crest__s2"'),
-                 ('stop-color="#a3833f"', 'class="crest__s3"'), ('flood-color="#5b4216"', 'class="crest__fs"'),
-                 ('flood-color="#7a5c27"', 'class="crest__fe"')):
+                 ('stop-color="#a3833f"', 'class="crest__s3"'), ('flood-color="#5b4216" flood-opacity', 'class="crest__fs" flood-opacity'),
+                 ('flood-color="#f3dfae"', 'class="crest__fl"'), ('flood-color="#5b4216"', 'class="crest__fd"')):
         assert a in defs, name + ": " + a
         defs = defs.replace(a, b)
     out = defs + body
@@ -82,6 +76,11 @@ def _gold_svg(name, w, h, shapes, veins=()):
 
 CREST_DEFS, CREST_BODY = _gold_svg("crest-gold.svg", CREST_W, CREST_H, (("h", ""), ("h", CREST_MIRROR), ("c", "")),
                                    (("v", ""), ("v", CREST_MIRROR)))
+# the board's black version is line art (the leaves outlined, white inside, the midrib kept): one path in one ink, the
+# solid half less the leaves' interiors (assets/img/crest-line.svg; drawn from the same model as the gold)
+_LINE = read(os.path.join(ASSETS, "img", "crest-line.svg"))
+assert re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', _LINE).groups() == (f"{CREST_W:g}", f"{CREST_H:g}"), "crest-line.svg viewBox changed"
+CREST_LINE = re.search(r'<path id="abzl-h" d="([^"]+)"', _LINE)[1]
 MONO_W, MONO_H = 79.97, 100
 MONO_DEFS, MONO_BODY = _gold_svg("monogram-gold.svg", MONO_W, MONO_H, (("p", ""),))
 
@@ -94,18 +93,23 @@ def crest_defs(idp):
     """the crest's (and the monogram's) definitions alone, in a 0 x 0 svg: for a page that shows several variants and
     defines the drawing once (the style guide). Not display:none, so its gradients and filter stay usable."""
     return (f'<svg class="crest-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>'
-            f'{CREST_DEFS.replace("abzg-", idp + "-")}{MONO_DEFS.replace("abzm-", idp + "-m")}</defs></svg>')
+            f'{CREST_DEFS.replace("abzg-", idp + "-")}<path id="{idp}-l" d="{CREST_LINE}"/>{MONO_DEFS.replace("abzm-", idp + "-m")}</defs></svg>')
 
 
 def crest_svg(idp="ab-crest", defs=True, variant="ouro", cls="", label=None, bare=False):
-    """the crest as an inline <svg>. variant "ouro": the board's metallic gold (relief: a light and a shadow edge, a
-    gradient body, a soft cast shadow); "plano": one ink (currentColor) with the leaf veins cut in the ground colour
-    (--crest-ground), as the board's one-colour versions. defs=False reuses a definition made earlier on the page
+    """the crest as an inline <svg>. variant "ouro": the board's metallic gold (relief at the strokes' own scale:
+    lit and shaded slopes over a gradient body, a faint cast shadow); "plano": one ink (currentColor) with the leaf veins cut in the ground colour
+    (--crest-ground), as the board's white-on-black version; "linha": one ink, the leaves as line art, as the board's
+    black version. defs=False reuses a definition made earlier on the page
     (crest_defs). Decorative (aria-hidden) unless a label is given (role img, one name). bare: the drawing only, no
     <svg> (to place inside another drawing)."""
     d = (CREST_DEFS if defs else "").replace("abzg-", idp + "-")
     if variant == "ouro":
         body = CREST_BODY.replace("abzg-", idp + "-")
+    elif variant == "linha":
+        d += f'<path id="{idp}-l" d="{CREST_LINE}"/>' if defs else ""
+        body = (f'<g class="crest__forma"><use href="#{idp}-l"/><use href="#{idp}-l" transform="{CREST_MIRROR}"/>'
+                f'<use href="#{idp}-c"/></g>')
     else:
         body = (f'<g class="crest__forma"><use href="#{idp}-h"/><use href="#{idp}-h" transform="{CREST_MIRROR}"/>'
                 f'<use href="#{idp}-c"/></g><g class="crest__recorte"><use href="#{idp}-v"/>'
@@ -283,7 +287,7 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <meta property="og:url" content="{canonical}">
 <meta property="og:locale" content="{t['og_locale']}">
 <meta property="og:locale:alternate" content="{t['alt_locale']}">
-<meta property="og:image" content="{BASE}assets/img/og.jpg">
+<meta property="og:image" content="{BASE}assets/img/og.{OG_V}.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -306,6 +310,7 @@ def head(t, p, title, desc, canonical, alternates, og=True, robots="index, follo
 <link rel="apple-touch-icon" href="{p}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="{p}site.webmanifest">
 <link rel="preload" href="{p}assets/fonts/cinzel-caps-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{p}assets/fonts/cinzel-caps-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{p}assets/fonts/eb-garamond-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{p}assets/fonts/eb-garamond-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{p}assets/css/tokens.css">
@@ -623,6 +628,10 @@ def door3d_js():
 DOOR3D = door3d_js()
 THREE_V = hash10(open(VENDOR, "rb").read())
 DOOR3D_V = hash10(DOOR3D.encode("utf-8"))
+# the Open Graph card carries its content hash in its name (og.<hash>.jpg): link previews (Facebook, LinkedIn, the
+# messaging apps) cache the image by URL, so a redrawn card under the old name would keep showing the old one. og.jpg
+# itself is still copied, for pages scraped before.
+OG_V = hash10(open(os.path.join(ASSETS, "img/og.jpg"), "rb").read())
 
 
 def sitemap():
@@ -683,12 +692,13 @@ def main():
     write(os.path.join(DOCS, "assets/js/door3d.js"), DOOR3D)
     for f in ["three.min.js", "three.LICENSE.txt"]:
         copy("js/vendor/" + f, "assets/js/vendor/" + f)
-    for f in ["cinzel-caps-400.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
+    for f in ["cinzel-caps-400.woff2", "cinzel-caps-700.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
               "OFL-cinzel.txt", "OFL-eb-garamond.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
-    for f in ["apple-touch-icon.png", "icon-512.png", "crest-gold.svg", "crest.svg", "crest-circle.svg", "monogram.svg",
+    for f in ["apple-touch-icon.png", "icon-512.png", "crest-gold.svg", "crest.svg", "crest-line.svg", "crest-circle.svg", "monogram.svg",
               "monogram-gold.svg", "wordmark.svg", "og.jpg"]:
         copy("img/" + f, "assets/img/" + f)
+    copy("img/og.jpg", f"assets/img/og.{OG_V}.jpg")
     shipped = 0
     for theme in ("dia", "noite"):                 # the photo layers, exactly the files photo.json lists
         for name, files in sorted(photo.P["layers"][theme].items()):
@@ -703,6 +713,9 @@ def main():
                 for fmt in ("avif", "webp"):
                     copy(f"photo/{theme}/{n}-{f['w']}.{fmt}", f"assets/photo/{theme}/{n}-{f['w']}.{fmt}")
                     shipped += f[fmt]
+    fav, tok = read(os.path.join(ASSETS, "favicon.svg")), read(os.path.join(SRC, "tokens.tpl.css")).upper()
+    for hx in set(re.findall(r"#[0-9A-Fa-f]{6}\b", fav)):         # the favicon stands alone (no tokens.css): its colours are token values
+        assert hx.upper() + ";" in tok, "favicon.svg: " + hx + " is not a token"
     copy("favicon.svg", "favicon.svg")
     write(os.path.join(DOCS, ".nojekyll"), "")
     # GitHub Pages custom domain; keeps the domain attached on every rebuild

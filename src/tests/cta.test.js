@@ -42,6 +42,7 @@ const STATE = () => {
 (async () => {
   const { srv, base } = await serve(dir); const b = await chromium.launch(); let fail = 0;
   const report = (ok, ...a) => { if (!ok) fail++; console.log(ok ? "PASS" : "FAIL", ...a); };
+  if (process.env.GEO_ONLY) { await geometry(b, base, report); console.log("cta", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0); }
   for (const [n, w, h] of [["m390", 390, 844], ["d1440", 1440, 900]]) {
     const mobile = w < 900;
     const MODES = ["click", "enter", "space", "cue", "tab", "stop-wheel", "stop-key", "stop-pointer", mobile ? "stop-touch" : null, "reduced-click", "hash", "back",
@@ -208,5 +209,82 @@ const STATE = () => {
     report(r.floor <= r.ih && !sliced, n, "rest" + (page ? "-en" : ""), JSON.stringify(r));
     await c.close();
   }
+  await geometry(b, base, report);
   console.log("cta", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);
 })();
+
+// First-screen geometry and the identity in the DOM (review of the identity round: the board's lockup is taller per em
+// than the old one, and where the text column sets the stage's row (short split windows, landscape phones) the
+// photograph grew with it and the cue left the screen, and no test noticed). At each size below, on a first visit (no
+// stored theme, the clock at noon in Torres Vedras, so the theme is Dia and the sun note shows; PT), .scene, .entrance,
+// .cta and the cue's icon (its box, or its absence) are compared with stored values, 0.5px either way. The stored
+// values are cb77856's (the old lockup) for the scene, the entrance and the cue at every size (the two builds measure
+// within 0.05px of each other); the action is cb77856's too except where the window has the height for the larger
+// lockup (1280 x 561: 7.8px lower; 1440 x 900: 20.6px lower), where it is this build's.
+// Then, on every page (home PT and EN, privacy PT and EN, 404): one crest (svg.crest), aria-hidden and not focusable;
+// the drawn wordmark aria-hidden; the lockup reads «A Brazileira» then «Boutique Hotel», and nothing of Torres Vedras;
+// on the home pages the h1 is the lockup and its accessible name starts «A Brazileira»; no <img> and no CSS background
+// anywhere names the identity board or a raster of the crest (the crest is drawn inline, never the board's bitmap).
+// GEO_ONLY=1 runs this part alone; GEO_WRITE=1 prints the measured table (to refresh the stored values).
+const GEO = {
+  // size: [scene x, y, w, h], [entrance], [cta], cue icon [x, y, w, h] or null (not shown)
+  "568x320": [[278.38,73.86,259.45,286.17], [278.38,69.25,259.45,290.78], [48.73,268.03,179.08,44], [393.09,375.28,20,12.5]],
+  "667x375": [[352.42,69.27,252.45,278.45], [323.66,69.25,310,278.47], [72.95,255.72,179.08,44], [463.66,362.97,20,12.5]],
+  "740x360": [[406.45,69.27,248.45,274.03], [357.05,69.25,347.28,274.05], [90.81,251.28,179.08,44],null],
+  "844x390": [[476.13,69.27,257.38,283.88], [404.63,69.25,400.38,283.89], [116.27,261.11,179.08,44], [589.81,368.39,20,12.5]],
+  "932x430": [[523.05,69.27,288.97,318.73], [444.89,69.25,445.3,318.75], [128.69,279.17,197.31,44], [651.53,403.25,20,12.5]],
+  "320x568": [[49.05,313.36,229.95,253.64], [12,310.03,296,256.97], [70.45,250.03,179.08,44],null],
+  "375x667": [[72.58,354.25,238.22,262.75], [12,351.38,351,265.63], [97.95,287.38,179.08,44], [180.5,638.13,14,8.75]],
+  "390x844": [[27.89,403.95,346.38,382.05], [12.47,415.05,365.06,370.95], [105.45,335.63,179.08,44], [188,811.13,14,8.75]],
+  "1024x520": [[573.55,105.27,336.55,371.2], [504.42,105.25,474.81,371.22], [143.94,368.45,197.31,44], [726.83,499.72,20,12.5]],
+  "1280x525": [[755.42,105.27,337.72,372.5], [621.53,105.25,605.52,372.52], [197.05,369.75,216.39,44], [908.28,501.02,20,12.5]],
+  "1280x561": [[743.98,105.27,360.59,397.73], [621.53,105.25,605.52,397.75], [197.05,394.98,216.39,44], [908.28,526.25,20,12.5]],
+  "1920x589": [[1141.69,118.42,379.53,418.63], [928.91,118.41,805.09,418.64], [399.8,415.56,243.3,49.5], [1313.2,563.08,22.5,14.06]],
+  "2560x669": [[1494.13,120.77,438.47,483.63], [1243.72,120.75,939.28,483.64], [626.42,462.63,283.86,57.75], [1692.23,634.59,26.25,16.41]],
+  "1440x900": [[698.34,92.02,679.95,749.98], [694.73,92,687.19,750], [236.2,581.09,216.39,44], [1016.33,865.25,20,12.5]],
+};
+async function geometry(b, base, report) {
+  const out = {};
+  for (const key of Object.keys(GEO)) {
+    const [w, h] = key.split("x").map(Number), mob = w < 900 || h < 500;
+    const c = await b.newContext({ viewport: { width: w, height: h }, isMobile: mob && w < h, hasTouch: mob });
+    const pg = await c.newPage(); await serve.offline(pg); await pg.clock.install({ time: new Date("2026-11-10T12:00:00Z") });
+    await pg.goto(base, { waitUntil: "networkidle" }); await pg.evaluate(() => document.fonts.ready); await pg.waitForTimeout(1300);
+    const m = await pg.evaluate(() => {
+      const R = (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => +v.toFixed(2)); };
+      const q = (s) => document.querySelector(s), cue = q(".porta__cue"), icon = cue.firstElementChild, cs = getComputedStyle(cue);
+      const shown = cs.visibility !== "hidden" && cs.display !== "none" && icon.getBoundingClientRect().height > 0;
+      return [R(q(".scene")), R(q(".entrance")), R(q(".cta")), shown ? R(icon) : null];
+    });
+    out[key] = m;
+    if (!process.env.GEO_WRITE && GEO[key]) {
+      const e = GEO[key], names = ["scene", "entrance", "cta", "cue"], off = [];
+      names.forEach((n, i) => {
+        if ((e[i] === null) !== (m[i] === null)) off.push(n + (e[i] === null ? " shown, expected absent" : " absent, expected shown"));
+        else if (e[i]) e[i].forEach((v, j) => { if (Math.abs(v - m[i][j]) > 0.5) off.push(n + "[" + j + "] " + m[i][j] + " (expected " + v + ")"); });
+      });
+      report(!off.length, key, "first-screen geometry", off.length ? off.join("; ") : "scene " + m[0].join(",") + " cue " + (m[3] ? m[3].join(",") : "none"));
+    }
+    await c.close();
+  }
+  if (process.env.GEO_WRITE) console.log(JSON.stringify(out));
+  for (const page of ["", "en/", "privacidade/", "en/privacy/", "404.html"]) {
+    const c = await b.newContext({ viewport: { width: 390, height: 844 } }); const pg = await c.newPage(); await serve.offline(pg);
+    await pg.goto(base + page, { waitUntil: "networkidle" });
+    const r = await pg.evaluate(() => {
+      const crests = [...document.querySelectorAll("svg.crest")], lk = document.querySelector(".lockup"), name = document.querySelector(".lockup__name");
+      const text = lk ? lk.textContent.replace(/\s+/g, " ").trim() : "";
+      const raster = /identity|board|quadro|crest[^/]*\.(png|jpe?g|webp|avif)|monogram[^/]*\.(png|jpe?g|webp|avif)/i;
+      const imgs = [...document.images].map((i) => i.currentSrc || i.src).filter((u) => raster.test(u));
+      const bgs = [...document.querySelectorAll("*")].map((e) => getComputedStyle(e).backgroundImage).filter((v) => v !== "none" && raster.test(v));
+      return { crests: crests.length, hidden: crests.every((s) => s.getAttribute("aria-hidden") === "true" && s.getAttribute("focusable") === "false"),
+        name: !!name && name.getAttribute("aria-hidden") === "true", text, h1lockup: !!document.querySelector("h1.lockup"), imgs, bgs };
+    });
+    const home = page === "" || page === "en/";
+    const h1 = home ? await pg.getByRole("heading", { level: 1, name: /^A Brazileira/ }).count() : 1;
+    const ok = r.crests === 1 && r.hidden && r.name && /^A Brazileira\W+Boutique Hotel$/.test(r.text) && !/torres/i.test(r.text)
+      && (!home || (r.h1lockup && h1 === 1)) && !r.imgs.length && !r.bgs.length;
+    report(ok, page || "home", "identity in the DOM", JSON.stringify({ ...r, h1 }));
+    await c.close();
+  }
+}

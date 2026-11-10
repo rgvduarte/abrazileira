@@ -8,7 +8,7 @@ description: >-
   (Nov 2026), in its vertical version: the gold crest (a five-point crown over a double-outlined shield with the B
   monogram, between two olive branches) over A BRAZILEIRA in the board's own lettering (a flared Roman, the tall B
   with its flag, the R's with a swash), drawn as vectors, in Verde Torres, and BOUTIQUE HOTEL in widely spaced Cinzel
-  capitals; everything the house says, and the interface, is
+  Bold capitals; everything the house says, and the interface, is
   set in EB Garamond, in sentence case. Gold (ouro) is the crest's alone; brass (latão) is ornament by day and light by night. Two surface worlds, Dia and Noite,
   switch the whole page, including the photograph. The signature is a photograph of an arched limestone doorway
   (walnut double door, fanlight, wall lantern, an olive in a clay pot), cut into layers: scrolling swings the doors
@@ -31,14 +31,16 @@ colors:
   nogueira: "#5F3819"       # text, focus, hairlines, field borders; 8.77:1 on parede
   tinta: "#2E1E14"          # strongest text, the button; 13.82:1 on parede
   verde-torres: "#24281B"   # Verde Torres, the identity pitch's ink (its palette circle; the board's lettering measures #1D2319): the wordmark and its line by day; 13.00:1 on parede
-  ouro-luz: "#F3DFAE"       # the crest's relief, lit edge (identity board)
+  ouro-luz: "#F3DFAE"       # the crest's relief: every slope that faces the top left (identity board)
   ouro-claro: "#DCBD7A"     # the crest's gold, light stop; 8.13:1 on parede-noite #34251C
   ouro: "#C09E5E"           # the crest's gold, middle stop; 5.81:1 on parede-noite
   ouro-escuro: "#A3833F"    # the crest's gold, deep stop; 4.12:1 on parede-noite, 3.09:1 on parede
-  ouro-sombra: "#7A5C27"    # the crest's relief, shadow edge and leaf veins
-  ouro-fundo: "#5B4216"     # the crest's cast shadow (30%)
+  ouro-sombra: "#7A5C27"    # the crest's leaf veins
+  ouro-fundo: "#5B4216"     # the crest's relief: the slopes facing away; its faint cast shadow (20%)
+  ouro-vivo-claro: "#E6CC8F" # the gold a step lighter, on the deep green and brown circles (8.44 / 7.27:1)
+  ouro-vivo: "#CDAE6E"      # middle stop there (6.22 / 5.36:1)
+  ouro-vivo-escuro: "#B5944F" # deep stop there (4.61 / 3.97:1; the day gold's was 3.70 / 3.19)
   marfim: "#FBF7EC"         # ivory: the board's «dourado sobre marfim» ground (logo applications only)
-  marfim-sombra: "#F3E8D0"  # the ivory circle's rim
   branco: "#FFFFFF"         # white: logo applications only, never the page
   preto: "#0E0C0B"          # black: the board's black grounds and the one-colour crest
   verde-fundo: "#283322"    # deep green circle («dourado fundo verde»)
@@ -104,9 +106,9 @@ typography:
   label-lockup:               # BOUTIQUE HOTEL (the board's vertical lockup has no town line)
     fontFamily: "Cinzel, 'Cinzel lockup fallback', 'Times New Roman', serif"
     fontSize: "max(4.43cqi, 11px): capitals 0.031 W (17.2px at W 389)"
-    fontWeight: 400
+    fontWeight: 700            # Cinzel Bold, its own ten-letter file (cinzel-caps-700.woff2, 1.4 KB; the Q's tail shortened to the board's)
     lineHeight: 1.3
-    letterSpacing: "max(0.25em, (74.5cqi - 8.933em) / 13): the line 0.745 W wide (0.61em at the ratio)"
+    letterSpacing: "max(0.25em, (74.5cqi - 9.572em) / 13): the line 0.745 W wide (0.56em at the ratio)"
     textTransform: uppercase
   label:                      # «Lista de espera» (19px); the privacy notice's section names (17px)
     fontFamily: "Cinzel, 'Cinzel list fallback', 'Times New Roman', serif"
@@ -374,8 +376,17 @@ site; the board itself is confidential working material and is never shown):
   its band, on a shield with a double outline and curled shoulders, flanked by two olive branches (27 leaves a side);
   inside the shield, the monogram: a Roman B whose stem carries a hooked flourish to the left. One drawing: the left
   half (mirrored for the right), the centre (crown, B) and the leaf veins. `crest.svg` is the same drawing in one ink
-  (`currentColor`, the veins cut out), `crest-circle.svg` the circle application (gold on ivory). Measured against
-  the board: monogram IoU 0.96 at 4×; crown, shield and branches at the level of the best earlier vectors, cleaner by eye.
+  (`currentColor`, the veins cut out: the board's «branco sobre preto»), `crest-line.svg` the board's «preto
+  (monocromático)», also one ink but line art (the branch leaves outlined 0.65 units, their interiors open, the midrib
+  kept: the solid half less the leaves' interiors, one path, so it reads on any ground; before, the black version
+  reused the filled silhouette and read as heavy clip-art), `crest-circle.svg` the circle application (gold on flat
+  ivory). The shield's double outline is the board's: a thin outer line (0.55 of the inner one's width), a clear gap,
+  a thicker inner line (profile across the left side at 55% of the height, at 4× the board's scale: board 7 / 5 / 12px,
+  now 6 / 7 / 11px; it was 12 / 1 / 13px, one heavy band at real sizes); the outer edge stayed where it was, so the
+  silhouette and every other path are unchanged. Measured against the board: monogram IoU 0.96 at 4×; crown, shield
+  and branches at the level of the best earlier vectors, cleaner by eye. The drawings come from the identity model
+  (the identity work's model: its double line now takes `wo`, the outer line's share, and a second pass emits the
+  line-art half).
 - **The minimal monogram** (`monogram-gold.svg`, `monogram.svg`, 79.97 × 100): the B alone, for small marks.
   `favicon.svg` is that B in gold with a dark outline (painted under the fill), so it reads on light and dark tabs at
   16 to 32px.
@@ -388,15 +399,18 @@ site; the board itself is confidential working material and is never shown):
   moved alone, so the curves stay the font's), the A's crossbar raised to the board's, the B drawn by hand from the
   board's measures and the R's legs redrawn as the board's swash, growing out of the bowl's foot; IoU 0.84 against the board's letters at 4× (the old pitch wordmark scored 0.21 there: its large A's,
   smaller RAZILEIR and spiral B were a different lettering, so the board was followed).
-- **The line**: BOUTIQUE HOTEL in Cinzel 400 capitals, live text. The board's lockups have no town line: Torres Vedras
-  is said in the footer, the sun note, the titles and the metadata.
+- **The line**: BOUTIQUE HOTEL in Cinzel 700 capitals, live text: the board sets it in a firm, medium-bold roman, about
+  twice Cinzel Regular's ink (the line's ink as a share of the wordmark's: board 0.145 / 0.155, Cinzel 400 0.072, 700
+  0.138; review of the identity round). Its own subset (`cinzel-caps-700.woff2`: B E H I L O Q T U and the space, 1.4
+  KB, kern kept), with one change: the Q's tail is shortened to the board's (it swept under the U; now it ends just
+  past the bowl, 0.56 of its length, 0.62 of its drop; OFL 1.1 allows modified versions and Cinzel declares no Reserved
+  Font Name). The board's lockups have no town line: Torres Vedras is said in the footer, the sun note, the titles and
+  the metadata.
 
 **Inline, once per page.** `build.py › crest_svg()` inlines the crest in the h1 with its ids prefixed and every colour
 turned into a class (`.crest__*` in site.css, which reads the `--ouro-*` tokens), so the markup holds no hex. The
-file draws its relief with two clip paths; Chromium paints clips of paths this large on the main thread (a 70–100 ms
-long task at 4× CPU on a phone, which failed door3d's «still visitor» check), so the inlined crest builds the same
-relief inside its filter instead (the shape's alpha shifted ±0.19: shadow rim, lit rim, gradient body; raster work,
-off the main thread): no extra long task, and the same look (mean luminance of the crest's ink 160.3 against 161.1). A page
+relief is one SVG filter, in the file and inline alike (no clip paths: Chromium paints clips of paths this large on
+the main thread, a 70–100 ms long task at 4× CPU on a phone): see Colour below. A page
 that shows several variants (the style guide) defines the drawing once (`crest_defs()`, a 0 × 0 svg, not
 `display: none`, so its gradients and filter stay live) and draws each variant with `<use>`. It is decorative
 (`aria-hidden`, `focusable="false"`), as are the drawn letters: the h1 reads «A Brazileira, Boutique Hotel», the
@@ -412,10 +426,12 @@ capitals; the horizontal lockup reads the same):
   0.026 W above the capitals, as on the board);
 - the lettering, W wide;
 - BOUTIQUE HOTEL with its capitals 0.056 W under the baseline (0.037 W under the R's swash, `--lockup-under`, measured
-  from the capitals by `--lockup-cap-top`), capitals 0.031 W (`--lockup-label`, Cinzel at 4.43cqi, never under 11px),
-  the line 0.745 W wide (`--track-label` = (74.5cqi − 8.933em) / 13, 0.61em at the ratio; where the 11px floor binds,
-  on phones, the tracking gives way first, never under 0.25em, so the line stays near the board's width:
-  0.75 W at W 194, 0.83 W at 162). Trailing tracking is taken back, so the line is optically centred.
+  from the capitals by `--lockup-cap-top`), capitals 0.031 W (`--lockup-label`, Cinzel Bold at 4.43cqi, never under 11px),
+  the line 0.745 W wide (`--track-label` = (74.5cqi − 9.572em) / 13, 9.572em being Cinzel Bold's kerned advance of the
+  14 characters, 0.56em at the ratio; where the 11px floor binds, on phones, the tracking gives way first, never under
+  0.25em, so the line stays near the board's width: 0.75 W at W 194, 0.87 W at 162). Trailing tracking is taken back,
+  so the line is optically centred. Its fallback is re-matched to the bold's width (Times 110.82%, Noto Serif 109.53%;
+  ascent and descent Cinzel's 0.976 / 0.372 over those).
 Sizes on the first screen (Dia, measured): 390 × 844, W 194, crest 102 × 100, lockup 146px tall; 375 × 667 the same;
 320 × 568 W 162, 124px; 844 × 390 W 193, 145px; 768 × 1024 W 262, 193px; 1440 × 900 W 389, 287px; 1920 × 1080 W 437,
 323px.
@@ -434,31 +450,71 @@ stays full width at the foot on phones. (A first tuning, 5.6svh, left the 390 ×
 shift the CSS paving's repeat by a pixel against the 3D street and fail door3d's take-over-frame equality, mean
 |dRGB| 2.35 against 1.45; exact compensation brings it back to 1.44.)
 
+**Short split windows** (review of the identity round): the board's lockup is also taller per em than the old one in
+the split layout (about 0.5em there: the old line was one line, BOUTIQUE HOTEL · TORRES VEDRAS; 21px at a 41px em,
+28px at 55px). Where the text column is what sets the stage's row (900–1680 × 501–570, 1920 × 501–620, 2560 ×
+501–725) the row grew with it: the photograph beside it grew 21–28px, the paving went down and the scroll cue under
+the screen's edge, so site.js hid it. Now the home's lockup em there is held (site.css, the split block from 501px
+tall): the lockup may be as tall as the larger of the old lockup at this em (3.22051em + 1.045 × max(0.18428em,
+0.7rem)) and the room the screen leaves it (100svh less the top bar with its sun note, the band, the stage's padding,
+the break, the sentence, the interval, the action's row and `--intro-end`), and its em is the one that gives the
+board's lockup that height (3.73678em + 1.045 × max(0.23922em, 0.6875rem), inverted on both branches; the crest's box
+is W × 0.526 / 1.02, its width and height attributes' ratio). So on a short window the photograph, the paving and the
+cue are where they were, and the lockup is a little smaller (0.86 of its em at the shortest); with the height it grows
+back to its full em, continuously; where the column already fitted nothing changes, except that the sentence and the
+action sit lower under the taller lockup (1440 × 900 +20.6px, 1920 × 1080 +23.3px, 1024 × 768 +16.1px: harmless, the
+door does not move). Measured against cb77856 at 231 sizes (900, 1024, 1280, 1440, 1680, 1920, 2560 × 501–757, every
+8px): the door's height within 0.03px everywhere and the cue on screen exactly where it was.
+**Landscape phones**: there the old line was two lines (BOUTIQUE HOTEL / TORRES VEDRAS at max(0.32em, 11px)), and the
+board's lockup is 1.2px (30px em) to 3.4px (34.4px) taller; the home's break gives exactly that back
+(`--rhythm-break` = 24px − (0.51627e + 1.045 × max(0.23922e, 11px) − 2.345 × max(0.32e, 11px))), so the sentence,
+the action, the photograph and the cue are where they were (667 × 375: the cue was sliced and hidden). Pinned by
+`src/tests/cta.test.js` (first-screen geometry: 568 × 320, 667 × 375, 740 × 360, 844 × 390, 932 × 430, 320 × 568,
+375 × 667, 390 × 844, 1024 × 520, 1280 × 525, 1280 × 561, 1920 × 589, 2560 × 669, 1440 × 900; .scene, .entrance, .cta
+and the cue's icon within 0.5px of cb77856's, the action this build's where the window has the height).
+
 **Enlarged text** (WCAG 1.4.4): the lockup never grows past its column (`max-inline-size: 100%`, and the crest and the
 line are ratios of the lockup's real width); the line's 11px floor grows with the root size and BOUTIQUE HOTEL may
-break between its two words.
+break between its two words. The 404's lockup (`--size-lockup-plain`) is bounded by 12.5vw, and the smallest lockup
+(`--size-lockup-min`) by 12.5vw too (W = 5.4em = 0.675 of the screen): at 180–200% text a 320px phone's 404 scrolled
+sideways (scrollWidth 355 for 320; now 320 / 360 / 390 at 320 / 360 / 390px, 150–200%).
 
 **Colour**:
 - The crest is the board's metallic gold in relief, the same by day and by night: a body gradient of three stops
-  (`--ouro-claro` #DCBD7A, `--ouro` #C09E5E, `--ouro-escuro` #A3833F), a lit edge top left (`--ouro-luz`) and a shadow
-  edge bottom right (`--ouro-sombra`, the shape minus itself shifted), the leaf veins in the shadow tone, a soft cast
-  shadow (`--ouro-fundo`, 30%). By night on parede-noite #34251C every body stop is a graphic of 4.12:1 or more
-  (8.13 / 5.81 / 4.12:1; the shadow edge, a thin rim at 42%, 2.37:1). By day, on parede, the body is 1.56 to 3.09:1
-  with its shadow edge at 5.35:1: the board's own light gold on a light ground (its «dourado sobre marfim»), kept as
+  (`--ouro-claro` #DCBD7A, `--ouro` #C09E5E, `--ouro-escuro` #A3833F) under one filter that models the embossing at
+  the strokes' own scale (review of the identity round: the relief was a rim 0.19 units wide, 0.2–0.4 CSS px at real
+  sizes, so the lit edge never showed and what remained was a flat ochre with a dark hairline, a sticker): the shape's
+  alpha is softened by a blur of 0.45 units (viewBox units, so it scales with the crest) and compared with itself seen
+  0.35 units from the top left; where the softened shape rises towards the light the slope takes `--ouro-luz` (×5),
+  where it falls away `--ouro-fundo` (×3.5), the flat tops keep the gradient; clipped to the shape; then a faint cast
+  shadow (`--ouro-fundo` 20%, 0.25 blur, 0.12 / 0.2 down-right). Every stroke, leaf and letter reads rounded, lit on
+  its upper left flank and shaded on the lower right, as on the board. Gold pixels' R, p10 / p50 / p90 (lum std): board
+  153 / 190 / 242 (35.8); now 146 / 187 / 243 (37.5) at the board's size, 142 / 196 / 243 (41.3) at the desktop's
+  205px and 142 / 195 / 243 (41.6) at the phone's 102px (@2); before 167 / 186 / 206 (18.3). The leaf veins stay in
+  `--ouro-sombra` at 55%; the dark all-round edge (an outline in brown) is gone. The monogram's file has the same
+  filter at 1.9× (its strokes are that much larger in its box). By night on parede-noite #34251C every body stop is a
+  graphic of 4.12:1 or more (8.13 / 5.81 / 4.12:1). By day, on parede, the body is 1.56 to 3.09:1 with the shaded slopes
+  darker: the board's own light gold on a light ground (its «dourado sobre marfim»), kept as
   the client's reference look; the crest is decorative (the name is text, the lettering 13.00:1), so no information
   depends on it.
 - The lettering and the line: Verde Torres `--verde-torres` #24281B by day (13.00:1 on parede), linho by night;
   `--color-brand-ink`.
 - Applications (style guide; `--marfim`, `--branco`, `--preto`, `--verde-fundo`, `--castanho-fundo`): gold on ivory,
-  gold on white, white on black, black (one colour); circles gold on ivory, white, deep green and brown, white on black.
+  gold on white, white on black (`crest.svg`'s filled leaves), black (`crest-line.svg`'s line art); circles gold on
+  ivory, white, deep green and brown, white on black. On the light grounds the disc is flat (no vignette) and ends at
+  the ring's outer edge. On the deep green and the brown, as on the board, the gold ring is outermost (r 49.3), a thin
+  light gap inside it (0.5), then the disc (r 48.35), and the gold is a step lighter (`--ouro-vivo-claro` #E6CC8F,
+  `--ouro-vivo` #CDAE6E, `--ouro-vivo-escuro` #B5944F; the board's crest there measures 186,164,115 on green and
+  199,170,121 on brown; the day gold went muddy, its deep stop 3.70 / 3.19:1, now 4.61 / 3.97:1).
 - Forced colours: the crest is drawn flat in CanvasText with its veins in Canvas (`forced-color-adjust: none` on the
   svg), the lettering in CanvasText.
 
 **Clear space**: the height of the lettering's capitals (0.096 W) on every side; 16px at the minimum size. The
 first screen keeps 24px or more.
 
-**Minimum sizes** (screen): the vertical lockup at W 160px (30px em, the line at its 11px floor; the privacy notice's
-home link, the shortest phones); the horizontal version at W 200px; the lettering alone at 140px (the tall B and the
+**Minimum sizes** (screen): the vertical lockup at W 162px (30px em, the line at its 11px floor; the privacy notice's
+home link, the shortest phones); the horizontal version at W 200px (the style guide never draws it smaller: on a narrow
+phone it slides inside its card); the lettering alone at 140px (the tall B and the
 R's swashes still read at DPR 1); the crest alone at 48px (below that the crown and the branches clog); under 48px,
 the minimal monogram (24px) and the favicon (16 to 32px).
 
@@ -466,10 +522,14 @@ the minimal monogram (24px) and the favicon (16 to 32px).
 40%) | the lettering over its line; crest 0.391 W wide, the rule 0.208 W tall, 0.038 W after the crest and 0.068 W
 before the letters.
 
-**Icons**: `favicon.svg` the minimal monogram (gold, dark outline); `apple-touch-icon.png` (180) the crest in gold on
-ivory, full bleed (iOS rounds the corners); `icon-512.png` the circle application, gold on ivory, on transparent; the
-manifest lists the three. `src/icons.py` redraws the PNGs from the SVGs (256 colours: 4.8 / 23 KB). The Open Graph
-image (`og.py`, Noite) sets the vertical lockup at W 432 beside the night doorway.
+**Icons**: `favicon.svg` the minimal monogram in the tokens' gold with a dark outline (`--ouro-fundo`), `--ouro` on dark
+tabs and `--ouro-escuro` under `prefers-color-scheme: light` (2.73:1 on an inactive light tab, 3.57:1 on white; it was
+#C39C53, not a token, 1.95 / 2.56:1); the build fails if a colour in it is not a token value. `apple-touch-icon.png`
+(180) the crest in gold, in relief, on ivory, full bleed (iOS rounds the corners), 24-bit (17 KB: a palette banded the
+relief); `icon-512.png` the circle application, gold on flat ivory, on transparent, 256 colours without dither (21 KB;
+Floyd-Steinberg sprinkled speckle over the gold), the ivory disc ending at the ring's outer edge (r 49.35: no pale halo
+outside the ring on a dark launcher); the manifest lists the three. `src/icons.py` redraws the PNGs from the SVGs. The
+Open Graph image (`og.py`, Noite) sets the vertical lockup at W 432 beside the night doorway.
 
 **Retired**: `emblem.svg` (the crowned laurel with the cross and the bow) and the pitch wordmark (2316.2 × 369), the
 lockup's TORRES VEDRAS line and its « · », the Cinzel place and dot fallbacks. The pitch's shield monogram (the B with
@@ -588,6 +648,9 @@ widely spaced Roman capitals and a Garamond specimen for text. The site now foll
   always `text-transform: uppercase`, widely spaced: the lockup's line, the waiting list's name, the privacy
   notice's section names. 5.9 KB. Cinzel 2.000 (2020) declares no Reserved Font Name (`OFL-cinzel.txt`), so the
   subset keeps its name.
+- **Cinzel** 700, the lockup's line only (`cinzel-caps-700.woff2`, `unicode-range` and file limited to B E H I L O Q T
+  U and the space, 1.4 KB, kern kept, the Q's tail shortened to the board's): the board's BOUTIQUE HOTEL is a firm
+  medium-bold roman (Logo usage › The line). `--weight-label-lockup` 700; every other label stays 400.
 - **EB Garamond** 400 and 500 (Georg Duffner, Octavio Pardo; OFL): 400 for every sentence the house says (lede,
   the page title, the list sentence, the consent, the privacy notice, the sun note) and the email a guest types;
   500 for the interface (Dia · Noite, PT · EN, status, the action, the field label, messages, the button, the
@@ -609,7 +672,7 @@ and its name is a spaced label above it. 320px is 320 × 640, 390px is 390 × 84
 | Token | Family | 320px | 390px | 1440px | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|---|---|---|
 | lettering | drawn (SVG), 5.4em of the lockup's 36–72px | 194px wide (162px when the screen is ≤ 600px tall) | 262px | 389px | — | — | — | A Brazileira, the identity board's lettering |
-| lockup line | Cinzel | 11px (0.31em tracking) | 11.6px (0.61em) | 17.2px (0.61em) | 400 | 1.3 | 0.745 W wide | BOUTIQUE HOTEL |
+| lockup line | Cinzel Bold | 11px (0.27em tracking) | 11.6px (0.56em) | 17.2px (0.56em) | 700 | 1.3 | 0.745 W wide | BOUTIQUE HOTEL |
 | label | Cinzel | 19px | 19px | 19px | 400 | 1.3 | 0.2em | LISTA DE ESPERA (the privacy section names 17px, 1.47) |
 | title | EB Garamond | 28px | 28px | 38px | 400 | 1.15 | 0 | Nota de privacidade |
 | lede | EB Garamond | 19.2px | 20.25px | 28px | 400 | 1em + 7.2px (26.4 / 27.5 / 35.2px) | 0 | the sentence, the list sentence, 404, thank-you |
@@ -652,14 +715,15 @@ content. The field is 19px, never below 16px, so iOS Safari does not zoom on foc
 - Height-aware sizes (`svh` inside `min()`) keep the lockup and lede in one screen on short laptops.
 
 ### Font loading and fallbacks
-All four faces are `font-display: swap`, and the three files (Cinzel capitals, EB Garamond 400 and 500, 37 KB
-together) are preloaded on every page. The wordmark is drawn, so it needs no file, no preload and no fallback: it
+All five faces are `font-display: swap`, and the four files (Cinzel capitals 400, the lockup line's Cinzel 700, EB
+Garamond 400 and 500, 38 KB together) are preloaded on every page. The wordmark is drawn, so it needs no file, no preload and no fallback: it
 is in the HTML. Every role has its own local fallback (Times New Roman, or the metric-compatible Liberation Serif /
 Tinos), and after it a twin for Android (below), each sized so that role's own strings
 set to the web font's width in Chromium, with English variants where the sentence differs (`[lang|=en]` swaps
 the stacks). Centred multi-line text (the ledes) and wrapped text near a break (the consent, the privacy intro)
 are matched on the line that decides the break, not on the average. Values (size-adjust, PT / EN):
-lockup line BOUTIQUE HOTEL 103.15% (the TORRES VEDRAS and « · » fallbacks are retired with that line; the line's
+lockup line BOUTIQUE HOTEL 110.82% (Noto Serif 109.53%; matched to Cinzel Bold's 9.572em, it was 103.15% for the
+400) (the TORRES VEDRAS and « · » fallbacks are retired with that line; the line's
 tracking now follows the lockup's width, so a fallback may set it up to a few px wider before Cinzel lands, inside
 the lockup's own box: nothing under it moves);
 list name 97.37 / 101.77%; section names 102.05%;
@@ -2235,12 +2299,19 @@ news, while the lockup and the photograph carry the place. The new pt-PT lines n
 The only contact on the site is inn@abrazileira.com (privacy notice, the no-JS line and the send error).
 The round 3 copy changes (sun note, success, send error, button label) are new pt-PT lines: they need the client's
 sign-off.
-Open Graph: `assets/img/og.jpg`, 1200 × 630, 59 KB, Noite: the identity board's vertical lockup at an 80px em (W
+Open Graph: `assets/img/og.jpg`, 1200 × 630, 81 KB, Noite: the identity board's vertical lockup at an 80px em (W
 432px, the crest 227px wide; BOUTIQUE HOTEL at 24px, 5.6cqi, its tracking giving way so the line keeps 0.745 W, so it
 still reads at about 10px when a link preview shows the card 500px wide) and the photograph of the entrance (doors
 closed, the lantern lit, the hall's light in the gap), rendered by `src/og.py` from the real components and
 layers (`--replace` writes it into `src/assets/img/`); JPEG, since it is a photograph (the PNG of the same frame is
-about ten times larger). `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
+about ten times larger). The page names it by its content hash (`og:image` = `assets/img/og.<hash>.jpg`; build.py
+copies it under that name and keeps `og.jpg` for pages scraped before): link previews cache the image by URL, so a
+redrawn card under the same name would keep showing the old one (after a deploy, re-scrape the home and /en/ once in
+Facebook's Sharing Debugger). The card shipped in the identity round was a failed render: taken before the facade
+layer had decoded, it showed the blurred placeholder wall with the two door leaves pasted on it, sharp. og.py now
+loads every layer eagerly, awaits each picture's `decode()` and two frames before the screenshot, and checks the
+result before writing it: the photo area's detail (mean luminance step between neighbouring pixels, 640..1160 × 40..600)
+must be 2.4 or more (a full render 3.37; the failed card 1.24); otherwise nothing is written and it exits 3. `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
 madeira, à noite.» / «… the logo and a photograph of an arched stone entrance with wooden doors, at night.»
 
 ## Accessibility (extension)
@@ -2290,7 +2361,7 @@ accessibility tree (nothing is made inert or hidden).
   `npm i -D playwright && npx playwright install chromium` in the repository, or a global install on
   `NODE_PATH`): `node src/tests/reverse-scroll.test.js docs` (the reverse-scroll / overscroll / toolbar
   regression plus fast flicks, 84 checks; it chooses Dia or Noite explicitly, since the default follows the sky)
-  and `node src/tests/cta.test.js docs` (75 checks: the walk-in on request at 390 and 1440, from PT and EN, in
+  and `node src/tests/cta.test.js docs` (94 checks: the walk-in on request at 390 and 1440, from PT and EN, in
   both themes and the default sky theme with a pinned clock: click, Enter, Space, the scroll cue, a held Space or
   Enter and a double click fly forwards only, 0.9–1.1s, without a stall, with the scene playing, and land with
   the title and the email in view and the focus in the email; a wheel, a key, a pointer press or a touch stops
@@ -2299,7 +2370,12 @@ accessibility tree (nothing is made inert or hidden).
   colour hand-off is ΔRGB 0 on every pixel of the frame (list words and footer text excepted) from the moment the
   screen is one colour, mid-rise, at p = 1 and with the seam on screen, Dia and Noite, at 390 × 844, 430 × 932,
   375 × 667, 320 × 568, 844 × 390, 768 × 1024, 1440 × 900, 1920 × 1080 and 2560 × 1080; on 320 × 568, 375 × 553, 375 × 667 and 390 × 664
-  the photograph's foot is inside the first screen and the cue is never sliced) and `node
+  the photograph's foot is inside the first screen and the cue is never sliced; the first-screen geometry at 14 sizes,
+  landscape phones and short split windows among them (.scene, .entrance, .cta and the cue's icon within 0.5px of the
+  stored values: cb77856's, the action this build's where the window has the height; `GEO_ONLY=1` runs that part
+  alone, `GEO_WRITE=1` prints the table); and the identity in the DOM on all five pages: one crest, aria-hidden and not
+  focusable, the drawn lettering aria-hidden, the lockup reading «A Brazileira, Boutique Hotel» with no Torres Vedras,
+  the home's h1 named «A Brazileira…», no image or background naming the board or a crest raster) and `node
   src/tests/list.test.js docs` (156 checks: a tap or a click on the email field or the button never moves the
   page, at three rest positions on 390 × 844 and 375 × 667 by touch and 1440 × 900 and 1280 × 720 by mouse, and the
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
@@ -2431,7 +2507,7 @@ accessibility tree (nothing is made inert or hidden).
 - Budget, measured on the home page with gzip -9 (fonts as shipped, photo excluded; re-measured on the consolidated
   build): 74.5 kB — HTML 14.5 (the
   drawn wordmark inline: 2.9 kB, where its font file was 3.1), CSS 10.9 (tokens 5.3 with the two LQIPs and the
-  fallback faces, site 5.6), JS 12.1 (10.0 before the 3D entrance's loader and fallbacks), fonts 37.0 (Cinzel capitals 6.1, EB Garamond 400 15.0 and 500 15.9; the
+  fallback faces, site 5.6), JS 12.1 (10.0 before the 3D entrance's loader and fallbacks), fonts 38.4 (Cinzel capitals 6.1, the lockup line's Cinzel Bold 1.4, EB Garamond 400 15.0 and 500 15.9; the
   pitch typography replaced 62.2 kB of Cinzel and Alegreya files, 94.2 kB before); target 150 kB, ceiling 170 kB
   (og and icons excluded). The privacy notice is 9.4 kB of HTML (70.4 kB in all). The 3D entrance, where the gate lets
   it, adds door3d.js 16.8 kB and three.min.js 133.3 kB gzip (53.9 / 535.6 kB raw), fetched at the first idle moment
@@ -2449,7 +2525,8 @@ accessibility tree (nothing is made inert or hidden).
 | Tight portrait | `(orientation: portrait) and (max-height: 42.5em)` (≤ 680px tall) | top bar inset 4px, lede 16px above, action 8px under the status, 16px between the action and the photograph, compact cue band |
 | Very short portrait | `(orientation: portrait) and (max-height: 37.5em)` (≤ 600px tall) | lockup at its 30px minimum, lede 12px above, no cue band, the photograph takes the height that is left (door and steps in the first screen) |
 | Split | `(min-width: 56.25em) and (min-aspect-ratio: 1/1), (orientation: landscape) and (min-width: 35em)` | 5fr text \| 6fr entrance, 64px apart, container 86rem; lede 48px under the lockup; action 48px under the status; top bar inset follows the container; the cue band takes the same columns, the cue on the door's axis. Review r2: was `(min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em)`: portrait tablets from 900px are stacked now, and the landscape threshold is 560px, so a 568 × 320 phone (iPhone SE 1st generation on its side), stacked before with only the lockup on plain page colour in its first screen and the door from y 365, now takes the compact split: wall, door and paving beside the text (the action's box ends at 324px, its text inside the screen; the steps are below the fold, as at 667 × 375) |
-| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 30–36px (`--size-lockup-short`, 9.15svh: 35.7px at 390px tall, so the drawn lockup keeps the 142px footprint the old one had and the photograph beside it keeps its size), the wordmark 204–245px wide (its line on two lines), lede 19px, status 4px under it, action right under it, entrance min 16rem |
+| Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 30–36px (`--size-lockup-short`, 9.15svh: 35.7px at 390px tall), W 162–194px, BOUTIQUE HOTEL on one line; the home's break under it is 24px less the board's lockup's growth over the old one (1.2–3.4px), so the sentence, the action and the photograph beside them keep their places, lede 19px, status 4px under it, action right under it, entrance min 16rem |
+| Short split (home) | split, from `min-height: 31.26em` (501px) | the lockup's em held to the larger of the old lockup's height and the room the screen leaves (Logo usage › Short split windows): on short windows the photograph, the paving and the cue keep cb77856's places; the lockup grows back to its full em with the height |
 | Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 19px; then 21px |
 | Lockup line | none | BOUTIQUE HOTEL on one line everywhere (the board's lockup has no town line since the identity round, so the one-line / two-line switch and its container query are gone); with enlarged text it may break between its two words |
 | Footer lines | `(max-width: 29.99em)` | name, place and link on three lines, no separators |

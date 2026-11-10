@@ -39,14 +39,16 @@ js.append("await b.close(); })();")
 jp = os.path.join(work, "icons.js")
 open(jp, "w").write("\n".join(js))
 subprocess.run(["node", jp], check=True, cwd=os.environ.get("OG_NODE_CWD", os.getcwd()))
-# 256 colours with alpha (the gold is a few tones): about 5x smaller, indistinguishable at icon sizes. Needs Pillow;
-# without it the full-colour PNGs are kept as rendered.
+# icon-512 (the circle: a flat gold gradient on flat ivory): 256 colours with alpha and no dither (about 5x smaller;
+# Floyd-Steinberg sprinkled speckle over the gold, review of the identity round). The apple-touch icon is the gold crest
+# in relief, whose tones a palette bands: it stays 24-bit (opaque, about 17 KB). Needs Pillow; without it the PNGs are
+# kept as rendered.
 try:
     from PIL import Image
-    for name, _, _, _ in jobs:
-        f = os.path.join(out, name)
-        im = Image.open(f).convert("RGBA")
-        im.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.FLOYDSTEINBERG).save(f, optimize=True)
+    f = os.path.join(out, "icon-512.png")
+    Image.open(f).convert("RGBA").quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(f, optimize=True)
+    f = os.path.join(out, "apple-touch-icon.png")
+    Image.open(f).convert("RGB").save(f, optimize=True)
 except ImportError:
     pass
 print("icons rendered to", out)
