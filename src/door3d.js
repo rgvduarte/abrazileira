@@ -34,16 +34,30 @@ const T = 0.055;                          /* leaf thickness */
 const HALL = { floor: -1.1, ceil: 2.05, wall: 1.08 };
 const JAMB = 0.81, WALLT = 0.4;           /* the reveal behind the frame: half width, wall thickness */
 
-/* the leaves' relief, measured on the photograph (leaf px from the leaf's top-left; mw: moulding band, bw: bevel, per
-   side l r t b). Profile across the band (share of mw, mm): stile 0, quirk, ovolo, groove; the bevel rises from the
-   groove to the field. */
+/* the leaves' panels, measured on the photograph (leaf px from the leaf's top-left; mw: moulding band, bw: bevel, per
+   side l r t b); their profile below */
 const PANELS = {
   l: [{ x0: 47, x1: 262, y0: 41, y1: 712, mw: [20, 11, 22, 24], bw: [25, 10, 19, 21] },
       { x0: 47, x1: 262, y0: 797, y1: 1169, mw: [20, 11, 22, 22], bw: [25, 10, 21, 23] }],
   r: [{ x0: 43, x1: 272, y0: 42, y1: 712, mw: [19, 21, 22, 24], bw: [30, 20, 19, 21] },
       { x0: 43, x1: 272, y0: 797, y1: 1169, mw: [19, 21, 22, 22], bw: [30, 20, 21, 23] }]
 };
-const PROFILE = [[0, 0], [0.12, -5], [0.22, -5], [0.5, -1], [0.78, -4], [1, -13]], FIELD = -5, SMOOTH = [2, 3, 4];
+/* iPhone round 2 (9 Nov, «não há relevo na porta»): read again on the photograph, the moulding is a bolection, proud of
+   the stiles and rails (the bottom one casts its shadow on the rail below it; on every side a bright rise from the
+   stile to a crest, then a fall to a crease at the bevel's foot) and the field is raised, proud of the stile too; the
+   old profile (everything 1-13 mm below the stile, a 9 degree bevel) turned too little to catch a raking light.
+   Profile across the band (share of mw, mm above the stile's face), from LIP px outside the band (the rise from the
+   stile, per side l r t b): a rounded crest +12, an ovolo falling to a fillet, the crease at the bevel's foot -6; the
+   bevel rises to the field at FIELD (+12: 18 mm over 10-30 px, 17-42 degrees). Broad on purpose: the photograph draws
+   the moulding's fine lines itself, and beads of 1-2 device px under a raking light broke them into dashes (no MSAA
+   above 4.2 Mpx). The photograph's own shading lies on it unchanged at rest (projected from C0); the depth only shows
+   as the leaves turn. */
+const LIP = [3, 3, 7, 2];
+const PROFILE = [[0, 8], [0.15, 12], [0.55, 5], [0.9, -4], [1, -6]], FIELD = 12;
+const SMOOTH = [1, 2, 3];                 /* the rounded crest and ovolo (vertex normals averaged across them) */
+/* the crease (aExtra.w = 1 there, 0 at the next points, see relK in FS_SOLID): the bevel's foot, shaded by the
+   moulding on the stile's side from a light that comes across it */
+const CREASE = [0, 0, 0, 0, 0, 1, 0];
 const KNOB = { l: [277, 750], r: [38, 750] }, ESC = [32, 815, 9, 20];
 const HINGES = [[1002, 1057], [1516, 1575], [2043, 2104]];      /* master rows of the brass knuckles */
 /* the closed leaves' gap, painted dark into the head of the frame just above them (master px x0 x1 y0 y1): with the
@@ -95,8 +109,10 @@ vec3 irr(vec3 n, vec3 p, float sh) {
 `;
 const VS = `
 uniform mat4 uMRest;
-attribute vec4 aExtra;           /* kind, edge u, edge v, unused */
+attribute vec4 aExtra;           /* kind, edge u, edge v (the moulding's: its side's outward x, y), crease */
 varying vec3 vRest, vW, vNR, vNW;
+varying vec3 vFW, vFR;           /* the leaf's own face (its flat stiles and rails), now and at rest */
+varying vec3 vOW, vOR;           /* a moulding's side: its outward direction, towards its stile, now and at rest */
 varying vec4 vX;
 void main() {
   vec4 w = modelMatrix * vec4(position, 1.0);
@@ -104,6 +120,10 @@ void main() {
   vRest = (uMRest * vec4(position, 1.0)).xyz;
   vNW = normalize(mat3(modelMatrix) * normal);
   vNR = normalize(mat3(uMRest) * normal);
+  vFW = normalize(mat3(modelMatrix) * vec3(0.0, 0.0, 1.0));
+  vFR = normalize(mat3(uMRest) * vec3(0.0, 0.0, 1.0));
+  vOW = mat3(modelMatrix) * vec3(aExtra.yz, 0.0);
+  vOR = mat3(uMRest) * vec3(aExtra.yz, 0.0);
   vX = aExtra;
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
@@ -123,12 +143,64 @@ uniform vec3 uEnvTop, uEnvHor, uEnvLow, uEnvIn;
 uniform float uBias;              /* LOD bias of the projected photo: as crisp as the page's own <img> (review r1) */
 uniform vec4 uMean;               /* brass: where the photograph saw this part head-on (leaf uv, or the hinge's x in metres
                                      when z = 1) and the mip level that averages it (w) */
+uniform float uRake;              /* see irrS() */
+uniform vec4 uRel;                /* the relief's key (see relK): its floor, exponent, range */
+uniform float uCrease;            /* the creases' shade as the key comes across their rims (see relK) */
+uniform float uSheen;             /* the oiled walnut's sheen of the key at grazing angles, a gain (see main()) */
 varying vec3 vRest, vW, vNR, vNW;
+varying vec3 vFW, vFR, vOW, vOR;
 varying vec4 vX;
+/* The light a leaf, its brass and its edges receive (iOS round, 9 Nov: «não há relevo na porta»). As irr(), but behind
+   the doorway's plane the street's light arrives through the opening, from its direction, instead of from a dome: a
+   leaf that turns in takes it at a raking angle across its face, so the bevel and moulding facets that face the
+   opening light up and the others fall into their own shade, as on a real door opened onto a bright street. A point in
+   the doorway's plane (the leaves at rest) still sees the dome, so the ratio E(now) / E(rest) stays exactly 1 at rest.
+   The knob shades the leaf from that light too. (The hall's light stays a dome: by day it is diffuse; taken from the
+   pendant by night, the leaves' street faces, which turn away from it, went flat and dark against the lamplit hall.) */
+vec3 irrS(vec3 n, vec3 p, float sh, vec4 knob) {
+  vec3 L = sunL(p);
+  float inside = smoothstep(0.0, 0.9, -p.z), k = smoothstep(0.0, 0.3, -p.z) * uRake;
+  vec3 c = vec3(clamp(p.x, uDoor.x + 0.15, uDoor.y - 0.15), clamp(p.y, uDoor.z + 0.3, uDoor.w - 0.3), 0.6);
+  vec3 d = normalize(c - p);
+  float open = max(dot(n, d), 0.0) * sphereSh(p, d, knob);
+  return uSun * sunK(p) * max(dot(n, L), 0.0) * doorVis(p, L) * sh
+       + uSky * mix(0.5 + 0.5 * n.z, open, k) * (1.0 - 0.45 * inside)
+       + uHall * (0.5 - 0.5 * n.z) * (0.55 + 0.45 * inside);
+}
 vec3 env(vec3 r) {
   vec3 c = mix(uEnvHor, uEnvTop, smoothstep(0.0, 0.85, r.y));
   c = mix(uEnvLow, c, smoothstep(-0.25, 0.05, r.y));
   return mix(c, uEnvIn, smoothstep(0.05, -0.6, r.z));
+}
+/* The relief's key (iPhone round 2, 9 Nov: the client still saw «não há relevo na porta»). On a real door that turns
+   from a bright street into a hall, the relief reads because ONE light rakes across it: the bevels and beads that face
+   it light up, those that face away and the creases under the mouldings' rims fall into shade. The exposure ratio above
+   (irrS, sun + sky + hall) dilutes that contrast to a few percent, so the relief takes its contrast from the key alone:
+   by day the street seen through the opening (from the doorway's plane: face-on and a little from above, as the
+   photograph's light, which lights the top bevels and darkens the bottom ones); by night the lamplit hall's far side,
+   from inside (the leaves' street faces do not see it at rest, so nothing changes there). */
+vec3 keyL(vec3 p) {
+  if (uLampOn < 0.5) {
+    vec3 c = vec3(clamp(p.x, uDoor.x + 0.15, uDoor.y - 0.15), clamp(p.y, uDoor.z + 0.3, uDoor.w - 0.3) + 0.4, 0.6);
+    return normalize(c - p);
+  }
+  return normalize(vec3(-sign(p.x), 0.3, -0.35));
+}
+/* a facet's key light over the leaf's face's, over a floor of uRel.x (the light that comes from everywhere else, in
+   units of a face-on key). A crease lies in the shade of its rim on the stile's side (o, outward) when the key comes
+   across that rim: the shade reaches out from the crease (w = 1 there, 0 at the next points of the profile) in
+   proportion to the tangent of the key's incidence on the leaf (t), a quarter of the next facet at 45 degrees */
+float relK(vec3 n, vec3 f, vec3 o, float w, vec3 p) {
+  vec3 L = keyL(p);
+  float lf = dot(f, L), t = clamp(dot(o, L) / max(lf, 0.08), 0.0, 2.5);
+  float kn = max(dot(n, L), 0.0) * (1.0 - uCrease * smoothstep(1.0 - 0.3 * t, 1.15 - 0.3 * t, w) * step(0.01, t));
+  return (uRel.x + kn) / (uRel.x + max(lf, 0.0));
+}
+/* the oiled walnut's sheen: the lit hall mirrored at grazing angles (Schlick, F0 0.04) as a leaf turns in and is seen
+   more and more edge-on from the street; none at rest (the street faces mirror the street) */
+float sheen(vec3 n, vec3 v) {
+  float F = 0.04 + 0.96 * pow(1.0 - max(dot(n, v), 0.0), 5.0);
+  return F * smoothstep(0.05, -0.6, reflect(-v, n).z);
 }
 void main() {
   float kind = vX.x;
@@ -153,8 +225,18 @@ void main() {
   }
   vec3 al = lin(a);
   vec3 Ln = sunL(vW), Lr = sunL(pR);
-  vec3 eN = irr(nW, vW, sphereSh(vW, Ln, uKnob)), eR = irr(nR, pR, sphereSh(pR, Lr, uKnob0));
+  vec3 eN = irrS(nW, vW, sphereSh(vW, Ln, uKnob), uKnob), eR = irrS(nR, pR, sphereSh(pR, Lr, uKnob0), uKnob0);
   vec3 m = clamp(eN / max(eR, vec3(1e-4)), vec3(uMinM), vec3(uMaxM));
+  if (uMetal < 0.5 && kind < 0.5) {
+    /* The leaf's exposure comes from its own flat face (turned into the doorway, the face and its bevels all fell to
+       the same floor of the clamp), and the relief from the key (relK): each facet's contrast against the face, now,
+       over the same at rest, so exactly 1 at rest and on the face itself; a scalar, so the photograph's colour stays;
+       to the power uRel.y, within uRel.zw */
+    vec3 fW = normalize(vFW), fR0 = normalize(vFR);
+    vec3 fN = irrS(fW, vW, sphereSh(vW, Ln, uKnob), uKnob), fR = irrS(fR0, pR, sphereSh(pR, Lr, uKnob0), uKnob0);
+    float rel = relK(nW, fW, vOW, vX.w, vW) / relK(nR, fR0, vOR, vX.w, pR);
+    m = clamp(fN / max(fR, vec3(1e-4)), vec3(uMinM), vec3(uMaxM)) * clamp(pow(rel, uRel.y), uRel.z, uRel.w);
+  }
   if (uGap.z > 0.0 && kind < 0.5) {
     float g = uGap.z * exp(-max((vRest.x - uGap.x) * uGap.y, 0.0) / uGap.w);
     m *= (1.0 + g * uGapNow) / (1.0 + g);
@@ -178,6 +260,13 @@ void main() {
     float dS = (sN - sR) * uSpec, sl = dot(uSun, vec3(0.333));
     c += max(dS, 0.0) * uSun;
     c *= max(1.0 + min(dS, 0.0) * sl / max(dot(al, vec3(0.333)), 0.02), 0.88);
+    /* the oiled walnut's sheen as the leaf turns (sheen()). A gain on the photo pixel (the reflection's luminance over
+       the pixel's, at most +35 %), so its chroma stays: warm like the wood, never the sky's grey-blue (the environment's
+       reflection, before, laid a milky film over the turned leaves: walnut G/B 2.4 to 1.6). Only the change */
+    if (kind < 0.5 && uSheen > 0.0) {
+      float g = uSheen * max(sheen(nW, vN) - sheen(nR, vR), 0.0) / max(dot(al, vec3(0.2126, 0.7152, 0.0722)), 0.02);
+      c *= 1.0 + min(g, 0.35);
+    }
   }
   gl_FragColor = vec4(enc(c), 1.0);
 }`;
@@ -354,10 +443,10 @@ void main() {
 const THEMES = {
   dia: { sunDir: new Vector3(0.55, 0.5, 0.67).normalize(), sun: [1.0, 0.94, 0.84], sky: [0.62, 0.64, 0.68],
     hall: [0.78, 0.71, 0.6], lampOn: 0, minM: 0.5, maxM: 1.45, spec: 0.05, far: -3.8, wall: [250, 236, 223],
-    gapGlow: 0, sunK: 0.35, blur: 4.0,
+    gapGlow: 0, sunK: 0.35, blur: 4.0, rake: 1.0, rel: [0.12, 2.8, 0.35, 2.2], crease: 1.0, sheen: 0.08,
     env: { top: [1.15, 1.18, 1.25], hor: [0.95, 0.88, 0.78], low: [0.45, 0.4, 0.34], in: [0.8, 0.72, 0.6] } },
   noite: { sunDir: new Vector3(0, 0, 1), sun: [1.0, 0.64, 0.33], sky: [0.035, 0.04, 0.06], hall: [1.4, 0.9, 0.48],
-    lampOn: 1, minM: 0.5, maxM: 8.0, spec: 0.03, far: -4.0, wall: [28, 20, 15], gapGlow: 50, sunK: 0, blur: 4.0,
+    lampOn: 1, minM: 0.5, maxM: 8.0, spec: 0.03, far: -4.0, wall: [28, 20, 15], gapGlow: 50, sunK: 0, blur: 4.0, rake: 0, rel: [0.12, 2.8, 0.35, 2.2], crease: 1.0, sheen: 0.1,
     env: { top: [0.05, 0.06, 0.09], hor: [0.12, 0.09, 0.07], low: [0.03, 0.025, 0.02], in: [0.9, 0.6, 0.32] } }
 };
 
@@ -368,22 +457,27 @@ function quad(arr, a, b, c, d) { arr.push(a, b, c, a, c, d); }
 function leafGeometry(side, w, h, top) {
   const sc = w / LPX, P = [], N = [], X = [];
   const X0 = (px) => (side === "l" ? px : px - LPX) * sc, Y0 = (py) => top - py * sc;
-  function vtx(px, py, z, n, ex) { P.push(X0(px), Y0(py), z); N.push(n[0], n[1], n[2]); X.push(ex[0], ex[1], ex[2], 0); }
-  function tri(list) { for (const v of list) vtx(v[0], v[1], v[2], v[3], v[4]); }
+  function vtx(px, py, z, n, ex, w) { P.push(X0(px), Y0(py), z); N.push(n[0], n[1], n[2]); X.push(ex[0], ex[1], ex[2], w || 0); }
+  function tri(list) { for (const v of list) vtx(v[0], v[1], v[2], v[3], v[4], v[5]); }
   const F = [0, 0, 0], Z = [0, 0, 1];
   function flat(x0, y0, x1, y1) {        /* a flat part of the face (stile, rail), z = 0 */
     if (x1 <= x0 || y1 <= y0) return;
     const a = [x0, y0, 0, Z, F], b = [x1, y0, 0, Z, F], c = [x1, y1, 0, Z, F], d = [x0, y1, 0, Z, F];
     tri([a, d, c, a, c, b]);
   }
-  const panels = PANELS[side];
-  flat(0, 0, LPX, panels[0].y0);
-  flat(0, panels[0].y1, LPX, panels[1].y0);
-  flat(0, panels[1].y1, LPX, LPY);
-  for (const p of panels) { flat(0, p.y0, p.x0, p.y1); flat(p.x1, p.y0, LPX, p.y1); }
-  /* rings: profile point k at inset (per side) ins[k] and height hk; the four sides meet on the mitres */
+  const panels = PANELS[side], [Ll, Lr, Lt, Lb] = LIP;
+  /* the stiles and rails as a grid whose lines pass through every corner of the panels' outer rings, so no ring corner
+     lies on the middle of a flat edge (such T-junctions left 1 px cracks, dark specks, along the rings once they stood
+     proud) */
+  const xs = [0, panels[0].x0 - Ll, panels[0].x1 + Lr, LPX], ys = [0];
+  for (const p of panels) ys.push(p.y0 - Lt, p.y1 + Lb);
+  ys.push(LPY);
+  for (let j = 0; j < ys.length - 1; j++) for (let i = 0; i < xs.length - 1; i++)
+    if (!(i === 1 && j % 2 === 1)) flat(xs[i], ys[j], xs[i + 1], ys[j + 1]);
+  /* rings: profile point k at inset (per side) ins[k] and height hk; the four sides meet on the mitres. Each ring face
+     carries its side's outward direction (towards its stile, leaf-local x/y) in aExtra.yz, for the creases' shade */
   for (const p of panels) {
-    const pts = PROFILE.map(([f, mm]) => ({ ins: p.mw.map((m) => m * f), h: mm / 1000 }));
+    const pts = [{ ins: LIP.map((l) => -l), h: 0 }].concat(PROFILE.map(([f, mm]) => ({ ins: p.mw.map((m) => m * f), h: mm / 1000 })));
     pts.push({ ins: p.mw.map((m, i) => m + p.bw[i]), h: FIELD / 1000 });
     const rect = (ins) => [p.x0 + ins[0], p.x1 - ins[1], p.y0 + ins[2], p.y1 - ins[3]];
     /* outward direction of each side in leaf-local x/y (px y runs down, world y up) */
@@ -406,8 +500,8 @@ function leafGeometry(side, w, h, top) {
       const a = { tl: [A[0], A[2]], tr: [A[1], A[2]], br: [A[1], A[3]], bl: [A[0], A[3]] };
       const b = { tl: [B[0], B[2]], tr: [B[1], B[2]], br: [B[1], B[3]], bl: [B[0], B[3]] };
       const face = (s, o1, o2, i2, i1) => {
-        const na = vN(k, s, k), nb = vN(k + 1, s, k);
-        const A1 = [o1[0], o1[1], ha, na, F], A2 = [o2[0], o2[1], ha, na, F], B2 = [i2[0], i2[1], hb, nb, F], B1 = [i1[0], i1[1], hb, nb, F];
+        const na = vN(k, s, k), nb = vN(k + 1, s, k), wa = CREASE[k] || 0, wb = CREASE[k + 1] || 0, O = [0, OUT[s][0], OUT[s][1]];
+        const A1 = [o1[0], o1[1], ha, na, O, wa], A2 = [o2[0], o2[1], ha, na, O, wa], B2 = [i2[0], i2[1], hb, nb, O, wb], B1 = [i1[0], i1[1], hb, nb, O, wb];
         tri([A1, A2, B2, A1, B2, B1]);
       };
       face(2, a.tl, a.tr, b.tr, b.tl);       /* top */
@@ -482,6 +576,19 @@ function banded(img) {
   return t;
 }
 
+/* The steps' clock (iOS round, 9 Nov). turn(): the next turn of the event loop, a message-channel task (Safari has no
+   requestIdleCallback; a 16 ms timeout per step and per fence poll cost ~0.9 s over a mount). sliceAt: when the
+   current slice of work began (a turn or a fence poll resumed); a step may follow the last one in the same task while
+   the slice is under SLICE ms and the page is still (fewer, larger tasks; never over ~SLICE plus one step). */
+const SLICE = 10;
+let sliceAt = 0;
+const turn = (() => {
+  if (typeof MessageChannel === "undefined") return (f) => setTimeout(() => { sliceAt = performance.now(); f(); }, 0);
+  const ch = new MessageChannel(), q = [];
+  ch.port1.onmessage = () => { const f = q.shift(); sliceAt = performance.now(); if (f) f(); };
+  return (f) => { q.push(f); ch.port2.postMessage(0); };
+})();
+
 /* an error that names the step of the mount it came from (site.js remembers it for the session, except "textures":
    a photograph that did not arrive) */
 function staged(stage, e) {
@@ -532,6 +639,13 @@ function renderer3(ctx) {
   return renderer;
 }
 
+/* the leaves' geometry, in a step of its own before create() (the panels' rings: 11-30 ms of create()'s 25-50 at 4x
+   CPU throttle) */
+export function prep(G) {
+  const X = (u) => (u - G.hp[0]) * WM, Y = (v) => (G.hp[1] - v) * HM;
+  const x0 = X(G.door[0]), top = Y(G.door[1]), w = X(G.gap[0]) - x0, h = top - Y(G.door[3]);
+  return { l: leafGeometry("l", w, h, top), r: leafGeometry("r", w, h, top) };
+}
 export function create(ctx, G, opt) {
   opt = opt || {};
   const { renderer, msaa, fail } = ctx;
@@ -563,7 +677,8 @@ export function create(ctx, G, opt) {
     uKnob: { value: new Vector4() }, uKnob0: { value: new Vector4() }, uMetal: { value: 0 }, uSpec: { value: 0.05 },
     uMaxM: { value: 1.5 }, uMinM: { value: 0.5 }, uClampX: { value: new Vector2(0, 1) }, uGap: { value: new Vector4() }, uGapNow: { value: 1 },
     uEnvTop: { value: new Vector3() }, uEnvHor: { value: new Vector3() }, uEnvLow: { value: new Vector3() }, uEnvIn: { value: new Vector3() },
-    uBias: { value: BIAS }, uMean: { value: new Vector4(0.5, 0.5, 0, 3) }
+    uBias: { value: BIAS }, uMean: { value: new Vector4(0.5, 0.5, 0, 3) },
+    uRake: { value: 1 }, uRel: { value: new Vector4(0.35, 1.5, 0.45, 1.8) }, uCrease: { value: 0 }, uSheen: { value: 0 }
   });
 
   /* the hall: the plate's box */
@@ -647,7 +762,7 @@ export function create(ctx, G, opt) {
     brass.uniforms.uMetal.value = 1;
     const pivot = new Group();
     pivot.position.set(s === "l" ? door.x0 : door.x1, 0, 0);
-    const leaf = new Mesh(leafGeometry(s, leafW, leafH, door.top), wood);
+    const leaf = new Mesh((opt.pre && opt.pre[s]) || leafGeometry(s, leafW, leafH, door.top), wood);
     leaf.frustumCulled = false;
     pivot.add(leaf);
     const k = KNOB[s], kx = (s === "l" ? k[0] : k[0] - LPX) * sc, ky = door.top - k[1] * sc;
@@ -811,6 +926,7 @@ export function create(ctx, G, opt) {
       if (u.uMetal) {
         u.uMaxM.value = P.maxM; u.uMinM.value = P.minM;
         u.uSpec.value = u.uMetal.value ? (t === "dia" ? 0.55 : 0.4) : P.spec;
+        u.uRake.value = P.rake; u.uRel.value.set(...P.rel); u.uCrease.value = P.crease; u.uSheen.value = P.sheen;
         u.uEnvTop.value.set(...P.env.top); u.uEnvHor.value.set(...P.env.hor); u.uEnvLow.value.set(...P.env.low); u.uEnvIn.value.set(...P.env.in);
       }
     }
@@ -922,7 +1038,13 @@ export function create(ctx, G, opt) {
     const ext = (m) => { m.geometry.computeBoundingBox(); const b = m.geometry.boundingBox; let a = 1e9, z = -1e9;
       for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const w of [b.min.z, b.max.z]) { const v = sx(x, y, w, m.matrixWorld); a = Math.min(a, v); z = Math.max(z, v); }
       return [+a.toFixed(2), +z.toFixed(2)]; };
-    return { door: [+sx(door.x0, 0, 0).toFixed(2), +sx(door.x1, 0, 0).toFixed(2)], leafL: ext(leaves.l.leaf), leafR: ext(leaves.r.leaf), cam: [+(camera.matrixWorld.elements[14] / D).toFixed(5), +(camH.matrixWorld.elements[14] / D).toFixed(5)] };
+    /* each leaf's front face, its corners on the canvas (CSS px x, y) in the photograph's leaf px order: top-left,
+       top-right, bottom-right, bottom-left (the tests' per-leaf checks and the relief's measures) */
+    const quad = (s) => [[0, 0], [LPX, 0], [LPX, LPY], [0, LPY]].map(([px, py]) => {
+      pv.set((s === "l" ? px : px - LPX) * sc, door.top - py * sc, 0).applyMatrix4(leaves[s].leaf.matrixWorld).applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
+      return [+((pv.x + 1) / 2 * lastV.cw).toFixed(2), +((1 - pv.y) / 2 * lastV.ch).toFixed(2)];
+    });
+    return { door: [+sx(door.x0, 0, 0).toFixed(2), +sx(door.x1, 0, 0).toFixed(2)], leafL: ext(leaves.l.leaf), leafR: ext(leaves.r.leaf), quadL: quad("l"), quadR: quad("r"), cam: [+(camera.matrixWorld.elements[14] / D).toFixed(5), +(camH.matrixWorld.elements[14] / D).toFixed(5)] };
   }
   /* the camera distance (rest units) at which the hall's far arch of light fills the canvas */
   function endZ(v) {
@@ -944,14 +1066,15 @@ export function create(ctx, G, opt) {
     renderer.dispose();
   }
   /* the GPU done with what the last step queued (a fence, polled between tasks, never waited on): a step's GPU work
-     (a band, the mip chain) would otherwise stall the next step's first call that waits for the GPU (75 ms at 4x) */
+     (a band, the mip chain) would otherwise stall the next step's first call that waits for the GPU (75 ms at 4x).
+     Polled at the next turn, then every 4 ms (every 16 ms until 9 Nov) */
   async function drained(gone) {
     const gl = renderer.getContext();
     let f = null;
     try { f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } catch (e) { return; }
     if (!f) return;
-    for (let t0 = performance.now(); performance.now() - t0 < 1500 && !(gone && gone());) {
-      await new Promise((ok) => setTimeout(ok, 16));
+    for (let t0 = performance.now(), k = 0; performance.now() - t0 < 1500 && !(gone && gone()); k++) {
+      await new Promise((ok) => (k ? setTimeout(() => { sliceAt = performance.now(); ok(); }, 4) : turn(ok)));
       if (gl.isContextLost() || gl.getSyncParameter(f, gl.SYNC_STATUS) === gl.SIGNALED) break;
     }
     try { gl.deleteSync(f); } catch (e) {}
@@ -959,25 +1082,32 @@ export function create(ctx, G, opt) {
   /* a program's first use (its uniforms looked up, its textures bound) in a step of its own: one mesh drawn into a
      4 x 4 target, so the first real frame only draws */
   let tiny = null;
-  function prime(m) {
-    if (!tiny) tiny = new WebGLRenderTarget(4, 4, { depthBuffer: true, stencilBuffer: false });
+  /* rt: the variant it is drawn with (three.js makes one program for the canvas, one for a render target: the hall is
+     drawn to both, the lens only to targets, the door's scene only to the canvas). The canvas variant is drawn into one
+     scissored pixel of the (hidden) canvas: primed only in a target, the canvas programs were first used in the
+     first warm frame, a 61-87 ms task at 4x (iOS round) */
+  function prime(m, rt) {
     const was = m.parent, mw = m.matrixWorld.clone();
-    renderer.setRenderTarget(tiny);
+    renderer.setRenderTarget(rt);
+    if (!rt) { renderer.setScissorTest(true); renderer.setScissor(0, 0, 1, 1); }
     renderer.render(m, camera);
+    if (!rt) renderer.setScissorTest(false);
     renderer.setRenderTarget(null);
     m.matrixWorld.copy(mw);
     if (was) m.matrixWorldNeedsUpdate = true;
   }
   /* one texture onto the GPU: at once, or (a banded one) a band of rows per step, then its mip chain in a step of its own */
-  async function upload(t, pause, gone) {
+  async function upload(t, pause, gone, up) {
     const bm = t.userData.bitmap;
-    if (!bm) { renderer.initTexture(t); await drained(gone); return; }
+    up = up || (() => {});
+    if (!bm) { up(); renderer.initTexture(t); await drained(gone); return; }
     renderer.initTexture(t);             /* the empty storage, every level */
     const W = bm.width, H = bm.height, rows = Math.max(16, Math.floor(BAND / W)), o = { premultiplyAlpha: "none", colorSpaceConversion: "none" };
     /* straight into the texture: no state query in the step (copyTextureToTexture reads five pixel-store values back,
        each a round trip that waits for the GPU to finish the band before) */
     const gl = renderer.getContext(), gt = renderer.properties.get(t).__webglTexture;
     for (let y = 0; y < H; y += rows) {
+      up();
       const h = Math.min(rows, H - y), part = await createImageBitmap(bm, 0, y, W, h, o);
       await pause();
       if (gone()) { part.close(); return; }
@@ -989,16 +1119,18 @@ export function create(ctx, G, opt) {
     }
     await pause();
     if (gone()) return;
+    up();
     renderer.state.bindTexture(gl.TEXTURE_2D, gt);
     gl.generateMipmap(gl.TEXTURE_2D);
     renderer.state.unbindTexture();
     delete t.userData.bitmap;
     await drained(gone);
   }
-  /* every program linked? (the driver's own word, LINK_STATUS; a lost context answers null, not false) */
-  function linked(stage) {
-    const gl = renderer.getContext();
-    for (const p of renderer.info.programs || []) {
+  /* every program linked? (the driver's own word, LINK_STATUS; a lost context answers null, not false); the newest
+     `skip` programs are left for later (still compiling: asking would wait for them) */
+  function linked(stage, skip) {
+    const gl = renderer.getContext(), ps = renderer.info.programs || [];
+    for (const p of ps.slice(0, Math.max(0, ps.length - (skip || 0)))) {
       if (fail.why) break;
       if (p.program && gl.getProgramParameter(p.program, gl.LINK_STATUS) === false)
         fail.why = (String(gl.getProgramInfoLog(p.program) || "").trim().split("\n")[0] || "a program did not link").slice(0, 80);
@@ -1009,49 +1141,84 @@ export function create(ctx, G, opt) {
      hidden): each texture's upload on its own (the facade in bands), the programs compiled in parallel where the
      driver can (KHR_parallel_shader_compile), else one material per step, their link checked, then one frame per view.
      Each failure names its stage (site.js remembers it for the session). */
-  async function warm(views, pause, isGone) {
+  async function warm(views, pause, isGone, step) {
     const gone = isGone || (() => false);
+    step = step || (() => {});
+    /* the steps of the upload, counted ahead (?diag: «upload 5/14») */
+    let nU = 0, kU = 0;
+    for (const t of Object.values(textures)) if (t) { const bm = t.userData.bitmap; nU += bm ? Math.ceil(bm.height / Math.max(16, Math.floor(BAND / bm.width))) + 1 : 1; }
+    const up = () => step("upload", ++kU, nU);
     for (const k of Object.keys(textures)) {
       const t = textures[k];
       if (!t) continue;
       await pause();
       if (gone() || textures[k] !== t) continue;
-      try { await upload(t, pause, gone); } catch (e) { throw staged("upload", e); }
+      try { await upload(t, pause, gone, up); } catch (e) { throw staged("upload", e); }
       if (gone()) return;
     }
     pose(0);
-    const par = renderer.extensions.has("KHR_parallel_shader_compile");
-    const seen = new Set(), first = [];
-    for (const [sc, list] of [[sceneH, [sceneH]], [scene, [scene, bg]], [quadScene, [quadScene]]])
-      for (const root of list) root.traverse((m) => { if (m.isMesh && !seen.has(m.material)) { seen.add(m.material); first.push([m, sc]); } });
+    /* WebKit exposes KHR_parallel_shader_compile but still blocks on a link (webkit.org/b/251514): there, as where the
+       extension is missing, one material per step, each program's link asked for a step after its compile */
+    const par = !opt.serial && renderer.extensions.has("KHR_parallel_shader_compile");
+    if (!tiny) tiny = new WebGLRenderTarget(4, 4, { depthBuffer: true, stencilBuffer: false });
+    /* [mesh, its scene, the target it is drawn to] per material and variant */
+    const first = [];
+    for (const [sc, list, rts] of [[sceneH, [sceneH], [null, tiny]], [scene, [scene, bg], [null]], [quadScene, [quadScene], [tiny]]])
+      for (const rt of rts) {
+        const seen = new Set();
+        for (const root of list) root.traverse((m) => { if (m.isMesh && !seen.has(m.material)) { seen.add(m.material); first.push([m, sc, rt]); } });
+      }
     try {
       if (par) {
-        await renderer.compileAsync(sceneH, camera); await pause();
-        await renderer.compileAsync(scene, camera); await pause();
-        await renderer.compileAsync(quadScene, camera); await renderer.compileAsync(bg, camera, scene);
+        const groups = [[sceneH, null], [scene, null], [bg, null, scene], [sceneH, tiny], [quadScene, tiny]];
+        let i = 0;
+        for (const [o, rt, sc] of groups) {
+          await pause();
+          if (gone()) return;
+          step("compile", ++i, groups.length);
+          renderer.setRenderTarget(rt);
+          const done = renderer.compileAsync(o, camera, sc);
+          renderer.setRenderTarget(null);
+          await done;
+        }
       } else {
         /* a material per step: the first mesh that uses it, compiled with its scene's lights (none: the scene's own);
-           each checked in its own step: the driver compiles while the page goes on, and the first query of a program
-           waits for it */
-        for (const [m, sc] of first) { await pause(); if (gone()) return; renderer.compile(m, camera, sc); linked("compile"); }
+           each program's link asked for a step later, not in the step that compiled it: the driver compiles while
+           the page goes on, and the first query of a program waits for it */
+        let i = 0, n0 = 0;
+        for (const [m, sc, rt] of first) {
+          await pause();
+          if (gone()) return;
+          step("compile", ++i, first.length);
+          const ps = renderer.info.programs || [];
+          linked("compile", ps.length - n0);
+          n0 = ps.length;
+          renderer.setRenderTarget(rt);
+          renderer.compile(m, camera, sc);
+          renderer.setRenderTarget(null);
+        }
       }
     } catch (e) { throw staged("compile", e); }
     await pause();
     if (gone()) return;
     linked("compile");
     pose(0.3);
-    for (const [m] of first) {
+    let i = 0;
+    for (const [m, , rt] of first) {
       await pause();
       if (gone()) return;
-      try { prime(m); } catch (e) { throw staged("warm", e); }
+      step("warm", ++i, first.length);
+      try { prime(m, rt); } catch (e) { throw staged("warm", e); }
       await drained(gone);
     }
     if (tiny) { tiny.dispose(); tiny = null; }
     linked("warm");
-    if (views.length) { await pause(); if (gone()) return; size(views[0], true); await drained(gone); }
+    if (views.length) { await pause(); if (gone()) return; step("frames", 0, views.length); size(views[0], true); await drained(gone); }
+    i = 0;
     for (const v of views) {
       await pause();
       if (gone()) return;
+      step("frames", ++i, views.length);
       try { frame(v); } catch (e) { throw staged("warm", e); }
       await drained(gone);
     }
@@ -1084,7 +1251,9 @@ export function mount(env) {
   canvas.setAttribute("aria-hidden", "true");
   env.stage.insertBefore(canvas, env.stage.firstChild);
   /* the context now (its own task); the scene, its geometry and its materials in the next step (use()) */
-  const opt = { force: env.force, maxDpr: env.maxDpr };
+  const opt = { force: env.force, maxDpr: env.maxDpr, serial: env.serial };
+  const step = (s, i, n) => { if (env.step) env.step(s, i, n); };
+  step("context");
   let ctx, core = null;
   try { ctx = context(canvas, opt); } catch (e) { canvas.remove(); throw e; }
   let dead = false, gone = false, have = null, want = null, building = null;
@@ -1092,12 +1261,26 @@ export function mount(env) {
   /* iOS takes a hidden page's context, and any browser may under memory pressure: the canvas goes, the page decides
      (site.js: rebuilt later if the page was in the background, else the CSS entrance for the session) */
   canvas.addEventListener("webglcontextlost", function () { dead = true; canvas.remove(); if (env.onLost && !gone) env.onLost(); }, false);
-  const idle = (f) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: 500 }) : setTimeout(f, 16));
+  const idle = window.requestIdleCallback ? (f) => requestIdleCallback(() => { sliceAt = performance.now(); f(); }, { timeout: 120 }) : turn;
   const still = () => !env.quiet || env.quiet();
-  /* the next step: once the page is still, at idle (and still then) */
-  const pause = () => new Promise((ok) => {
-    (function w() { if (dead) return ok(); if (!still()) return setTimeout(w, 120); idle(() => (dead || still() ? ok() : setTimeout(w, 120))); })();
-  });
+  /* the next step: once the page is still (env.quiet: no scroll being followed, no flight, no input for a moment), at
+     idle or at the next turn (and still then); in the same task while the slice is short (SLICE) and the page still.
+     The time spent waiting for the page to be still (held) and in all (pause) is kept for ?diag and the tests. */
+  let heldMs = 0, pauseMs = 0;
+  const pause = () => {
+    if (!dead && sliceAt && performance.now() - sliceAt < SLICE && still()) return Promise.resolve();
+    return new Promise((ok) => {
+      const t0 = performance.now(); let h = 0;
+      const done = () => { pauseMs += performance.now() - t0; ok(); };
+      (function w() {
+        if (h) heldMs += performance.now() - h;
+        h = 0;
+        if (dead) return done();
+        if (!still()) { h = performance.now(); return setTimeout(w, 50); }
+        idle(() => (dead || still() ? done() : (h = performance.now(), setTimeout(w, 50))));
+      })();
+    });
+  };
   const loaded = (im) => (im.complete && im.naturalWidth ? Promise.resolve(im)
     : new Promise((ok, no) => { im.addEventListener("load", () => ok(im), { once: true }); im.addEventListener("error", no, { once: true }); }));
   /* the photographs are decoded in a worker: createImageBitmap(blob) on the page's own thread still spent 60-80 ms of
@@ -1177,35 +1360,52 @@ export function mount(env) {
     return cache[t];
   }
   const drop = (t) => { const c = cache[t]; if (!c) return; delete cache[t]; c.then((o) => { for (const v of Object.values(o)) if (v && v.close) v.close(); }, () => {}); };
+  /* the photographs are fetched and decoded (in the worker) while three.js and the scene are built (iOS round: the
+     scene waited for the decode before) */
   function use(t) {
     want = t;
-    return load(t).catch((e) => { throw staged("textures", e); }).then(async (imgs) => {
-      if (dead || want !== t) { if (want !== t) drop(t); return; }
-      have = null;                        /* draw() answers false until the new theme is on the GPU */
+    step("decode");
+    let got = false;
+    const pics = load(t);
+    pics.then(() => { got = true; }, () => {});
+    return (async () => {
       if (!core) {                        /* once, whichever theme asks first (a change mid-mount waits for it) */
         building = building || (async () => {
           await pause();
           if (dead) return;
+          step("three");
           if (!ctx.renderer) try { renderer3(ctx); } catch (e) { throw staged("context", e); }
           await pause();
           if (dead) return;
+          step("scene");
+          try { opt.pre = prep(env.G); } catch (e) { throw staged("create", e); }
+          await pause();
+          if (dead) return;
           try { core = create(ctx, env.G, opt); } catch (e) { throw staged("create", e); }
+          opt.pre = null;
         })();
         await building;
         if (dead || !core) return;
       }
+      if (!got) step("decode");
+      let imgs;
+      try { imgs = await pics; } catch (e) { throw staged("textures", e); }
+      if (dead || want !== t) { if (want !== t) drop(t); return; }
+      have = null;                        /* draw() answers false until the new theme is on the GPU */
       await pause();
       if (dead || want !== t) return;
+      step("theme");
       try { core.setTheme(t, imgs); } catch (e) { throw staged("theme", e); }
-      await core.warm(env.views ? env.views(core.endZ) : [], pause, () => dead || want !== t);
+      await core.warm(env.views ? env.views(core.endZ) : [], pause, () => dead || want !== t, step);
       if (dead || want !== t) return;
       drop(t);                            /* uploaded: the decoded copies go (a later change decodes again, from the cache) */
       have = t;
       if (env.onTheme) env.onTheme(t);
-    });
+    })();
   }
   const mo = new MutationObserver(function () { const t = env.theme(); if (t !== have && t !== want) use(t).catch(() => {}); });
   mo.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  const fq = [];                          /* [when, fence] after each frame drawn, oldest first (lag()) */
   return {
     ready: use(env.theme()),
     canvas,
@@ -1216,15 +1416,29 @@ export function mount(env) {
        the page's to judge (site.js hands back to the CSS entrance for the session) */
     draw(v) {
       if (dead || have !== env.theme()) return false;
-      try { return core.frame(v); } catch (e) { if (env.onError) env.onError(e); return false; }
+      let ok;
+      try { ok = core.frame(v); } catch (e) { if (env.onError) env.onError(e); return false; }
+      if (ok && fq.length < 64) { try { const f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); if (f) fq.push([performance.now(), f]); } catch (e) {} }
+      return ok;
+    },
+    /* how far behind the GPU is: [ms, frames], the age of the oldest drawn frame it has not finished and how many are
+       waiting (a fence after each frame, polled, never waited on; [0, 0] when it has caught up). The page's live
+       safeguard reads it once a frame: in Chromium a WebGL canvas can queue seconds of GPU work before its main
+       thread feels it (iPhone emulation on SwiftShader: ~1 s of frames, ~5 s of GPU work, before a frame interval
+       over 120 ms) */
+    lag() {
+      try { while (fq.length && gl.getSyncParameter(fq[0][1], gl.SYNC_STATUS) === gl.SIGNALED) gl.deleteSync(fq.shift()[1]); } catch (e) { return [0, 0]; }
+      return fq.length ? [performance.now() - fq[0][0], fq.length] : [0, 0];
     },
     /* the context is gone, with or without its event (a page back from the background) */
     lost() { return dead || gl.isContextLost(); },
     dpr() { return Math.min(window.devicePixelRatio || 1, opt.maxDpr || MAXDPR); },
     msaa: ctx.msaa,
-    /* everything goes at once: the GPU's resources and the context itself (WEBGL_lose_context), so its drawing buffer
-       (MSAA on a phone: about 50 MB on an iPhone at 2x) is freed now, not whenever the canvas is collected; a hand-back
-       is often the sign of memory or GPU pressure (review, door finish) */
+    times: () => ({ held: Math.round(heldMs), pause: Math.round(pauseMs) }),
+    /* everything goes at once (the GPU's resources, the worker, the canvas), and the context itself
+       (WEBGL_lose_context) as soon as the GPU has done what was queued and the page is still (release()), so its
+       drawing buffer (MSAA on a phone: about 50 MB on an iPhone at 2x) is freed then, not whenever the canvas is
+       collected; a hand-back is often the sign of memory or GPU pressure (review, door finish) */
     destroy() {
       if (gone) return;
       gone = true;
@@ -1233,10 +1447,32 @@ export function mount(env) {
       for (const c of wq.values()) c[1](new Error("gone"));
       wq.clear();
       try { if (core) core.dispose(); else if (ctx.renderer) ctx.renderer.dispose(); } catch (e) {}
-      try { if (!gl.isContextLost()) { const x = gl.getExtension("WEBGL_lose_context"); if (x) x.loseContext(); } } catch (e) {}
+      try { for (const x of fq) gl.deleteSync(x[1]); } catch (e) {}
+      fq.length = 0;
       canvas.remove();
+      release();
     }
   };
+  /* The context is let go only once the GPU has done all it was given (a fence, polled every 100 ms, never waited on)
+     and the page is still (env.quiet) or hidden. Lost at once, it waited for that work: Chromium tears the command
+     buffer down synchronously, and a hand-back comes exactly when the GPU is behind, in the visitor's gesture (iOS
+     round, review: on the iPhone emulation one main-thread task of 5.9-10.8 s right after the guard's hand-back, the
+     next flick 12 s late). A fence that never signals (a driver fault) counts as done after 30 s. */
+  function release() {
+    const t0 = performance.now();
+    let f = null;
+    try { if (!gl.isContextLost()) { f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } } catch (e) { f = null; }
+    (function w() {
+      let done = true;
+      try {
+        if (gl.isContextLost()) { f = null; return; }
+        done = performance.now() - t0 > 30000 || (f ? gl.getSyncParameter(f, gl.SYNC_STATUS) === gl.SIGNALED : performance.now() - t0 > 2000);
+      } catch (e) {}
+      if (!done || !(document.hidden || still())) return setTimeout(w, 100);
+      try { if (f) gl.deleteSync(f); } catch (e) {}
+      try { const x = gl.getExtension("WEBGL_lose_context"); if (x) x.loseContext(); } catch (e) {}
+    })();
+  }
 }
 if (typeof document !== "undefined" && document.currentScript === null && typeof window !== "undefined") {
   document.documentElement.__door3d = { mount };

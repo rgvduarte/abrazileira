@@ -24,7 +24,24 @@
 //    head): at 393 x 852 @3, 844 x 390 @3, 1440 x 900 @2 and 768 x 1024 @2, Dia, with the layers as loaded and
 //    promoted, no unsaturated pixel within 1.5 device px of the doorway's edge is 40 levels brighter than the walnut
 //    3px either side of it (brass hinges and the gap excepted).
-setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 600000);
+// J. Where the scroll stops the block (title to button) stands in the middle of what the visitor sees (client, 9 and
+//    10 Nov: «centrado a meio na altura da página. Não em cima»): at 320 x 568, 375 x 667, 390 x 844, 390 x 796,
+//    430 x 932, 844 x 390, 768 x 1024, 1024 x 768, 1440 x 900 and 1920 x 1080, Dia and Noite, PT and EN, settled, at
+//    the end of the run and at the end of the page. Where the block and the footer fit on one screen (16px between
+//    them), the page ends one large viewport after the run, and there the block is within 8px of the middle when the
+//    footer fits under it with 32px clear; otherwise it stands 16-32px above the footer, the title on screen and the
+//    field whole (320 x 568, 375 x 667: the page went on 100px and 51px before, the title cut by the top). Taller than
+//    that (844 x 390): where the run ends the block starts 16px from the top, the field whole. Opaque.
+//    An iPhone with Safari's bars, emulated (serve.ios: stylesheets served with svh, lvh, dvh in px; headless Chromium
+//    has svh = lvh = dvh): 390 wide, 796 shown / 836 hidden (the client's diag), 393 x 695 / 735, 375 x 553 / 627 (SE):
+//    with the bars shown the page ends 40px (74px) after the run, with them hidden at the run's end; in both, where the
+//    scroll stops, the same rule as above; the hero action's flight and #lista on load land there, the focus in the
+//    field. Before 10 Nov the block was 40px (bars shown) and 20px (hidden) high there on the client's iPhone.
+//    The hero action's flight in Chromium (390 x 796, 1440 x 900): centred, focus in the field; the messages of a failed
+//    check lengthen the form downwards (the title and the field do not move).
+// K. Reduced motion and no JavaScript (390 x 844, 1440 x 900): the list starts at the photograph's foot (no void), and
+//    arriving with #lista its block is in the middle (8px; 16px without JavaScript, where its height is a guess).
+setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 900000);
 const { chromium } = require("playwright"), serve = require("./serve.js");
 const [, , dir] = process.argv;
 (async () => {
@@ -208,6 +225,89 @@ const [, , dir] = process.argv;
       let m = 0; for (let y = Math.floor(top - 1.5); y <= Math.ceil(top + 1.5); y++) m = Math.max(m, Lp(x, y));
       const a = L(x, top - 3), b2 = L(x, top + 3); if (Math.max(a, b2) <= 110 && m - Math.max(a, b2) > 40) seams++; }
     report(!seams, `${w}x${h}@${dpr}`, "I doorway edge at rest" + (promote ? " (layers promoted)" : ""), JSON.stringify({ seams }));
+    await c.close();
+  }
+  // J. the block in the middle of what the visitor sees where the scroll stops (the page's end), the footer whole under it
+  const AIR = 16, GAP = 32, block = (pg) => pg.evaluate(() => { const q = (s) => document.querySelector(s).getBoundingClientRect(), t = q(".lista__title"), b = q(".lista .button"), e = q("#email"), f = q(".foot");
+    const vh = window.visualViewport ? visualViewport.height : innerHeight;
+    return { y: Math.round(scrollY), vh, top: +t.top.toFixed(1), bot: +b.bottom.toFixed(1), h: Math.round(b.bottom - t.top), off: +((t.top + b.bottom) / 2 - vh / 2).toFixed(1),
+      email: [Math.round(e.top), Math.round(e.bottom)], foot: Math.round(f.height), footTop: Math.round(f.top), footBot: Math.round(f.bottom), max: document.documentElement.scrollHeight - innerHeight,
+      op: Math.min(...[".lista__title", ".lista__lede", ".lista .form"].map((s) => +getComputedStyle(document.querySelector(s)).opacity)), active: document.activeElement && document.activeElement.id }; });
+  /* where the scroll stops: the block (title to button) and the footer share the screen when they fit together with
+     16px between them: then the page ends one large viewport after the run, and there the block is within 8px of the
+     middle where the footer fits under it with 32px clear; otherwise it stands 16-32px above the footer, the title on
+     screen and the field whole. Too tall for that (844 x 390): where the run ends, the block starts 16px from the top
+     with the field whole (or is centred, when it fits alone). */
+  const together = (r) => r.h + r.foot + AIR <= r.vh + 0.5;
+  const atEnd = (r) => { const gap = r.footTop - r.bot, centred = (r.vh - r.h) / 2 - r.foot >= GAP;
+    return r.top >= 0 && r.email[0] >= 0 && r.email[1] <= r.vh && r.footBot <= r.vh + 1 && gap >= AIR - 0.5 && (centred ? Math.abs(r.off) <= 8 : gap <= GAP + 1); };
+  const alone = (r) => r.h + 2 * AIR <= r.vh ? Math.abs(r.off) <= 8 : r.top >= 0 && r.top <= AIR + 1 && r.email[0] >= 0 && r.email[1] <= r.vh;
+  const walk = async (pg) => { const g = await geo(pg), end = Math.round(g.pin + g.run);
+    await pg.evaluate((y) => scrollTo(0, y), end);
+    await pg.waitForFunction(() => { const P = document.documentElement.__porta.geo(); return P.r === P.p && P.p === 1; }, null, { timeout: 8000 }).catch(() => {});
+    await pg.waitForTimeout(300); const run = await block(pg);
+    await pg.evaluate(() => scrollTo(0, 1e6)); await pg.waitForTimeout(400); const pageEnd = await block(pg);
+    return { g, end, run, pageEnd }; };
+  for (const [n, w, h] of [["se320", 320, 568], ["m375", 375, 667], ["m390", 390, 844], ["m796", 390, 796], ["m430", 430, 932], ["land", 844, 390], ["t768", 768, 1024], ["t1024", 1024, 768], ["d1440", 1440, 900], ["d1920", 1920, 1080]])
+    for (const theme of ["dia", "noite"]) for (const page of ["", "en/"]) {
+      const c = await ctx(w, h, { theme }); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+      const { g, end, run, pageEnd } = await walk(pg), past = pageEnd.max - end;
+      const ok = Math.abs(end - g.listY) <= 1 && run.op >= 0.999 && pageEnd.op >= 0.999 && (together(run) ? past <= 1 && atEnd(pageEnd) : alone(run));
+      report(ok, n, "J block centred where the scroll stops", theme, page || "pt",
+        JSON.stringify({ end, listY: g.listY, pageEndPastRun: past, together: together(run), run: { top: run.top, bot: run.bot, h: run.h, off: run.off, foot: run.foot }, pageEnd }));
+      await c.close();
+    }
+  /* an iPhone with Safari's bars, emulated (serve.ios): the client's (390 wide, 796 shown, 836 hidden: the diag of 9 and
+     10 Nov), a 393 x 695 / 735 phone and an iPhone SE (375 x 553 / 627). Bars shown, the page ends one large viewport
+     after the run, 40px (74px) past it, and the block must be in the middle there, where the scroll stops; bars hidden
+     (a finger scroll), the page ends with the run. Before 10 Nov the block was centred in the small viewport from the
+     list's top: 40px high at the page's end with the bars shown, 20px high with them hidden. The hero action's flight
+     and #lista land at the page's end, the block centred, the focus in the field. */
+  for (const [n, w, sv, lv, themes] of [["ios390", 390, 796, 836, ["dia", "noite"]], ["ios393", 393, 695, 735, ["dia"]], ["iosSE", 375, 553, 627, ["dia"]]])
+    for (const bars of ["shown", "hidden"]) for (const theme of themes) for (const page of ["", "en/"]) {
+      const vh = bars === "shown" ? sv : lv, c = await ctx(w, vh, { theme, isMobile: true, hasTouch: true }), pg = await c.newPage();
+      await serve.offline(pg); await serve.ios(pg, sv, lv, vh); await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+      const probe = await pg.evaluate(() => [document.querySelector(".porta__probe").offsetHeight, innerHeight]);
+      const { g, end, run, pageEnd } = await walk(pg), past = pageEnd.max - end;
+      const ok = probe[0] === sv && probe[1] === vh && Math.abs(end - g.listY) <= 1 && run.op >= 0.999 && pageEnd.op >= 0.999 && together(pageEnd) && Math.abs(past - (lv - vh)) <= 1 && atEnd(pageEnd);
+      report(ok, n, "J iPhone, bars " + bars, "block centred where the scroll stops", theme, page || "pt",
+        JSON.stringify({ svh: sv, lvh: lv, ih: vh, end, pageEndPastRun: past, run: { top: run.top, off: run.off }, pageEnd }));
+      if (theme === "dia") {
+        await pg.evaluate(() => scrollTo(0, 0)); await pg.waitForTimeout(500);
+        await pg.click(".porta .cta"); await pg.waitForFunction(() => document.activeElement && document.activeElement.id === "email", null, { timeout: 6000 }).catch(() => {});
+        await pg.waitForTimeout(500); const f = await block(pg);
+        report(f.y === f.max && f.active === "email" && f.op >= 0.999 && atEnd(f), n, "J iPhone, bars " + bars, "the hero action lands where the scroll stops", page || "pt", JSON.stringify(f));
+        if (!page) { await pg.goto("about:blank"); await pg.goto(base + "#lista", { waitUntil: "networkidle" }); await pg.waitForTimeout(900); const a = await block(pg);
+          report(a.y === a.max && a.op >= 0.999 && atEnd(a), n, "J iPhone, bars " + bars, "#lista on load lands where the scroll stops", JSON.stringify(a));
+          /* the address typed again: a jump within the page */
+          await pg.evaluate(() => { scrollTo(0, 0); location.hash = ""; }); await pg.waitForTimeout(600); await pg.evaluate(() => { location.hash = "#lista"; }); await pg.waitForTimeout(900); const j = await block(pg);
+          report(j.y === j.max && j.op >= 0.999 && atEnd(j), n, "J iPhone, bars " + bars, "a jump to #lista within the page lands where the scroll stops", JSON.stringify(j)); }
+      }
+      await c.close();
+    }
+  for (const [n, w, h] of [["m796", 390, 796], ["d1440", 1440, 900]]) {
+    const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1000);
+    await pg.click(".porta .cta"); await pg.waitForFunction(() => document.activeElement && document.activeElement.id === "email", null, { timeout: 5000 }).catch(() => {});
+    await pg.waitForTimeout(500);
+    const r = await block(pg);
+    report(Math.abs(r.off) <= 8 && r.active === "email" && r.op >= 0.999, n, "J the hero action lands with the block centred", JSON.stringify(r));
+    // a failed check: the messages lengthen the form downwards; the title and the field stay where they are
+    const at = await pg.evaluate(() => [document.querySelector(".lista__title").getBoundingClientRect().top, document.getElementById("email").getBoundingClientRect().top]);
+    if (w < 900) await pg.touchscreen.tap(w / 2, (await pg.locator(".lista .button").boundingBox()).y + 20); else await pg.click(".lista .button");
+    await pg.waitForTimeout(600);
+    const after = await pg.evaluate(() => ({ title: document.querySelector(".lista__title").getBoundingClientRect().top, email: document.getElementById("email").getBoundingClientRect().top,
+      msgs: [...document.querySelectorAll(".field__msg")].filter((m) => !m.hidden).length, y: scrollY }));
+    report(after.msgs === 2 && Math.abs(after.title - at[0]) <= 0.5 && Math.abs(after.email - at[1]) <= 0.5, n, "J messages grow the form downwards", JSON.stringify({ before: at.map(Math.round), after }));
+    await c.close();
+  }
+  // K. reduced motion and no JavaScript: the list right after the photograph, and centred on arrival at #lista
+  for (const [n, w, h] of [["m390", 390, 844], ["d1440", 1440, 900]]) for (const mode of ["reduce", "nojs"]) {
+    const c = await ctx(w, h, { reducedMotion: mode === "reduce" ? "reduce" : "no-preference", javaScriptEnabled: mode !== "nojs" }); const pg = await c.newPage(); await serve.offline(pg);
+    await pg.goto(base + "#lista", { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const r = await pg.evaluate(() => { const q = (s) => document.querySelector(s), L = q("#lista").getBoundingClientRect(), S = q(".porta__stage").getBoundingClientRect(), t = q(".lista__title").getBoundingClientRect(),
+      last = (q(".lista__noscript") || q(".lista .button")).getBoundingClientRect();
+      return { on: document.documentElement.classList.contains("porta-on"), gap: Math.round(L.top - S.bottom), top: Math.round(t.top), off: +((t.top + last.bottom) / 2 - innerHeight / 2).toFixed(1), bottom: Math.round(last.bottom), ih: innerHeight }; });
+    report(!r.on && Math.abs(r.gap) <= 1 && r.top >= 0 && r.bottom <= r.ih && Math.abs(r.off) <= (mode === "nojs" ? 16 : 8), n, "K list after the photograph, centred at #lista,", mode, JSON.stringify(r));
     await c.close();
   }
   console.log("list", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);

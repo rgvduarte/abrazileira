@@ -682,15 +682,34 @@ target alone holds it apart, about 20px of ink); the action → façade box 24 a
 - **Split** (from 900px wide on landscape and square screens, or any landscape screen from 560px): 5fr text | 6fr entrance, 64px apart,
   container 86rem; the text column is a centred crest; the photograph fills the right column (681 × 751px at
   1440 × 900), standing at its foot.
-- **Waiting list**: a full-height hall section (`min-height: 100svh`), one centred column of 26rem whose title
-  starts 22svh from the top of the section (a little above the optical centre, and where the hero action
-  lands). With the sequence on, the section is pulled up by one large viewport (`margin-top: -100lvh`), so it
-  starts exactly where the pinned stage releases (the end of the run) and lies over the stage during the run;
-  it is at least one large viewport tall (`min-height: 100lvh`), so the footer always starts below the stage.
-  Its first screen is transparent (the stage behind it is the same flat colour) and its own colour starts exactly
-  at the bottom of the stage. Its words are held at opacity 0, with no pointer target, until the screen is one
-  colour (site.js). Home page document: 2.27 screens at 390 × 844 (was 3.08), 2.23 at 1440 × 900 (3.04), 2.75 at
-  844 × 390 (3.53), 2.38 at 320 × 568 (3.19).
+- **Waiting list**: a full-height hall section (`min-height: 100svh`), one centred column of 26rem. The block (title
+  to button) has its height at rest (`--lista-b`) measured by site.js at start, when the fonts arrive and on resize,
+  never while a message is shown, so a message lengthens the form downwards and nothing above it moves (30rem without
+  JavaScript). It used to start 22svh down, 16–88px above the middle. Without the sequence (reduced motion, no
+  JavaScript) the section follows the photograph, one screen tall, and the block stands in the middle of the small
+  viewport, between the safe areas: padding above max(16px, safe top, (100svh − its height + safe top − safe bottom)
+  / 2); a block taller than the screen starts 16px from the top, the field in view.
+  With the sequence on, the section is pulled up by one large viewport (`margin-top: -100lvh`), so it starts exactly
+  where the pinned stage releases (the end of the run) and lies over the stage during the run; it is one large
+  viewport tall less the footer's height (`--foot-h`, site.js), so the footer (positioned, over the stage's flat
+  colour) closes that same screen and the page ends one large viewport after the run. The scroll stops there, so the
+  block is placed against the page's end, in the dynamic viewport (what the visitor sees): padding above max(16px,
+  safe top, min(100lvh − (100dvh + its height − safe top + safe bottom) / 2, 100lvh − footer − its height − gap)),
+  padding below the gap (`--lista-g`: 32px, shrinking to 16px at least where the title would come within 16px of
+  the top). On a
+  desktop dvh = lvh = svh: the page ends with the run, the block in the middle. On an iPhone with Safari's bars shown
+  the page ends 40px after the run (836 − 796 on the client's phone), with them hidden at the run's end; the block is
+  in the middle of the screen at the page's end in both. Where the footer does not fit under the centred block with
+  32px clear (320 × 568, 375 × 667, an iPhone SE), the block stands that gap above the footer, the title on screen
+  (375 × 667: 19px above the middle; the page went on 51px before, 100px at 320 × 568, the title cut by the top). Only
+  a block and footer taller than the screen together lengthen the section (844 × 390: 360 + 68px, 411px in English):
+  the page goes on 69px (121px in English; 117 and 169 before) and its end shows the footer under the block's lower
+  part; the run's end is its rest position (the block 16px from the top). The hero action, `#lista` and Tab land on
+  that rest position (site.js `rest()`: the page's end when the list closes within the run's last screen, else the
+  list's top). Its first screen is transparent (the stage behind it is the same flat colour) and its own colour starts
+  exactly at the bottom of the stage. Its words are held at opacity 0, with no pointer target, until the screen is one
+  colour (site.js). Home page document: 1.95 screens at 390 × 844 (2.09 before 9 Nov evening), 1.95 at 1440 × 900
+  (2.03), 2.14 at 844 × 390 (2.26 on 9 Nov evening, 2.43 before), 1.95 at 320 × 568 (2.13, 2.21).
 - **Privacy notice**: top bar, the lockup at its 30px minimum as a home link, a 40rem reading column, footer.
 - **Very short portrait screens** (up to 600px tall: 320 × 568, iPhone SE in Safari 375 × 553): the lockup at its
   30px minimum, 12px above the lede, no scroll cue, and the photograph takes the height that is left, so the whole
@@ -1126,7 +1145,8 @@ control fetches and decodes it (`loading` switched to eager); a theme change wai
 the cross-fade, so the fade never lands on a half-loaded entrance.
 
 **`waiting list`** (`#lista`, `.lista.surface-hall`): the room you walked into. h2 «Lista de espera» /
-«Waiting list» (title), one sentence (lede), the form, and a `<noscript>` line. With the sequence on, its words
+«Waiting list» (title), one sentence (lede), the form, and a `<noscript>` line, standing in the middle of the screen
+where the run ends (Layout › Waiting list). With the sequence on, its words
 rise in with the scroll itself, as the last part of the run (Motion: p 0.645 → 0.87, driven by the same loop as
 the doors, not by an IntersectionObserver), so they are at rest, opaque, wherever the page is once the run is
 over: a reload or a restored position at the bottom, a jump, a short landscape screen (the former observer
@@ -1247,6 +1267,29 @@ CSS/JS references exist (it fails on the build before this fix). The two `theme-
   (`url("../photo/<theme>/street-….avif")`), rewritten to the same version before the CSS/JS fingerprint pass, so
   `tokens.<hash>.css` names the version (unversioned, the CSS entrance drew a new facade in a street Safari kept from
   the deploy before, and the 3D path fetched the strip twice). The test reads every stylesheet as well.
+- **«O scroll da porta deve acabar com o texto e inserir e-mail centrado a meio na altura da página. Não em cima»**
+  (9 Nov evening, iPhone, Safari 26: innerHeight 796, large viewport 836). Where the run ended, the block (title to
+  button) stood 16–88px above the middle (its title 22svh down), and the page went on past that point by the footer's
+  height, plus the toolbar's on an iPhone (152px there; 114px at 390 × 844, 68px at 1440 × 900), so a flick stopped
+  with the block near the top (its title 23px down on that iPhone). The first fix centred the block in the small
+  viewport from the list's top and let the footer close that screen. Asked again on 10 Nov (the same words): on the
+  iPhone the page ends one large viewport after the run, so with Safari's bars shown 40px of scroll remained and the
+  block rested 40px high; with them hidden (after a finger scroll) 20px high; on short phones the footer still pushed
+  the page on (51px at 375 × 667, 100px at 320 × 568, the title cut by the top). Headless Chromium could not show
+  it (svh = lvh = dvh there). Now the block is placed against the page's end in the dynamic viewport, a little higher
+  only where the footer must fit under it, and the hero action, `#lista` and Tab land on the page's end (Layout ›
+  Waiting list). The run, its timeline and the hand-off are unchanged. Measured (`src/tests/list.test.js` J), Dia and
+  Noite, PT and EN, where the scroll stops: |block centre − screen centre| ≤ 0.4px at the seven screens where the
+  footer fits under the centred block (390 × 844, 390 × 796, 430 × 932, 768 × 1024, 1024 × 768, 1440 × 900,
+  1920 × 1080), and after the hero action's flight; 375 × 667: 19px above the middle, 32px over the footer; 320 × 568:
+  16px from the top, 27px over the footer; both end with the run. At 844 × 390 the block is taller than the screen
+  with the footer (360px, 411px in English), so the 16px top rule applies at the run's end, the field whole (0.4px off
+  centre in Portuguese by coincidence, 26px in English). iPhone emulation (`serve.ios`: the stylesheets with svh, lvh
+  and dvh in px, the viewport as tall as the visible area): the client's 390 wide, 796 / 836: 0px off at the page's
+  end with the bars shown (40px after the run) and hidden (at the run's end), after the flight and on `#lista`; 393 ×
+  695 / 735: 5px / 0px; iPhone SE 375 × 553 / 627: the title 12px / 70px from the top, 16px / 32px over the footer.
+  With the 3D entrance on (`?3d=force`, merged with the iOS round) the end of the run is the same frame: ΔRGB 0 at
+  390 × 796 @3 and 1440 × 900, Dia and Noite.
 
 ### The door sequence (scroll-linked)
 Client, round 3 (after testing on an iPhone): too many scrolls, the waiting list took too long to appear, and the
@@ -1273,24 +1316,24 @@ On a phone the photograph's foot holds at the visitor's feet while it grows (the
 and the steps leave through the bottom edge as the threshold is crossed.
 
 **Measured scroll from the top until the list title and the email field are fully in view and readable**
-(opacity ≥ 0.99, settled; 9 Nov values, `final3-work/r2/beats.js`, and `src/tests/list.test.js` C):
+(opacity ≥ 0.99, settled; 9 Nov evening values, with the block centred; `src/tests/list.test.js` C):
 
 | Viewport | Scroll to the form | Screen is one colour at | End of the run |
 |---|---|---|---|
-| 390 × 844 | 645px = 0.76 screens | 0.63 | 0.95 |
-| 430 × 932 | 712px = 0.76 | 0.63 | 0.95 |
-| 375 × 667 | 502px = 0.75 | 0.63 | 0.95 |
-| 844 × 390 | 300px = 0.77 | 0.64 | 0.96 |
-| 768 × 1024 | 778px = 0.76 | 0.63 | 0.95 |
-| 1440 × 900 | 684px = 0.76 | 0.63 | 0.95 |
-| 1920 × 1080 | 813px = 0.75 | 0.63 | 0.95 |
+| 390 × 844 | 636px = 0.75 screens | 0.63 | 0.95 |
+| 430 × 932 | 701px = 0.75 | 0.63 | 0.95 |
+| 375 × 667 | 503px = 0.75 | 0.63 | 0.95 |
+| 844 × 390 | 294px = 0.75 | 0.64 | 0.96 |
+| 768 × 1024 | 771px = 0.75 | 0.63 | 0.95 |
+| 1440 × 900 | 678px = 0.75 | 0.63 | 0.95 |
+| 1920 × 1080 | 814px = 0.75 | 0.63 | 0.95 |
 
 Before 9 Nov: 1.00–1.04 screens; before the short run, about 2.0 (1.99 at 390 × 844).
 
 *Wheel notches* (the rework brief also said «2–3 wheel notches on desktop»): with native scrolling at about 100px
 a notch (Chrome on Windows; macOS varies with acceleration), the form needs about 9 notches at 1440 × 900 (890px),
 7 at 1280 × 720 (724px), 9 at 1536 × 864 (857px) and 11 at 1920 × 1080 (1069px) before 9 Nov; since then about 7 at
-1440 × 900 (684px) and 8 at 1920 × 1080 (813px). A one-screen run cannot also be
+1440 × 900 (678px) and 8 at 1920 × 1080 (814px). A one-screen run cannot also be
 2–3 notches without taking over the wheel, which the native-scroll rule forbids (a hijacked wheel breaks
 trackpads, keyboard scrolling, find-in-page and assistive tech). The screen target (about one screen) was chosen
 over the notch count; on desktop the hero action is the one-press route (it walks in to the form in 1.0s), and
@@ -1386,8 +1429,9 @@ hall still shows through under them (r 0.65: light 0.87, title 0.14; r 0.66: lig
   position is kept, so a resize used to land the page back in the door sequence with the list hidden: after a
   keyboard closed in a browser that resizes the page (Android in-app browsers), or a rotation round trip, the
   focused email field was at opacity 0 (375 × 667: p 0.60). Now (a) while a field of the list has the focus and
-  only the height changed, the run keeps its length in px (`--porta-run` inline), so the list and the field do not
-  move under a keyboard; it is let go when the focus leaves the list; (b) when the list was at rest and the screen's
+  only the height changed, the run keeps its length in px (`--porta-run` inline) and the list its top padding (the
+  block's centring, inline px), so the list and the field do not move under a keyboard; both are let go when the
+  focus leaves the list; (b) when the list was at rest and the screen's
   width or small-viewport height changed, the page is put back at the same distance into the list. Measured with
   the reviewer's scenarios: 390 × 844, 375 × 667 and 430 × 932, the field focused at the end of the run and at the
   page's end, the page 300–350px shorter and back: the field stays opaque and in view, and the page returns to
@@ -1452,8 +1496,10 @@ This replaces the former instant jump.
   repeated Space / Enter on the action are also prevented, so they neither scroll nor re-press), a second press
   on the action or the cue within 450ms (a double click or tap), and a second activation of the same flight,
   which simply carries on at the speed it has (no stall and restart).
-- **Lands** on the list's rest position (`#lista` top = the end of the run, the same place as the anchor and
-  Tab), with the title and the email field in view; the list's words rise in during the last 300ms of the flight
+- **Lands** on the list's rest position (site.js `rest()`, the same place as `#lista` on load and Tab): the page's
+  end, which is the end of the run except on a phone with its toolbars shown (40px further on the client's iPhone),
+  or the list's top where the list is longer than the run's last screen (844 × 390); with the title and the email
+  field in view; the list's words rise in during the last 300ms of the flight
   and are at rest when it lands. The
   focus moves to the email field with `preventScroll`; the field is described by the list sentence («Deixe-nos o
   seu email e avisamos quando abrirmos.»), so a screen reader says where it arrived as the focus lands.
@@ -1539,42 +1585,78 @@ either can take over from the other at the same frame. site.js, «The 3D entranc
   2000/3000; VideoCore; Vivante; Tegra 2–4). An Apple GPU reports «Apple GPU» and is never on it. The answer is
   remembered for the session (`1|<renderer>` or `0|<why>`); the module repeats the software and caveat checks when it
   makes its own context.
-- **Early, never in the way.** At idle right after the load event (not on the first scroll; never inside a frame of
-  motion: the probe makes a WebGL context, 10–30 ms on a phone): the gate, the probe, then the module and three.js are
-  fetched as module preloads (parsed, not run). The textures are the page's own photographs, which 2a fetches at idle
-  for the walk-in anyway. The rest happens only while the page is still (at rest or under the flat colour, no input
-  waiting: `navigator.scheduling.isInputPending()` where it exists), each step its own idle task, and the next step
-  starts only once the GPU has done what the last one queued (a `fenceSync` polled between tasks, never waited on):
-  the module's evaluation; the mount, again only once still; the WebGL context; three.js on it; the scene; the
-  theme; the textures, decoded in a small worker (`createImageBitmap` there; on the page's own thread it still spent
-  60–80 ms of the facade master) and uploaded one per step, the 2388 × 2634 facade in bands of about 250 rows (an
-  empty texture allocated first, each band cut off the main thread and copied in with `texSubImage2D`, no state read
-  back), then its mip chain in a step of its own; one program per step (`compile` and its link status; all at once
-  with KHR_parallel_shader_compile); each program's first use, one mesh drawn into a 4 × 4 target per step; the
-  drawing buffer and the lens's targets; two frames drawn ahead with the canvas hidden. Review, door finish (4× CPU
-  throttle, a capable GPU spoofed, no input): long tasks from the load event until the 3D is on went from 5–6 of
-  50–234 ms (the module and the context in one task, the facade's upload 94–169 ms in another) to 0–1 of 64–97 ms
-  (the renderer's own setup or the first frame, SwiftShader's share in it); a touch drag that starts as the module is
-  asked for, or at the facade's first band, waits 28–53 ms for its first event (was 135–277 ms; `door3d.test.js` 6b
-  holds it to 50 ms, with a second attempt: one first attempt in five read 52 ms). Measured here (headless): the module is requested 220–290 ms after the load event and the 3D is
-  on about 2–3 s after navigation with 4× throttle, with no scroll. First paint and LCP are unchanged: nothing of the 3D is on the
-  critical path (the HTML names the module in `data-3d` / `data-3d-dep`, which costs nothing until it is fetched).
+- **Early, never in the way** (iOS round, 9 Nov: on the client's iPhone, `?diag` under the flat colour read
+  `3d=loading`, the gate passed on «Apple GPU»; the 3D came only later). At the first idle moment after the first
+  paint (a frame, then the next turn of the event loop; not after the load event, which waits for every photograph
+  in view): the gate, the probe, then the module and three.js as module preloads at low priority (the first
+  screen's photograph goes first). Every later step runs only while the page is still: no scroll being followed, no
+  flight, no touch, wheel, key or pointer for 150 ms (`CALM`), anywhere in the run (until 9 Nov: 400 ms, and only at
+  rest or under the flat colour, so a visitor who started to scroll got the 3D seconds after reaching the list).
+  The steps run in slices: one may follow the last in the same task while the slice is under 10 ms (`SLICE`); the
+  next slice is an idle callback, or a message-channel turn where there is none (Safari 26 has no
+  `requestIdleCallback`: a 16–50 ms timeout per step stood in for it, ~0.9 s over a mount); a fence is polled at the
+  next turn, then every 4 ms (16 before). The photographs are decoded in a small worker while three.js and the scene
+  are built (the leaves' geometry, `prep()`, in a step of its own: 11–30 ms of the scene's 25–50 at 4×); the facade
+  goes up in bands of ~250 rows, then its mip chain; on WebKit (every iOS browser, and Safari) one program is
+  compiled per step and its link asked for a step later (`KHR_parallel_shader_compile` is exposed there but a link
+  still blocks, webkit.org/b/251514), elsewhere `compileAsync`; each program is first used in the variant it is
+  drawn with (the canvas variant in one scissored pixel of the hidden canvas: primed only in a target, the canvas
+  programs were first used in the first warm frame, a 61–87 ms task at 4×); two frames are drawn ahead, hidden.
+  Stages, in order: `gate probe fetch wait eval context decode three scene theme upload compile warm frames on`.
+  Safari 26 API surface (MDN browser-compat-data, 9 Nov): no `requestIdleCallback` (flag only),
+  `navigator.scheduling`, `scheduler.postTask`/`yield`; has workers with `createImageBitmap` (15; its options 15,
+  `premultiplyAlpha` fully 17), AVIF (16), `modulepreload` (17), `fenceSync`/`getSyncParameter` (15),
+  `OffscreenCanvas` (16.4; WebGL 2 in it 17, not used), `MessageChannel`; no import map is used.
+  Measured (iPhone emulation in Chromium, `final4-work/ios-load/tools/ios.js` in the working notes: Safari 26.6.1
+  user agent, DPR 3, 390 × 796, 4× CPU throttle, Safari's API surface, «Apple GPU» spoofed on SwiftShader; GPU times
+  are SwiftShader's, a phone's GPU does that work in a fraction of it; re-run for iPhone round 2, 10 Nov, ranges with
+  the number of runs). A still visitor: on 2.0–2.4 s after the load event (6 runs; the review's 7 runs on the same
+  machine a few hours earlier: 2.4–3.0 s), 1.1–1.4 s of it on SwiftShader's fences; with DPR 1 (a ninth of the
+  fill) 1.3–2.0 s (3 runs). Per stage, mean of 6 (ms): wait 37, decode 54, three 39, scene 42, upload 403, compile
+  43, warm 506, frames 572 (before the iOS round: 3.6–4.3 s in all, upload 858, warm 768, frames 741). Long tasks
+  after the load event: none in 6 still runs, one of 57 ms (scene) in 3 at DPR 1; in 16 flick runs, 54–56 ms (scene)
+  in 2, 76 ms (frames, the visitor's flick landing in it) in 1, and 54–66 ms once the 3D was on in 2 (one in its
+  frames before the hand-back, one 5.7 s after it); the review saw 51–72 ms in the three and scene
+  steps in 4 of 14. Nothing held. A visitor flicking from
+  1 s after the load (five flicks, 900 ms pauses, at the list 7.2 s after it): while it loads, no input waits over
+  35–46 ms (5 runs; the review saw 54–76 ms in 4 of 12 flick runs, 3 of them while a frames step drew: a touch that
+  lands in a frames step can wait 55–75 ms on SwiftShader, and once 151 ms in a first attempt of `door3d.test.js`);
+  on at 7.4–9.2 s, after the list (5 of 5), so that walk-in is the CSS one: the steps wait for the pauses (held
+  4.2–5.3 s) and SwiftShader's fences take 2.2–2.9 s as it composites the CSS walk-in at DPR 3 meanwhile. From 2 s:
+  on at 2.0–3.7 s, taken over in the first walk-in (6 of 6: at the first frame of a flick, r 0.003, or parked
+  mid-walk, r 0.202–0.217, by the cross-fade). From 3 s: on at 2.0–2.7 s, taken over at the first frame of the
+  flick (5 of 5). On SwiftShader the 3D then cannot keep up at DPR 3 and the guard hands it back: before the GPU-lag
+  rule (below) after 0.9–1.2 s of frames («a frame of 167–317 ms», 6 runs), with ~5 s of GPU work queued: touches
+  waited up to 256–618 ms and the next flick came 4–4.5 s after the last (1.55 s on the CSS walk-in); with it (7
+  runs) after 4–9 frames («the GPU 123–149 ms behind»): touches 36–213 ms, the next flick 1.55–2.1 s.
 - **The live safeguard** (`watch3d()`, once per driver frame): the interval from a frame in which the canvas drew to
   the next frame (the GPU's share included: the next frame waits for it), over the first second of such frames after
   each mount. Any frame over 120 ms, or a median over 25 ms (or over 1.5× the display's own cadence where that is
   slower, so a 30 Hz low-power mode is not taken for a slow GPU: a dozen empty frames are timed at idle as soon as the
-  gate has passed, before anything is fetched), hands back. A loop that stopped (the page at rest) starts the count afresh; after a tab switch or
+  gate has passed, before anything is fetched), hands back. So does the GPU's own lag (iPhone round 2): a fence after
+  each frame drawn (door3d.js `lag()`, polled once a frame, never waited on); a frame the GPU has not finished after
+  the frame limit (120 ms) with 3 or more waiting hands back («the GPU 124 ms behind, 8 frames (limit 120)»). In
+  Chromium a WebGL canvas can queue seconds of GPU work before its main thread feels it: on the iPhone emulation the
+  frame rule caught SwiftShader only after ~1 s of frames, with ~5 s of work queued that went on draining after the
+  hand-back. One stale answer after a stall (a single frame waiting) is not counted. A loop that stopped (the page at rest) starts the count afresh; after a tab switch or
   a page restored from the back/forward cache the next two intervals are not counted (the first frame after a stall
   can carry the time stamp of a frame scheduled before it). So do a lost context while the page is shown (memory
   pressure, a GPU reset) and any exception in a draw. The hand-back is at the same progress, for the rest of the
   session (`0|<why>`; the next load is refused before anything is probed or fetched), and `?diag` says why. When the
-  canvas still shows a frame (the two timing rules), the CSS layers are shown under it at once and it dissolves into
+  canvas still shows a frame (the timing rules), the CSS layers are shown under it at once and it dissolves into
   them over `--dur-handback` (180ms, linear, opacity on the compositor) with its last frame frozen: the slow 3D is not
   drawn again (review, door finish: drawn through a 400ms dissolve it gave 3 more slow frames; now none, and with a
   50 ms frame injected the frames return to 17 ms at once); a lost context or an exception cannot draw, and the swap
-  is immediate. A hand-back lets the context go at once (`WEBGL_lose_context` after every texture, target, geometry
-  and program is disposed), not at the next garbage collection: its drawing buffer (MSAA on a phone) is often what the
-  device was short of. What changes at a hand-back is only what 3D adds:
+  is immediate. A hand-back disposes every texture, target, geometry and program at once, and lets the context go
+  (`WEBGL_lose_context`) once the GPU has done what was queued (a fence, polled every 100 ms) and the page is still
+  or hidden (`release()` in door3d.js), not at the next garbage collection: its drawing buffer (MSAA on a phone) is
+  often what the device was short of. Lost at once, in the visitor's gesture, Chromium tore the command buffer down
+  synchronously, waiting for the GPU's backlog (iPhone emulation, review: one main-thread task of 5.9–10.8 s right
+  after the hand-back, the next flick 12 s late). Now (iPhone emulation, 13 runs): the context goes 2.7–7.2 s
+  after the hand-back on SwiftShader (5 timed runs), once its queue has drained, in 9–19 ms (8 runs); no long task in the 2 s after the
+  hand-back in 12 of 13 runs (one of 64 ms, 1.1 s after it), and 55–108 ms in 2 more runs 4–5 s after it (not the
+  release). While SwiftShader drains the 3D frames already queued, touches wait 100–340 ms (the CSS walk-in alone:
+  ≤ 42 ms), 37–213 ms since the GPU-lag rule hands back sooner (see the live safeguard). What changes at a hand-back is only what 3D adds:
   mean |ΔRGB| of the whole screen, 3D against CSS at the same p (headless, `final3-work/sbs.js`): p 0.002 0.36–0.99,
   p 0.15 1.1–2.3, p 0.3 2.5–3.6, p 0.5 18–26 (open, the 3D leaves stand in the doorway with their light, the CSS
   ones are flat and the hall differs in depth); the dissolve is there for that last case.
@@ -1596,8 +1678,10 @@ either can take over from the other at the same frame. site.js, «The 3D entranc
   frame-time rule, whose numbers still show in `?diag`; the GPU probe and the context-loss and exception hand-backs
   stay); `?3d=force` also skips the probe (the headless tests draw with SwiftShader); `?guard[=MED,MAX]` turns the
   frame-time rule on in any mode with those limits in ms; `?sem3d` forces the CSS entrance. `?diag` shows
-  `path=3D|CSS 3d=<state> why=<reason> dpr=<ratio>` and, once mounted, `guard=on|off frames=<n> <ms> median= worst=
-  cadence=`. States: `off`, `loading`, `on`, `refused`, `handing back`, `handed back`, `context lost`. The testing
+  `path=3D|CSS 3d=<state> why=<reason> dpr=<ratio>` (while loading, the stage, its step and the ms since the load
+  began: `3d=loading:upload 5/19 840ms`), then `3d steps: load@<ms> gate@<ms> … on@<ms> held=<ms>` (when each stage
+  began, ms since navigation; how long the steps waited for the page to be still) and, once mounted, `guard=on|off
+  frames=<n> <ms> median= worst= gpu lag= cadence=`. States: `off`, `loading`, `on`, `refused`, `handing back`, `handed back`, `context lost`. The testing
   switches belong to the address: the PT · EN links do not carry them.
 
 The client saw the CSS leaves as flat cut-outs («parece um jogo da Sega Saturn»: no thickness, a painted knob, no
@@ -1626,10 +1710,13 @@ the door may be lost.**
   its buffer is ~24 MB, less than ~42 MB at 2 with MSAA; the cost is 2.25× the pixels to shade, which the live
   safeguard watches (a phone that cannot keep up is handed back to the photograph).
 - **What 3D adds** (only what a picture cannot): leaves 55 mm thick, hinged on their outer front corners (the brass
-  knuckles stay, the leaves swing in to 84°); raised-and-fielded panels as real geometry measured on the photograph
-  (per side: a 20–24 px moulding band with quirk, ovolo and groove, a 10–30 px bevel to a field 5 mm below the
-  stile; mitred rings, smooth normals across the ovolo), so the photographed shading stays where its relief is and
-  parallax shows at grazing angles; knobs as lathe solids (rose Ø 76 mm, head Ø 69 mm, 66 mm deep) and the
+  knuckles stay, the leaves swing in to 84°); raised-and-fielded panels as real geometry on the photograph's own panel
+  layout (`PANELS`, measured on it; iPhone round 2: a bolection moulding proud of the stiles, as the photograph shows
+  it: per side a rise from the stile over 2–7 px, a rounded crest +12 mm, an ovolo falling to a fillet, the crease at
+  the bevel's foot −6 mm, then a 10–30 px bevel up to a field 12 mm proud of the stile, 17–42°; it was 1–13 mm below
+  the stile with a 9° bevel, too flat to catch a raking light; broad on purpose, the photograph draws the fine lines;
+  mitred rings, smooth normals across crest and ovolo; the stiles and rails a grid through every ring corner, no
+  T-junction cracks), so the photographed shading stays where its relief is and parallax shows at grazing angles; knobs as lathe solids (rose Ø 76 mm, head Ø 69 mm, 66 mm deep) and the
   escutcheon as a 4.5 mm plate, carrying the photographed brass; the doorway's depth (limestone jambs sampled from
   the pilasters, the lintel's soffit); the hall as a box; the facade as an endless plane carrying the page's street round the photograph (`FS_FACADE`: the wall's stops as a 256 × 1 lookup texture (walking the stops per pixel doubled the frame time in the software renderer the tests use: p95 167–200ms against 83–100 before the street; with the lookup 117–150), the paving strip with RepeatWrapping at one facade width, or three when the stylesheet picked the 3-width strip (`uSt.w`, the period, read from the file's name; fix r1) (no anisotropic filtering: the plane faces the camera all the way in), the colour below it, the two night lights as gains, evaluated only inside their ellipses; the photograph's outer fade laid over it; the strip is the file the page's stylesheet picked, read from `.ph--street`'s computed background, so it comes from the cache), so the take-over frame and the CSS rest frame meet with the street intact.
 - **Brass the photograph saw edge-on** (the knob's neck, the rims of the rose and the head, the hinge barrel's sides)
@@ -1641,7 +1728,34 @@ the door may be lost.**
   olive's shadows; the lantern as a point light by night; the street's sky; the hall's warm bounce, stronger deeper
   in; the sun or lantern seen only through the doorway; the knob's soft sphere shadow). At rest the ratio is exactly 1.
   Clamped to 0.5–1.45 by day, 0.5–8 by night (the leaves turning into the lamplit hall). Brass adds only the CHANGE of
-  a restrained reflection (now minus rest). The oiled walnut's sheen: a new sheen adds light; the photographed one
+  a restrained reflection (now minus rest).
+  **The relief as the leaves turn** (iPhone round 2, 9 Nov; client: «não há relevo na porta», then «já há puxadores»).
+  At rest the frame is the photograph, so the relief can only read in motion. The first attempt (each facet's full
+  irradiance, sun + sky + hall, over its face's, to the power 1.25, and a Schlick reflection of a sky-coloured
+  environment ×0.12) left the walnut's moulding-scale contrast where it was (−3…+0.5 %) and laid a blue-grey film on
+  the turned leaves (walnut G/B 2.4 → 1.6). Now (FS_SOLID `keyL`, `relK`): the leaf's exposure still comes from its
+  flat face (E(now) / E(rest), clamped), and the relief takes its contrast from one raking key alone, without the
+  domes that diluted it: by day the street seen through the opening (from the doorway's plane face-on and a little
+  from above, the photograph's own light: top bevels lit, bottom ones dark); by night the lamplit hall's far side,
+  from inside (the street faces do not see it at rest). Per facet: (floor + its key) / (floor + the face's), now over
+  at rest, to the power 2.8, within 0.35–2.2, floor 0.12 of a face-on key; exactly 1 at rest and on the face, a
+  scalar, so the photograph's colour stays. The crease at each bevel's foot takes the moulding's shade when the key
+  comes across it from the stile's side, reaching out by the tangent of the key's incidence (a quarter of the bevel
+  at 45°). What the frames show: by day, from the first degrees of the swing, the hinge-side bevel and moulding of
+  every panel light up with a dark crease line beside them and the free-edge side falls into shade; by night the
+  reverse (the light comes from the hall's far side), on darker leaves. The sky's reflection is gone; the oiled
+  walnut keeps a sheen as a gain on the photo pixel (chroma kept): the lit hall mirrored at grazing angles (Schlick,
+  F0 0.04; ×0.08 Dia, ×0.1 Noite; at most +35 %), none at rest. Rejected on the way, by eye against the photograph:
+  beads 1–2 device px wide (their lit and shaded facets broke the photograph's fine lines into dashes; no MSAA above
+  4.2 Mpx), a crease shade spread over the whole bevel (it put out the photograph's bright top bevels), the key's
+  own highlight (no visible gain: camera and key on the same side). Measured against the pre-relief build (doorway
+  crops, 390 × 844 @3 and 1440 × 900 @2, `shots/iphone2/relief/relief2-sheet-*.png`, `relief2-zoom-*.png`; mean |DoG(1.5 vs 6
+  device px)| of luminance over the panels' bands, mapped from `PANELS` through each leaf's projected face, probe
+  `quadL` / `quadR`): Dia p 0.1–0.3 ×1.29–1.92 (p 0.05 ×1.13–1.48), the fields' grain ×0.78–1.07; Noite right leaf
+  ×1.22–1.85, left leaf ×0.97–1.26 (it stands in the jamb's shade, luminance 17–23, and from p 0.2 it is a sliver
+  ~30 device px wide); at rest ×0.98–1.00. Walnut G/B by day 2.09–2.23 / 2.40–2.44 (left / right leaf; pre-relief
+  2.13–2.23 / 2.42–2.44, the first attempt 1.63–1.86 / 1.54–1.79). At rest nothing changes
+  (`door3d.test.js` 5: the take-over frame equals the photograph). The sun's highlight on the walnut: a new one adds light; the photographed one
   going away scales the photo pixel as a whole, its chroma kept, by at most 12 % (an absolute amount taken from dark
   walnut emptied its blue channel: the leaves turned red-orange, crimson in shade). Walnut pixels with blue ≤ 2,
   1440 Dia: p 0 0.2 %, p 0.15 0.6 %, p 0.3 0.8 %, p 0.5 2.3 % (CSS entrance at p 0.5: 2.1 %; before: 15 / 11 / 44 %).
@@ -1689,19 +1803,34 @@ the door may be lost.**
   photograph's layers stay hidden too (review, door finish: shown again there, at rest scale and then at the camera's
   zoom, they were decoded and painted under the opaque flood just as the list rose in, 4 decodes and frames of
   100–300 ms at 390 × 844; now 0 decodes and no slow frame through the hand-off). They come back only if the canvas
-  cannot draw (a theme still loading, a hand-back, a lost context). It takes over only at one of those
-  two moments (armed at rest or under the flat colour, again after each theme change), never mid-shot. The swap is
-  two inline styles (canvas `visibility`, `.scene` `visibility`), never a class on `html`. Whenever it cannot draw
+  cannot draw (a theme still loading, a hand-back, a lost context). It takes over as soon as it is ready (on, and
+  again after each theme change), wherever the walk-in is: at rest on the next scroll's first frame and under the
+  flat colour by a plain swap (the frames are equal); in the middle of the walk-in at the same r by a cross-fade
+  (iPhone round 2, client: «não há relevo na porta», then «já há puxadores»: he opens the page and scrolls at once,
+  and the take-over used to wait for rest or the flat colour, so his first walk-in was always the CSS one). The
+  cross-fade: the canvas fades in over the CSS entrance, which follows the same r under it, over `--dur-handback`
+  (180ms, linear, Web Animations on the compositor), and the photograph's layers are hidden only once it is opaque;
+  a hand-back during it is immediate. What it changes is what 3D adds (the CSS leaves turn in the stage's
+  perspective, the 3D ones in the camera's: at p 0.03–0.2 the leaves reshape and the hall deepens, doorway mean
+  |ΔRGB| 4–6). The canvas sits one step above `.scene` (`calc(var(--z-scene) + 1)`), under the text, the cue and the
+  flood (z-index 2, later in the document): at the same z-index the scene, later in the document, covered it, so
+  the cross-fade showed only its end, and the hand-back's dissolve was in fact an instant swap. iPhone emulation,
+  opened and scrolled at once to p 0.2 (Dia and Noite): on 3.4–3.5 s after the load, taken over at p 0.2024 by a
+  fade of 175 ms (10 frames with both), no long task (`door3d.test.js` 8); the frame held at the fade's middle lies
+  between the two (mean |ΔRGB| CSS → half 0.96 / 0.69, half → 3D 0.75 / 0.48, Dia / Noite; CSS → 3D 1.71 / 1.17,
+  the doorway's centre 3.12 / 2.56; `shots/iphone2/ios-load-fix/midwalk-takeover-*.png` in the working notes). A
+  visitor who reaches the flat colour before it is on still gets the CSS walk-in, and the 3D on the way back up. The
+  swap is two inline styles (canvas `visibility`, `.scene` `visibility`), never a class on `html`. Whenever it cannot draw
   (the other theme's textures still loading, a lost context) the CSS entrance, which follows r all along, is shown;
   after a theme change under the shown canvas its last frame stays (at most 300 ms) until the new theme's facade and
   leaves are decoded, so the CSS entrance never comes back for a frame without its facade.
 - **Delivery.** By default, behind the gate (see Status). Nothing on the critical path, and nothing in a gesture. A
   device with no WebGL 2 worth having is known before a byte is fetched (the probe, remembered for the session). At
-  idle right after the load event the module and three.js are fetched as module preloads (`<link rel="modulepreload">`;
-  `data-3d` and `data-3d-dep` on `.porta` name both, content-hashed). The module is evaluated, mounted and warmed only
-  while the page is still (no scroll followed and no flight for 400 ms, at rest or under the flat colour, where a
-  visitor reads; a pause mid-shot is often the gap between two gestures): never in the hero's motion (it cost the CSS sequence 100–300 ms frames at 4×
-  throttle, review r1), and it gains nothing then, since the canvas takes over only at rest or under the flat colour.
+  the first idle moment after the first paint the module and three.js are fetched as module preloads
+  (`<link rel="modulepreload" fetchpriority="low">`; `data-3d` and `data-3d-dep` on `.porta` name both,
+  content-hashed). The module is evaluated, mounted and warmed only while the page is still (see Status: 150 ms with
+  no scroll followed, no flight and no input, anywhere in the run), in slices of about 10 ms: never in the hero's
+  motion (it cost the CSS sequence 100–300 ms frames at 4× throttle, review r1).
   The module imports `assets/js/vendor/three.min.js` (an esbuild tree-shaken subset of `three`: 23 exports, MIT
   notice kept; `tools/vendor_three.py`, committed, the build only copies it). Textures are the page's own files: the
   facade and the leaves at the sizes the page already fetches for the walk-in (sizes = 3× the scene), the plate, the
@@ -1724,7 +1853,14 @@ the door may be lost.**
   (an iPhone at 2: ~42 MB; 1440 × 900 at 1: ~41 MB), without it 8 (390 × 844 at 3: ~24 MB; 1440 × 900 at 2: ~41 MB,
   was ~170 MB with MSAA before the door finish); estimates, not measured on a device.
 - **Refused, quietly, to the CSS entrance:** everything the gate names (see Status), before anything of the 3D is
-  fetched; a lost context or an exception, at the same progress (see the live safeguard). A shader that does not
+  fetched; a step that makes no progress within its limit (the watchdog, every 250 ms: 8 s of still time per step,
+  12 s for the module's evaluation, 20 s of any time while fetching or decoding; none while waiting for the page to
+  be still; time away never counts: a hidden page's ticks are skipped, one tick counts 500 ms at most, and a return
+  from the background starts the step's limit afresh; until iPhone round 2 the overdue tick iOS fires on a page's
+  return counted the whole absence, and 12 s away in «upload» refused the 3D for the tab's session in 4 of 6 runs),
+  named (`timeout: upload 1/19 (no progress in 8.1 s)`), remembered for the session except while fetching
+  or decoding (a network fault: tried again on the next load), so no promise (a photograph, the worker, a fence, a
+  compile) can leave «loading» for good; a lost context or an exception, at the same progress (see the live safeguard). A shader that does not
   compile or link on the device's driver (three.js only logs it and draws on without that part: the leaves vanished
   from the doorway): `renderer.debug.onShaderError` and each program's `LINK_STATUS`, read in the mount, refuse it there
   («mount: compile: shader: …», nothing drawn); a program first used later hands back. Any mount that fails is
@@ -2066,8 +2202,8 @@ accessibility tree (nothing is made inert or hidden).
 - Tests (Playwright + Chromium, never touching the real endpoint; they need `require("playwright")` to resolve:
   `npm i -D playwright && npx playwright install chromium` in the repository, or a global install on
   `NODE_PATH`): `node src/tests/reverse-scroll.test.js docs` (the reverse-scroll / overscroll / toolbar
-  regression plus fast flicks, 56 checks; it chooses Dia or Noite explicitly, since the default follows the sky)
-  and `node src/tests/cta.test.js docs` (63 checks: the walk-in on request at 390 and 1440, from PT and EN, in
+  regression plus fast flicks, 84 checks; it chooses Dia or Noite explicitly, since the default follows the sky)
+  and `node src/tests/cta.test.js docs` (75 checks: the walk-in on request at 390 and 1440, from PT and EN, in
   both themes and the default sky theme with a pinned clock: click, Enter, Space, the scroll cue, a held Space or
   Enter and a double click fly forwards only, 0.9–1.1s, without a stall, with the scene playing, and land with
   the title and the email in view and the focus in the email; a wheel, a key, a pointer press or a touch stops
@@ -2077,24 +2213,32 @@ accessibility tree (nothing is made inert or hidden).
   screen is one colour, mid-rise, at p = 1 and with the seam on screen, Dia and Noite, at 390 × 844, 430 × 932,
   375 × 667, 320 × 568, 844 × 390, 768 × 1024, 1440 × 900, 1920 × 1080 and 2560 × 1080; on 320 × 568, 375 × 553, 375 × 667 and 390 × 664
   the photograph's foot is inside the first screen and the cue is never sliced) and `node
-  src/tests/list.test.js docs` (68 checks: a tap or a click on the email field or the button never moves the
+  src/tests/list.test.js docs` (156 checks: a tap or a click on the email field or the button never moves the
   page, at three rest positions on 390 × 844 and 375 × 667 by touch and 1440 × 900 and 1280 × 720 by mouse, and the
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
   rest after a reload at the bottom, on six screens including 844 × 390 and 1440 × 900 at 200%; the scroll to the
-  readable form is 0.9–1.2 screens on six viewports; the send error carries the mailto link and the success line
+  readable form is 0.6–1.0 screens on six viewports; the send error carries the mailto link and the success line
   sits where the field was, PT and EN; the sun note shows on phones, in EB Garamond, with dark mode not overriding
-  the sky, clear of the crest at five sizes). `src/tests/png.js` decodes the screenshots (Node's zlib only).
-- The 3D entrance: `node src/tests/door3d.test.js docs` (92 checks). Headless Chromium has no GPU, so the default
+  the sky, clear of the crest at five sizes; J: where the scroll stops (the page's end) the block is within 8px of the screen's
+  middle where the footer fits under it with 32px clear, otherwise 16–32px above the footer with the title on screen,
+  and the page ends with the run (a block and footer taller than the screen: 16px from the top where the run ends, the
+  field whole), at ten sizes, Dia and Noite, PT and EN; the same with Safari's bars shown and hidden, emulated by
+  `serve.ios` (the client's 390 × 796 / 836, 393 × 695 / 735, 375 × 553 / 627), where the hero action and `#lista`
+  land at the page's end; and a failed check grows the form downwards;
+  K: reduced motion and no JavaScript put the list right after the photograph, centred at `#lista`). `src/tests/png.js` decodes the screenshots (Node's zlib only).
+- The 3D entrance: `node src/tests/door3d.test.js docs` (113 checks). Headless Chromium has no GPU, so the default
   page refuses its SwiftShader renderer, as it should; the 3D path is driven with `?3d=force` (no probe, no frame-time
   rule) or, for the default path, with a capable GPU spoofed in an init script (the renderer's name, the
   major-performance-caveat flag dropped, 8 cores and 8 GB) and `?guard=MED,MAX` limits SwiftShader can meet.
-  1. Per viewport (390 × 844 touch, 1440 × 900 mouse) and theme, `?3d=force`: requested at idle right after the load
-  event and mounted with no scroll; the photograph at rest with no inline style; the canvas drawing the doorway at
+  1. Per viewport (390 × 844 touch, 1440 × 900 mouse) and theme, `?3d=force`: requested at the first idle moment after
+  the first paint and mounted with no scroll; the photograph at rest with no inline style; the canvas drawing the doorway at
   p 0.15 / 0.3 / 0.5 with the layers hidden; flat `--color-hall`, no canvas and the photograph hidden at p 0.9; the
   exact rest state back at the top; touch drags down and back (390) and the walk-in on request recorded frame by frame
   (a ResizeObserver, after the driver wrote the frame): while the camera moves the canvas draws and the photograph is
   hidden, never a frame with neither under a stage that is not yet flat, never the camera at rest deep in the run; the
-  flight lands in the email field in 0.9–1.1 s (within one SwiftShader frame); a theme change mid-run
+  flight lands in the email field in 0.9–1.1 s (within one SwiftShader frame; SwiftShader's landing frame sometimes
+  takes 100–300 ms, on the 9 Nov base build too, so about one flight in twelve misses it: timing, run it again); a
+  theme change mid-run
   (canvas or CSS entrance, never neither); a theme change at rest after which the next scroll uploads no texture; a
   context lost in the background (the CSS entrance while away, the 3D rebuilt once shown); a context lost while shown
   (the CSS entrance at the same progress, mean |ΔRGB| of the frames before and after < 6, kept after a pageshow).
@@ -2102,8 +2246,8 @@ accessibility tree (nothing is made inert or hidden).
   without `?3d=force`), a data saver, a 2G link, deviceMemory 1, 2 cores, a weak GPU's name: refused with the reason,
   nothing requested, no WebGL context made where the reason is known before the probe; the refusal remembered for the
   session (no probe on the next load); `?3d` on a weak GPU draws (soft heuristics skipped), `?3d` on a software
-  renderer is refused (the probe stays); a capable GPU gets the 3D by default, requested at idle after the load event,
-  before any scroll.
+  renderer is refused (the probe stays); a capable GPU gets the 3D by default, requested within 2.5 s of the load
+  event, before any scroll.
   3. The live safeguard (capable GPU spoofed): a 2.5 s frame in the first second of motion dissolves into the CSS
   entrance at the same progress (mean |ΔRGB| against the 3D frame at p 0.3 < 6; the canvas mid-dissolve over 180ms;
   no draw call while handing back), remembered
@@ -2122,12 +2266,31 @@ accessibility tree (nothing is made inert or hidden).
   too (the log says RETRY); run the suite alone for a strict reading. SwiftShader presents a 3D frame late (a frame
   read 300 ms after a scroll can be one drawn earlier), so every frame compared is read after a settle wait.
   6b. A touch drag that starts as the module is asked for, and one at the facade's first band (default path, 4×
-  throttle): no input waits over 50 ms (the same two-attempt gate).
+  throttle): no input waits over 50 ms (the same two-attempt gate). The first lands on the module's evaluation, one
+  task by design: at the final check of 10 Nov it waited 44–69 ms on this build and 53–76 ms on the build the iPhone
+  round started from (5 runs each, same machine), so a slower machine can fail both attempts with no regression;
+  compare with the previous build before reading a failure as one.
   7. Review, door finish: the open leaves' width against the doorway flat from p 0.34 to 0.62 (within 1%; the 3D
   frame's meshes projected by its own camera, `__porta.d3probe()`), the main camera still and the hall's camera walking
   in, at 390 × 844 and 1440 × 900; a shader that does not compile (injected) refused at the mount on the default path
   and with `?3d=force`, nothing drawn, remembered; a draw that throws while the mount warms up, and a module with a
-  syntax error, refused, named, remembered, the next load asking for nothing; a hand-back loses the context at once.
+  syntax error, refused, named, remembered, the next load asking for nothing; a hand-back loses the context once the
+  GPU has caught up and the page is still.
+  8. iOS round: under the iPhone emulation (Safari 26.6.1 user agent, DPR 3, 390 × 796, 4× CPU throttle, no
+  `requestIdleCallback` / `navigator.scheduling` / `scheduler` / `deviceMemory` / `navigator.connection`, «Apple GPU»
+  spoofed), a still visitor: the gate within 1 s of the first paint, «on» within 4 s of the load event and within
+  1.5 s of it net of SwiftShader's fence waits, every stage in order, no long task over 50 ms after the
+  load event, under 300 ms held; a visitor flicking from 1 s after the load event while the 3D loads: no input waits over 50 ms (both
+  two-attempt timing gates); `?diag` while loading names the stage, its step and the time
+  (`3d=loading:upload 5/19 840ms`) and, once on, when each stage began; the watchdog: a band's crop that never
+  resolves is refused as `timeout: upload 1/n (no progress in 8.x s)` and remembered, a worker that never answers as
+  `timeout: decode (… 20.x s)`, not remembered. iPhone round 2: opened and scrolled at once (p 0.2 while loading),
+  the 3D takes over in that walk-in when on, at the same r, by a cross-fade (frames with both layers, opaque after
+  120–700 ms, never a frame with neither, no long task over 50 ms), and the next flick is drawn in 3D; a forced
+  hand-back (`?guard=25,60`): no long task over 50 ms in the next 2 s, the context let go later in under 50 ms; the
+  main thread held 12 s in «upload» (CDP `Debugger.pause`, as iOS suspends a page): «on», nothing remembered. The
+  flicking visitor's input check counts the inputs before «on» only (once on, it may take over mid-walk, and
+  SwiftShader's 3D frames at DPR 3 then hold touches up to 213–340 ms until the guard hands back).
   The other suites load the default page, which refuses SwiftShader, so they exercise the CSS entrance, plus a 3D pass
   where the review asked for one (review, door finish): `reverse-scroll.test.js` runs each viewport again with
   `?3d=force` (one theme each, `R3D_ALL=1` for both), its rest checks waiting for r = p = 0 and asking for the canvas
@@ -2178,8 +2341,9 @@ accessibility tree (nothing is made inert or hidden).
   fallback faces, site 5.6), JS 12.1 (10.0 before the 3D entrance's loader and fallbacks), fonts 37.0 (Cinzel capitals 6.1, EB Garamond 400 15.0 and 500 15.9; the
   pitch typography replaced 62.2 kB of Cinzel and Alegreya files, 94.2 kB before); target 150 kB, ceiling 170 kB
   (og and icons excluded). The privacy notice is 9.4 kB of HTML (70.4 kB in all). The 3D entrance, where the gate lets
-  it, adds door3d.js 13.3 kB and three.min.js 133.3 kB gzip (40.4 / 535.6 kB raw), at idle after the load; site.js is
-  14.4 kB gzip since the door finish (was 12.5).
+  it, adds door3d.js 16.8 kB and three.min.js 133.3 kB gzip (53.9 / 535.6 kB raw), fetched at the first idle moment
+  after the first paint; site.js is 15.6 kB gzip since the iPhone round of 9 Nov (14.4 since the door finish, 12.5
+  before).
   The photo is counted on its own (Components › entrance › Budgets: 98 KB by day, 47 KB by night on a 3× phone).
   The HTML lost the inline SVG drawing (it was most of the page) and gained a `<picture>` per layer and theme. CLS 0
   on every page (the photograph's boxes are sized by CSS; the wrapper grows below the fold).
@@ -2310,6 +2474,12 @@ Don't:
   0.34%), so the shader keeps its mipmapped lookup. The page's repeating background is drawn in whole device pixels
   (Blink snaps a repeating tile's size and phase), the canvas samples the plane continuously: matching it means
   reproducing that snapping (the tile's rounded size and phase, read from the page) for the rest frame.
+  The left leaf too (iPhone round 2, Chromium): at the take-over the 3D left leaf lands ~1 device px right of the CSS
+  leaf (390 @3 and 1440 @2: mean |ΔRGB| 4.5–5.2, 1.6–2.4 shifted 1 px; the jamb and the right leaf align at 0).
+  The canvas camera's box is the scene's whole-px offset box (site.js `box3`); the page draws the facade on whole px
+  but `.leaf--l` at its fractional layout (the hinge ring is not the cause: same without it). A fractional box
+  aligned the leaf and moved the jamb off (mean |ΔRGB| 1.5 → 6–10), so the whole-px box stays; matching both needs
+  the leaf's own snapped rect, read from the page.
 - Scrolling at 2560 × 1440 by night, CSS entrance, 4× CPU throttle, software raster (review r1, weak evidence): 278–292
   frames delivered against 321–324 for the build before the street, p95 66.7ms, no long task: the cost is in drawing
   (likely the street box's two large color-dodge gradients). Not reproducible as a real-GPU figure here; measure on a
@@ -2338,8 +2508,9 @@ Don't:
   image (clamped, smeared edge pixels). A hall camera further back has the same band. Needs its own visual rounds;
   the hall's own camera (zh = s^−0.12) keeps it where it was before the review.
 - The mount's last long tasks (review, door finish): at 4× CPU throttle on SwiftShader, one task of 64–97 ms may remain
-  (three.js's renderer setup, 31–56 ms, or the first frame drawn ahead), and the GPU probe's throwaway context at idle
-  after the load event (about 50 ms). Both run only while the page is still; a gesture that starts during one waits
+  (three.js's renderer setup, 31–56 ms, or the first frame drawn ahead; none over 50 ms after the load event in the
+  iPhone emulation of 9 Nov, The 3D entrance › Early), and the GPU probe's throwaway context at the first idle moment after the
+  first paint (about 50 ms). Both run only while the page is still; a gesture that starts during one waits
   for it (28–53 ms measured for the first event, `door3d.test.js` 6b). Real-GPU figures still to be taken.
 - The drawing buffer stays allocated for the visit even under the flat colour (resizing it away would cost the next
   take-over a reallocation); MSAA is off above 4.2 Mpx since the door finish, so a 1440 × 900 @2 laptop holds ~41 MB

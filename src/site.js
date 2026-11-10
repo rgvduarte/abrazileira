@@ -507,14 +507,18 @@
          software renderer, MAX_TEXTURE_SIZE >= 4096; and, only to keep clearly weak devices out (soft heuristics):
          navigator.deviceMemory under 2 GB, fewer than 4 cores (not on iOS, where WebKit may report fewer), a GPU on
          the WEAK list below. The GPU's answer and any hand-back are remembered for the session (sessionStorage).
-       - early, never in the way: at idle right after the load event the GPU is probed and the module and three.js
-         are fetched (module preloads: parsed, not run; the page's own photographs, the textures, are fetched at idle
-         by 2a); they are evaluated, mounted, uploaded and compiled only while the page is still (at rest or under the
-         flat colour), each step its own idle task, so a scroll never pays for them.
+       - early, never in the way: at the first idle moment after the first paint (not after the load event) the GPU
+         is probed and the module and three.js are fetched (module preloads, low priority: parsed, not run); they are
+         evaluated, mounted, uploaded and compiled in short slices (about 10 ms of work each, a message-channel turn
+         apart where there is no requestIdleCallback: Safari) whenever the page is still: no scroll being followed,
+         no flight, no touch, wheel, key or pointer for 150 ms, anywhere in the run (iOS round, 9 Nov: held to the top
+         or the flat colour, a visitor who scrolled within 3 s of the load got the 3D only ~10 s later). Each step
+         has a time limit (the watchdog): no step can leave «loading» for good.
        - the live safeguard (watch3d()): the frame intervals over the first second of 3D motion; a median over 25 ms
          (or 1.5x the display's own cadence where that is slower: a 30 Hz low-power mode), any frame over 120 ms (not
-         the first after a tab switch), a context lost while the page is shown, or an exception hands back to the CSS
-         entrance at the same progress (it has followed r all along) and is remembered for the session.
+         the first after a tab switch), a drawn frame the GPU has not finished after 120 ms with 3 or more waiting (its
+         own lag, door3d.js lag(): iOS round 2), a context lost while the page is shown, or an exception hands back to
+         the CSS entrance at the same progress (it has followed r all along) and is remembered for the session.
        - a context lost in the background (iOS frees a hidden page's GPU memory, and may say so only on its return)
          is rebuilt from the cached files once the page is shown and still, twice at most.
        ?3d forces it, for testing on a real device: no soft heuristics, no session memory, no frame-time rule (its
@@ -524,10 +528,18 @@
        It draws the SAME timeline from the same rendered progress r: the doors' angle, the pan, and the camera (s, zc, zh).
        While it draws (0 < r < the flat colour) its canvas covers the stage under the text and the photograph's layers
        are hidden; at rest (r = 0) the page shows its own photograph, and under the flat colour nothing is drawn. It
-       takes over only at one of those two moments (never mid-shot); whenever it cannot draw (a theme whose textures
-       are still loading) the CSS entrance, which has been following r all along, is simply shown again. */
+       takes over as soon as it is ready, wherever the walk-in is: at rest or under the flat colour by a plain swap,
+       in the middle of the walk-in at the same r by a cross-fade over --dur-handback (the CSS leaves turn in the
+       stage's perspective, the 3D ones in the camera's: a swap at p 0.03-0.2 reshapes the leaves and deepens the
+       hall, doorway mean |dRGB| 4-6). Until the iOS round it waited for rest or the flat colour, so the client, who
+       opens the page and scrolls at once, never had the 3D in his first walk-in («não há relevo na porta»).
+       Whenever it cannot draw (a theme whose textures are still loading) the CSS entrance, which has been following
+       r all along, is simply shown again. */
     var Q = location.search, F3 = /[?&]3d=force(&|$)/.test(Q), T3 = !F3 && /[?&]3d(=1)?(&|$)/.test(Q),
       IOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (/^Mac/.test(navigator.platform || "") && navigator.maxTouchPoints > 1),
+      /* WebKit (every iOS browser, and Safari): KHR_parallel_shader_compile is exposed but a link still blocks
+         (webkit.org/b/251514), so its programs are compiled one per step, each checked a step later (door3d.js) */
+      WK = IOS || (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|OPR|Android/.test(navigator.userAgent)),
       gq = /[?&]guard(?:=(\d+)(?:,(\d+))?)?(?:&|$)/.exec(Q),
       GUARD = { on: !!gq || (!F3 && !T3), med: gq && gq[1] ? +gq[1] : 25, max: gq && gq[2] ? +gq[2] : 120 },
       SOFT = /swiftshader|llvmpipe|softpipe|software|basic render/i,
@@ -547,17 +559,30 @@
       } catch (e) {}
       return "";
     }
-    /* still: no scroll being followed and no flight for 400 ms, at rest or under the flat colour (where a visitor
-       reads; a pause mid-shot is often the gap between two gestures). The 3D module is evaluated, mounted and warmed
-       only then. */
-    var moved = 0;
+    /* still: no scroll being followed (the loop at rest), no flight, and no touch, wheel, key or pointer for CALM ms,
+       wherever the run is. The 3D module is evaluated, mounted and warmed only then, in slices of about 10 ms of work
+       (door3d.js), so a finger that lands meanwhile waits for one slice at most. (Until 9 Nov: 400 ms, and only at
+       rest or under the flat colour; on the client's iPhone, a visitor who started to scroll 1-3 s after the load
+       got the 3D 10-11 s after it, held for 7 s: iPhone timeline in Chromium, f43work/ios.js.) */
+    var moved = 0, touched = 0, CALM = 150;
     function quiet() {
-      var sc = navigator.scheduling;       /* Chromium: an input already waiting is not stillness */
-      return !fl && !raf && performance.now() - moved > 400 && (shown <= 0 || Math.max(shown, seen - LAG) >= COVER_AT) && !(sc && sc.isInputPending && sc.isInputPending());
+      var sc = navigator.scheduling, t = performance.now();       /* Chromium: an input already waiting is not stillness */
+      return !fl && !raf && t - moved > CALM && t - touched > CALM && !(sc && sc.isInputPending && sc.isInputPending());
     }
+    ["touchstart", "touchmove", "touchend", "pointerdown", "wheel", "keydown"].forEach(function (k) {
+      window.addEventListener(k, function () { touched = performance.now(); }, { passive: true, capture: true });
+    });
+    /* the next turn of the event loop: an idle callback where there is one (Chromium, Firefox), else a message-channel
+       turn (Safari has no requestIdleCallback: a 50-200 ms timeout stood in for it, ~0.9 s over the mount) */
+    var turn = (function () {
+      if (window.requestIdleCallback) return function (f) { window.requestIdleCallback(f, { timeout: 120 }); };
+      if (!window.MessageChannel) return function (f) { setTimeout(f, 0); };
+      var ch = new MessageChannel(), q = [];
+      ch.port1.onmessage = function () { var f = q.shift(); if (f) f(); };
+      return function (f) { q.push(f); ch.port2.postMessage(0); };
+    })();
     function whenQuiet(f) {
-      var idle = window.requestIdleCallback || function (g) { return setTimeout(g, 50); };
-      (function w() { if (!quiet()) return setTimeout(w, 150); idle(function () { if (quiet()) f(); else setTimeout(w, 150); }, { timeout: 600 }); })();
+      (function w() { if (!quiet()) return setTimeout(w, 60); turn(function () { if (quiet()) f(); else setTimeout(w, 60); }); })();
     }
     /* The 3D camera follows the CSS camera's zoom s exactly on the door's plane, mostly with the lens: it moves in
        only s^-DOLLY of its rest distance (DOLLY 0.12) and narrows its field for the rest, and it moves in only while
@@ -580,20 +605,38 @@
     }
     /* what the stage shows: 0 the CSS entrance (the photograph's layers), 1 the canvas, 2 neither (under the flat
        colour, after the canvas has drawn: the flood covers the stage) */
-    var d3m = 0;
+    var d3m = 0, xf = null, xin = false;
+    function xstop() { if (xf) { try { xf.cancel(); } catch (e) {} xf = null; } }
     function show3d(m) {
       m = +m;
       if (m === d3m) return;
+      xstop();
       d3m = m;
       d3on = m === 1;
       d3.canvas.style.visibility = m === 1 ? "visible" : "";
+      /* a take-over in the middle of the walk-in (xin, see draw3d()): the canvas fades in over the CSS entrance, which
+         follows the same r under it, over --dur-handback (opacity on the compositor); the photograph's layers are
+         hidden only once the canvas is opaque */
+      if (m === 1 && xin && d3.canvas.animate) {
+        var a = (xf = d3.canvas.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE, easing: "linear" }));
+        a.onfinish = function () { if (xf === a) { xf = null; if (d3m === 1 && !fading) scene.style.visibility = "hidden"; } };
+        xin = false;
+        scene.style.visibility = "";
+        return;
+      }
+      xin = false;
       scene.style.visibility = m && !fading ? "hidden" : "";
     }
     function draw3d(r, p) {
       /* handing back (handBack()): the canvas keeps its last frame while it fades; the slow 3D is not drawn again */
       if (!d3 || !box3 || fading) return;
       var flat = Math.max(r, p - LAG) >= COVER_AT, ok;
-      if (!d3arm) { if (r > 0 && !flat) return; d3arm = true; }
+      /* armed as soon as it is ready (on, or a theme's textures in), wherever the walk-in is: in the middle of it (the
+         iPhone visitor who opens the page and scrolls at once, iOS round: until then it waited for rest or the flat
+         colour, so that visitor's first walk-in was always the CSS one) it takes over at the same r with a cross-fade
+         (xin); at rest, on the next scroll's first frame (equal to the photograph: no fade) */
+      if (!d3arm) { d3arm = true; xin = r > 0 && !flat; }
+      if (!(r > 0) || flat) xin = false;
       /* under the flat colour after the canvas has drawn: the canvas hidden and the photograph's layers left hidden. Shown
          again there (at rest scale, then at the camera's zoom), they were decoded and painted under the opaque flood
          just as the list rose in: frames of 100-300 ms at 390 x 844 (review, door finish). On the way back up the
@@ -627,6 +670,14 @@
         gd.sum += d;
         if (d > gd.worst) gd.worst = d;
         if (GUARD.on && d > GUARD.max) { handBack("a frame of " + Math.round(d) + " ms (limit " + GUARD.max + ")", true); return; }
+        /* the GPU's own lag (door3d.js lag()): a drawn frame it has not finished after the frame limit, with 3 or more
+           waiting (one stale answer after a stall is not a lag), is a slow frame the page's clock cannot see: in
+           Chromium the main thread feels it only once the command buffer is full (iPhone emulation on SwiftShader: a
+           hand-back after ~1 s of frames left ~5 s of GPU work queued, touches waiting 250-620 ms and the next flick
+           4 s late while it drained) */
+        var lg = d3.lag ? d3.lag() : [0, 0];
+        if (lg[0] > gd.lag) gd.lag = lg[0];
+        if (GUARD.on && lg[0] > GUARD.max && lg[1] >= 3) { handBack("the GPU " + Math.round(lg[0]) + " ms behind, " + lg[1] + " frames (limit " + GUARD.max + ")", true); return; }
         if (gd.sum >= 1000) {
           s = gd.t.slice().sort(asc);
           gd.med = s[s.length >> 1];
@@ -664,8 +715,9 @@
       }
       return hold.done || performance.now() - hold.t0 > 300;
     }
-    /* the canvas goes at once (the CSS entrance shows the same progress in this very frame); the context is let go a
-       moment later, outside the frame */
+    /* the canvas goes at once (the CSS entrance shows the same progress in this very frame); its resources a moment
+       later, outside the frame, and the context itself only once the GPU has caught up and the page is still
+       (door3d.js release(): lost at once, it froze the page for 6-11 s on the iPhone emulation, iOS round) */
     function lost3d(st, why) {
       var m = cur || d3;
       if (d3) show3d(0);
@@ -687,7 +739,8 @@
     function handBack(why, soft) {
       mem("0|" + why);
       if (gd) gd.done = true;
-      if (!soft || !d3 || !d3on || fading) { lost3d("handed back", why); queue(); return; }
+      /* in the middle of a take-over's cross-fade the CSS entrance is still shown under it: the canvas goes at once */
+      if (!soft || !d3 || !d3on || fading || xf) { lost3d("handed back", why); queue(); return; }
       d3st = "handing back";
       d3why = why;
       fading = performance.now();
@@ -697,6 +750,43 @@
       setTimeout(function () { if (fading) { lost3d("handed back", why); queue(); } }, FADE + 50);
     }
     function refuse(why) { d3st = "refused"; d3why = why; }
+    /* The way to «on», step by step (?diag, the tests): the stage now and its step (upload 5/14), when the load began,
+       when each stage began (performance.now(), ms since navigation). The watchdog: a step that makes no progress
+       within its limit falls back to the CSS entrance with the stage as the reason, so no promise (a photograph, the
+       worker, a fence, a compile) can leave «loading» for good. Only time the page was still counts (a step waits
+       for that), except while fetching or decoding (the network and the worker go on regardless); «wait» (for the
+       page to be still) has none. A timeout is remembered for the session, except while fetching or decoding (a
+       network fault: tried again on the next load). */
+    var d3stg = "", d3n = "", d3t0 = 0, d3log = [], wd = 0, wdAct = 0, wdT = 0,
+      LIMIT = { fetch: 20000, decode: 20000, eval: 12000 }, LIMIT0 = 8000, NET = /^(fetch|decode)$/;
+    function stg(s, i, n) {
+      var t = performance.now();
+      if (s !== d3stg) d3log.push(s + "@" + Math.round(t));
+      d3stg = s;
+      d3n = n ? i + "/" + n : "";
+      wdAct = 0;
+      wdT = t;
+      if (!wd && d3st === "loading") wd = setInterval(watchdog, 250);
+    }
+    /* Time away never counts: a hidden page's ticks are skipped, and one tick counts 500 ms at most (iOS suspends a
+       page in the background and fires the overdue tick on its return; until the iOS round it counted the whole
+       absence: 12 s away in «upload» refused the 3D for the tab's session in 4 of 6 runs, review). Back from the
+       background (back3d()), the step starts a full limit afresh. */
+    function watchdog() {
+      var t = performance.now(), dt = Math.min(t - wdT, 500), why;
+      wdT = t;
+      if (d3st !== "loading") { clearInterval(wd); wd = 0; return; }
+      if (document.hidden) return;
+      if (d3stg === "wait" || !(NET.test(d3stg) || quiet())) return;
+      wdAct += dt;
+      if (wdAct <= (LIMIT[d3stg] || LIMIT0)) return;
+      why = "timeout: " + d3stg + (d3n ? " " + d3n : "") + " (no progress in " + (wdAct / 1000).toFixed(1) + " s)";
+      clearInterval(wd);
+      wd = 0;
+      if (!NET.test(d3stg)) mem("0|" + why);
+      lost3d("refused", why);
+      queue();
+    }
     /* what the page knows without WebGL; "" = go on */
     function gate() {
       var c = navigator.connection, m, dm = navigator.deviceMemory, hc = navigator.hardwareConcurrency;
@@ -739,35 +829,41 @@
       mem(why ? "0|" + why : "1|" + gpu);
       return why;
     }
-    /* fetched (and parsed) only: the module and three.js, as module preloads; nothing is evaluated */
+    /* fetched (and parsed) only: the module and three.js, as module preloads at low priority (the first screen's
+       photograph goes first); nothing is evaluated */
     function pre3d() {
       if (pre) return pre;
       var urls = [wrap.getAttribute("data-3d"), wrap.getAttribute("data-3d-dep")], ps = [], l0 = document.createElement("link");
       if (!(l0.relList && l0.relList.supports && l0.relList.supports("modulepreload"))) return (pre = Promise.resolve());
       urls.forEach(function (u) {
-        if (u) ps.push(new Promise(function (ok) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = u; l.onload = l.onerror = ok; document.head.appendChild(l); }));
+        if (u) ps.push(new Promise(function (ok) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = u; l.fetchPriority = "low"; l.onload = l.onerror = ok; document.head.appendChild(l); }));
       });
       return (pre = Promise.all(ps));
     }
-    /* At idle right after the load event: the gate, then the fetch. The module is evaluated, mounted and warmed only
-       while the page is still: never in the middle of a gesture or of the action's flight (it would cost the hero's
-       motion 100-300 ms frames at 4x CPU throttle; it gains nothing then, since the canvas takes over only at rest or
-       under the flat colour) (review r1). */
+    /* At the first idle moment after the first paint: the gate, then the fetch. The module is evaluated, mounted and
+       warmed only while the page is still (quiet()): never in the middle of a gesture or of the action's flight (it
+       cost the hero's motion 100-300 ms frames at 4x CPU throttle, review r1), in slices of about 10 ms. */
     function load3d() {
       if (d3st !== "off") return;
+      d3t0 = performance.now();
+      d3log = [];
+      stg("gate");
       var why = gate();
-      if (!why && !F3) why = gpu3d();
+      if (!why && !F3) { stg("probe"); why = gpu3d(); }
       if (why) { refuse(why); return; }
       d3st = "loading";
+      stg("fetch");
       d3why = (F3 ? "?3d=force" : T3 ? "?3d (testing)" : "passed the gate") + (gpu ? ": " + gpu : "");
       if (!cad) cadence();                         /* now, while the page is idle: not during the mount's own tasks */
       pre3d().then(function () {
+        if (d3st === "loading") stg("wait");
         whenQuiet(function () {
           if (d3st !== "loading") return;
           if (root.__door3d) return mount3d();        /* mounted before (a context was lost): the module is in */
+          stg("eval");
           /* the module's evaluation is one task; the mount is the next, again only once the page is still (a gesture
              that began meanwhile is not made to wait for both, review, door finish) */
-          window.addEventListener("door3d", function () { whenQuiet(mount3d); }, { once: true });
+          window.addEventListener("door3d", function () { if (d3st === "loading") stg("wait"); whenQuiet(mount3d); }, { once: true });
           var s = document.createElement("script"), t0;
           s.src = wrap.getAttribute("data-3d");
           s.type = "module";
@@ -803,8 +899,10 @@
              without MSAA above 2 its buffer is smaller (~24 MB against ~42 MB), and the live safeguard watches the
              2.25x pixels it shades (decided 9 Nov, after the door finish) */
           maxDpr: 3,
+          serial: WK,
           big: function () { return Math.round(scene.offsetWidth * 3) + "px"; },
           quiet: quiet,
+          step: function (s, i, n) { if (d3st === "loading" && (m === undefined || m === cur)) stg(s, i, n); },
           /* the first frames drawn ahead (canvas hidden), so the first frame of a scroll pays for nothing */
           views: function (ez) { return box3 ? [view3d(0.3, ez), view3d(0.05, ez)] : []; },
           /* hidden, away and not yet back (the loss can be told before the page's return event), or shown again less
@@ -819,14 +917,15 @@
             } else handBack("context lost while shown");
           },
           onError: function (e) { if (m === cur) handBack("exception: " + String(e && e.message || e).slice(0, 80)); },
-          /* a theme's textures are in: the canvas takes over again only at rest or under the flat colour */
+          /* a theme's textures are in: the canvas takes over again (mid-walk by a cross-fade, see draw3d()) */
           onTheme: function () { if (m === cur) { d3arm = false; queue(); } } });
         m.ready.then(function () {
           if (m !== cur || d3st !== "loading") { m.destroy(); return; }
           d3 = m;
           d3st = "on";
+          stg("on");
           d3arm = false;
-          gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, worst: 0, med: 0, done: false };
+          gd = { t: [], sum: 0, prev: 0, last: false, drew: false, skip: 0, worst: 0, med: 0, lag: 0, done: false };
           wrap.classList.add("porta--3d");
           queue();
         }, function (e) {
@@ -855,7 +954,7 @@
     function back3d(e) {
       if (gd) { gd.prev = 0; gd.skip = 2; }
       if (e.type === "pagehide" || (e.type === "visibilitychange" && document.hidden)) { awayAt = performance.now(); return; }
-      if (e.type === "pageshow" ? e.persisted : !document.hidden) { visAt = performance.now(); revive3d(); }
+      if (e.type === "pageshow" ? e.persisted : !document.hidden) { visAt = wdT = performance.now(); wdAct = 0; revive3d(); }
     }
     document.addEventListener("visibilitychange", back3d);
     window.addEventListener("pageshow", back3d);
@@ -1179,14 +1278,13 @@
       if (keyed && on && target().p > 0.01) window.scrollTo(0, pin);
     });
     try { set(); } catch (err) { bail("set", err); }
-    /* the 3D entrance: at idle right after the load event (first paint and the hero's photograph are done; the
-       larger photographs are being fetched at idle by 2a): the gate, the GPU probe, the fetch. Not on the first
-       scroll: by the time a visitor has read the first screen it is usually mounted and warm. */
+    /* the 3D entrance: at the first idle moment after the first paint (a frame, then the next turn of the event
+       loop), not after the load event, which waits for every photograph in view: the gate, the GPU probe, the fetch.
+       Not on the first scroll: by the time a visitor has read the first screen it is mounted and warm. */
     (function () {
-      var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 200); };
       /* not inside a frame of motion: the probe makes a WebGL context (10-30 ms on a phone) */
-      function go() { idle(function () { if (raf || fl) return setTimeout(go, 200); try { load3d(); } catch (e) { refuse("load: " + (e && e.message || e)); } }, { timeout: 1500 }); }
-      if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+      function go() { turn(function () { if (raf || fl) return setTimeout(go, 100); try { load3d(); } catch (e) { refuse("load: " + (e && e.message || e)); } }); }
+      window.requestAnimationFrame(function () { setTimeout(go, 0); });
     })();
     /* while the sequence is moving (a flight, or the loop still following the scroll), the theme changes
        without a cross-fade (no snapshot mid-shot); parked anywhere, even in the list, it cross-fades */
@@ -1194,8 +1292,8 @@
     /* geometry for the tests and the ?diag panel (read-only) */
     root.__porta = { fly: fly, land: land, d3probe: function () { return d3 && d3.probe ? d3.probe() : null; }, geo: function () {
       return { pin: pin, run: run, S: cam.s, kp: cam.kp, keys: KX, scales: KY.map(Math.exp), light: LIGHT, flat: COVER_AT, list: [T[8][1], T[10][2]], r: shown, p: seen,
-        d3: d3st, d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try, d3why: d3why, d3gpu: gpu, d3dpr: d3 ? d3.dpr() : 0,
-        d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), done: gd.done, cadence: +cad.toFixed(1) } : null };
+        d3: d3st, d3stage: d3stg + (d3n ? " " + d3n : ""), d3ms: d3t0 ? Math.round(performance.now() - d3t0) : 0, d3log: d3log.slice(), d3times: cur && cur.times ? cur.times() : d3 && d3.times ? d3.times() : null, d3quiet: quiet(), d3shown: d3on, d3ok: !!(d3 && d3.ok), d3try: d3try, d3why: d3why, d3gpu: gpu, d3dpr: d3 ? d3.dpr() : 0,
+        d3guard: gd ? { on: GUARD.on, n: gd.t.length, ms: Math.round(gd.sum), med: +gd.med.toFixed(1), worst: Math.round(gd.worst), lag: Math.round(gd.lag), done: gd.done, cadence: +cad.toFixed(1) } : null };
     } };
   })();
   /* ---------------------------------------------------------------- 3. The waiting list
@@ -1323,13 +1421,51 @@
     var list = document.getElementById("lista"), email = document.getElementById("email");
     if (!list) return;
     function listY() { return list.getBoundingClientRect().top + window.pageYOffset; }
+    /* where the list is at rest: with the sequence on and the list closing within the run's last screen (the page
+       ends one large viewport after the run, site.css), the page's end, where the block stands in the middle of the
+       screen; it is the run's end except on a phone with its toolbars shown (an iPhone: 40px further, review of
+       10 Nov). A longer list (a block taller than the screen): its top, the run's end. */
+    var porta = document.querySelector(".porta");
+    function rest() {
+      var y = listY(), d = document.documentElement, end;
+      if (!porta || !d.classList.contains("porta-on")) return y;
+      end = porta.getBoundingClientRect().bottom + window.pageYOffset;
+      return d.scrollHeight <= end + 1 ? Math.max(y, d.scrollHeight - window.innerHeight) : y;
+    }
+    /* The block (title to button) stands in the middle of the screen where the scroll stops (site.css › Waiting list):
+       the stylesheet needs its height at rest (--lista-b) and, with the sequence on, the footer's (--foot-h), so the
+       footer closes the same screen and the page ends one large viewport after the run. Read at start, when the fonts arrive and on resize, and only
+       while no message is shown (a message lengthens the form downwards: nothing above it moves). While a field of the
+       list has the focus and only the height changed (a keyboard that resizes the page), the block keeps its place, as
+       the run keeps its length (section 2, measure()). Reads first, writes only on a change: no layout of our own. */
+    var inner = list.querySelector(".lista__inner"), form = list.querySelector(".form"), foot = document.querySelector(".foot"),
+      kept = { w: -1, top: "" }, lb = "", lf = "", lq = 0;
+    function inside() { var a = document.activeElement; return !!(a && a !== list && list.contains(a)); }
+    function keep() { kept = { w: list.clientWidth, top: getComputedStyle(list).paddingTop }; }
+    function lay() {
+      lq = 0;
+      var w = list.clientWidth, focused = inside();
+      if (focused && w === kept.w && kept.top) { if (list.style.paddingBlockStart !== kept.top) list.style.paddingBlockStart = kept.top; return; }
+      var b = inner && form && (form.getAttribute("data-state") || "idle") === "idle" && !form.querySelector(".field__msg:not([hidden])") ? inner.offsetHeight + "px" : lb,
+        f = foot ? foot.offsetHeight + "px" : lf;
+      if (list.style.paddingBlockStart) list.style.paddingBlockStart = "";
+      if (b !== lb) list.style.setProperty("--lista-b", (lb = b));
+      if (f !== lf) list.style.setProperty("--foot-h", (lf = f));
+      if (focused) keep(); else kept = { w: w, top: "" };
+    }
+    function relay() { if (!lq) lq = window.requestAnimationFrame(lay); }
+    lay();
+    window.addEventListener("resize", lay);
+    list.addEventListener("focusin", function () { if (!kept.top || kept.w !== list.clientWidth) keep(); });   /* where the block is, before a keyboard */
+    list.addEventListener("focusout", relay);    /* the focus left the list (read once it has landed): let the block go */
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relay);
     function arrive() {
       if (email && !email.closest("fieldset:disabled")) email.focus({ preventScroll: true });
     }
     function toList(e) {
       e.preventDefault();
-      if (!still.matches && root.__porta && root.__porta.fly(listY, arrive)) return;
-      window.scrollTo(0, listY());
+      if (!still.matches && root.__porta && root.__porta.fly(rest, arrive)) return;
+      window.scrollTo(0, rest());
       arrive();
     }
     var links = document.querySelectorAll('.porta a[href="#lista"]');
@@ -1346,7 +1482,7 @@
        where it is at rest). A tap or a click into the form never moves the page (see keyed), wherever it rests. */
     list.addEventListener("focusin", function (e) {
       if (!keyed || (e.relatedTarget && list.contains(e.relatedTarget))) return;
-      var y = listY(), d = y - window.pageYOffset,
+      var y = rest(), d = y - window.pageYOffset,
         fits = e.target.getBoundingClientRect().bottom - list.getBoundingClientRect().top <= window.innerHeight - 8;
       if (list.offsetHeight <= window.innerHeight + 2) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
       /* a list taller than the screen: its rest position whenever what took the focus is in view there (from either
@@ -1358,8 +1494,20 @@
         if (e.target.scrollIntoView) e.target.scrollIntoView({ block: "nearest" });
       }
     });
-    /* arriving with #lista: the wrapper grew after the browser's first jump, so land on the list again */
-    if (location.hash === "#lista") window.scrollTo(0, listY());
+    /* arriving with #lista: the wrapper grew after the browser's first jump, so land on the list again. The browser
+       keeps its own jump to the anchor (the list's top) until the page has loaded; then, unless the visitor has
+       scrolled away from it, the page moves on to where the list is at rest (the page's end with a phone's toolbars
+       shown, see rest()). The same after a jump to #lista within the page (the address typed again). */
+    var reland = function () {
+      window.requestAnimationFrame(function () {
+        if (location.hash === "#lista" && Math.abs(window.pageYOffset - listY()) <= 2 && Math.abs(rest() - window.pageYOffset) > 2) window.scrollTo(0, rest());
+      });
+    };
+    if (location.hash === "#lista") {
+      window.scrollTo(0, rest());
+      if (document.readyState === "complete") reland(); else window.addEventListener("load", reland);
+    }
+    window.addEventListener("hashchange", reland);
   })();
 
   /* ?diag: a read-only overlay for testing on real phones (scroll, viewport, sequence state, errors) */
@@ -1369,12 +1517,15 @@
     box.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;margin:0;padding:8px;font:11px/1.35 ui-monospace,Menlo,monospace;background:rgba(0,0,0,.8);color:#fff;border-radius:6px;pointer-events:none;white-space:pre-wrap;max-height:45vh;overflow:hidden";
     document.body.appendChild(box);
     (function f() { frames++; window.requestAnimationFrame(f); })();
-    /* the entrance's path (3D or CSS), its state and why; the safeguard's numbers over the first second of 3D motion */
+    /* the entrance's path (3D or CSS), its state and why (while loading: the stage, its step and the ms since the load
+       began, «3d=loading:upload 5/14 1840ms»); when each stage began (ms since navigation, the load event first) and
+       how long the steps waited for the page to be still; the safeguard's numbers over the first second of 3D motion */
     var diag3d = function () {
-      var g = root.__porta && root.__porta.geo(), q = g && g.d3guard;
+      var g = root.__porta && root.__porta.geo(), q = g && g.d3guard, nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0], t = g && g.d3times;
       if (!g) return "path=CSS (the sequence stepped aside)";
-      return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") +
-        (q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms cadence=" + q.cadence + "ms" + (q.done ? " (done)" : "") : "");
+      return "path=" + (g.d3shown ? "3D" : "CSS") + " 3d=" + g.d3 + (g.d3 === "loading" ? ":" + g.d3stage + " " + g.d3ms + "ms" : "") + " why=" + (g.d3why || "-") + (g.d3dpr ? " dpr=" + g.d3dpr : "") +
+        (g.d3log && g.d3log.length ? "\n3d steps: load@" + (nav && nav.loadEventStart ? Math.round(nav.loadEventStart) : "-") + " " + g.d3log.join(" ") + (t ? " held=" + t.held + "ms" : "") : "") +
+        (q ? "\nguard=" + (q.on ? "on" : "off (measuring)") + " frames=" + q.n + " " + q.ms + "ms median=" + q.med + "ms worst=" + q.worst + "ms gpu lag=" + q.lag + "ms cadence=" + q.cadence + "ms" + (q.done ? " (done)" : "") : "");
     };
     setInterval(function () {
       var st = document.querySelector(".porta__stage"), r = st && st.getBoundingClientRect();

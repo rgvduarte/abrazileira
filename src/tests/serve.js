@@ -26,3 +26,12 @@ module.exports.offline = (page) => page.route("**/*", (rt) => {
   if (u.includes("/rest/v1/rpc/join_waitlist")) return rt.fulfill({ status: 204, body: "" });
   return rt.abort();
 });
+// Safari's toolbars on an iPhone, which headless Chromium cannot show (there svh = lvh = dvh = the viewport): every
+// stylesheet the page loads is served with the viewport units fixed in px, as iOS resolves them: svh the small viewport
+// (bars shown), lvh and vh the large one (bars hidden), dvh the one in use now. Give the page a viewport as tall as the
+// visible area (bars shown: svh; hidden: lvh), so innerHeight is what the iPhone reports. Call after offline().
+module.exports.ios = (page, svh, lvh, dvh) => {
+  const px = (u, v) => (css) => css.replace(new RegExp("(?<![\\w.-])(-?\\d*\\.?\\d+)" + u + "\\b", "g"), (m, n) => `calc(${n} * ${v / 100}px)`);
+  const fix = (css) => [px("svh", svh), px("lvh", lvh), px("dvh", dvh), px("vh", lvh)].reduce((t, f) => f(t), css);
+  return page.route(/\.css(\?|$)/, async (rt) => { const r = await rt.fetch(); return rt.fulfill({ response: r, body: fix(await r.text()) }); });
+};

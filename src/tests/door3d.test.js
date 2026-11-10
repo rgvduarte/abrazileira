@@ -7,7 +7,7 @@
 // or, for the default path, with a capable GPU spoofed in an init script (the renderer's name, the caveat flag dropped,
 // 8 cores, 8 GB) and the frame-time rule given limits SwiftShader can meet (?guard=MED,MAX).
 // 1. Per viewport (390 x 844 touch, 1440 x 900 mouse) and theme, ?3d=force:
-//   requested after the load event and mounted with no scroll at all; at rest the canvas is hidden and the photograph's
+//   requested after the first paint (at its first idle moment) and mounted with no scroll at all; at rest the canvas is hidden and the photograph's
 //   layers are shown, with no inline style left; mid-run (p = 0.15, 0.3, 0.5) the canvas draws (not the wall colour) and
 //   the layers it replaces are hidden; under the flat colour (p = 0.9) the canvas is hidden and every pixel is
 //   --color-hall; back at the top: the exact rest state; the hero action's flight lands in the email field, the canvas
@@ -19,7 +19,7 @@
 //   ?3d=force), a data saver, a 2G link, deviceMemory 1, 2 cores, a weak GPU's name: refused with the reason, nothing
 //   requested (and no WebGL context made where the reason is known before); ?3d skips the soft heuristics (a weak GPU
 //   draws) but keeps the probe (a software renderer is refused); a refusal is remembered for the session; a capable GPU
-//   gets the 3D by default, fetched at idle right after the load event, before any scroll.
+//   gets the 3D by default, fetched after the first paint, before any scroll.
 // 3. The live safeguard (capable GPU spoofed): an injected 2.5 s frame (?guard=100000,1500), a slow median (?guard=25,..
 //   with 50 ms of work in every frame) and an exception in a draw each hand back to the CSS entrance at the same
 //   progress (the slow cases dissolve over --dur-handback), remember it for the session (the next load is refused before
@@ -39,9 +39,25 @@
 // 7. Review, door finish: the open leaves' width against the doorway is flat from p 0.34 (the 3D frame's own meshes,
 //   projected); a shader that does not compile is refused at the mount (nothing drawn, remembered); a draw that throws
 //   while the mount warms up and a module that does not run are refused, named and remembered (the next load asks for
-//   nothing); a hand-back lets the WebGL context go at once. Section 1 also records every frame of a touch drag (390) and
+//   nothing); a hand-back lets the WebGL context go once the GPU has caught up and the page is still. Section 1 also records every frame of a touch drag (390) and
 //   of the flight: while the camera moves, the canvas draws and the photograph is hidden, never a blank frame, the flight
 //   0.9-1.1 s; under the flat colour the photograph stays hidden; section 3: nothing is drawn while handing back.
+// 8. iOS round (9 Nov: on the client's iPhone the 3D passed the gate but was still «loading» when he walked in). Under an
+//   iPhone emulation (Safari 26 user agent, DPR 3, 390 x 796, 4x CPU throttle, Safari's API surface: no
+//   requestIdleCallback, no navigator.scheduling, no scheduler, no deviceMemory, no navigator.connection; «Apple GPU»
+//   spoofed): a still visitor gets the 3D soon after the load event (the gate within 1 s of the first paint; «on»
+//   within 4 s of the load event and within 1.5 s of it net of the time spent waiting for SwiftShader, the tests' GPU,
+//   on its fences), with no long task over 50 ms after the load event and almost no time held; a visitor who starts to
+//   scroll 1 s after the load event (flicks with pauses): no input waits over 50 ms (timing gates, a second attempt).
+//   ?diag names the stage while loading («3d=loading:upload 5/19 840ms») and lists when each stage began. The
+//   watchdog: a step that hangs (a band's crop that never resolves) falls back to the CSS entrance after its limit,
+//   named, remembered for the session; a decode that hangs (the worker never answers) too, not remembered (a network
+//   fault is tried again on the next load). iPhone round 2 (client: «não há relevo na porta», then «já há puxadores»):
+//   opened and scrolled at once (p 0.2 before the 3D is ready), the 3D takes over in that first walk-in as soon as it is
+//   on, at the same progress, by a cross-fade over --dur-handback (never a blank frame, no long task over 50 ms), and the
+//   next flick is drawn in 3D; a forced hand-back (?guard=25,60) leaves no long task over 50 ms in the next 2 s and lets
+//   the context go later in a short task; the main thread held 12 s in «upload» (a page suspended in the background)
+//   does not refuse the 3D.
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 1200000);
 const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.replace("#", "").padEnd(6, "0").slice(i - 1, i + 1), 16));
@@ -124,8 +140,8 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
       for (const k of ["texImage2D", "texStorage2D", "texSubImage2D"]) { const o = P[k]; P[k] = function () { window.__tex++; return o.apply(this, arguments); }; } });
     await pg.goto(base + "?3d=force", { waitUntil: "load" });
     await settled(pg);
-    const t = await pg.evaluate(() => ({ load: Math.round(window.__loadAt), first: Math.round(Math.min(...window.__req3d)), y: scrollY, d3: document.documentElement.__porta.geo().d3 }));
-    report(t.d3 === "on" && t.first > t.load && t.first - t.load < 2500 && t.y === 0, n, theme, "early and lazy: requested at idle right after the load event, mounted with no scroll", JSON.stringify(t));
+    const t = await pg.evaluate(() => ({ fcp: Math.round((performance.getEntriesByName("first-contentful-paint")[0] || { startTime: -1 }).startTime), load: Math.round(window.__loadAt), first: Math.round(Math.min(...window.__req3d)), y: scrollY, d3: document.documentElement.__porta.geo().d3 }));
+    report(t.d3 === "on" && t.fcp > 0 && t.first > t.fcp && t.first - t.load < 2500 && t.y === 0, n, theme, "early and lazy: requested after the first paint (at its first idle moment, not after the load event), mounted with no scroll", JSON.stringify(t));
     const hall = await pg.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--color-hall").trim());
     let s = await state(pg);
     report(s.canvas === "hidden" && s.scene === "visible" && s.inline === "", n, theme, "rest: the photograph, canvas hidden", JSON.stringify(s));
@@ -277,14 +293,14 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     await c.close();
   }
   {
-    /* a capable GPU: the 3D by default, fetched at idle right after the load event, before any scroll */
+    /* a capable GPU: the 3D by default, fetched at the first idle moment after the first paint, before any scroll */
     const { c, pg, reqs, errs } = await ctx({ spoof: { gpu: GPU } });
     await pg.goto(base + "?guard=5000,9000", { waitUntil: "load" }); await settled(pg, 60000);
-    const t = await pg.evaluate(() => ({ load: Math.round(window.__loadAt), first: Math.round(Math.min(...window.__req3d)), y: scrollY, mem: sessionStorage.getItem("ab-3d") }));
+    const t = await pg.evaluate(() => ({ fcp: Math.round((performance.getEntriesByName("first-contentful-paint")[0] || { startTime: -1 }).startTime), load: Math.round(window.__loadAt), first: Math.round(Math.min(...window.__req3d)), y: scrollY, mem: sessionStorage.getItem("ab-3d") }));
     await go(pg, 0.3);
     const s = await state(pg);
-    report(s.d3 === "on" && s.canvas === "visible" && /^passed the gate: ANGLE \(Apple/.test(s.why) && t.y === 0 && t.first > t.load && t.first - t.load < 2500 && /^1\|/.test(t.mem) && !errs.length,
-      "a capable GPU: the 3D by default, requested at idle right after the load event, before any scroll", JSON.stringify({ ...s, ...t, reqs: reqs.length }));
+    report(s.d3 === "on" && s.canvas === "visible" && /^passed the gate: ANGLE \(Apple/.test(s.why) && t.y === 0 && t.fcp > 0 && t.first > t.fcp && t.first - t.load < 2500 && /^1\|/.test(t.mem) && !errs.length,
+      "a capable GPU: the 3D by default, requested after the first paint, before any scroll", JSON.stringify({ ...s, ...t, reqs: reqs.length }));
     await c.close();
   }
 
@@ -579,7 +595,8 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
       "the module fetched but not running (a syntax error): refused, remembered, never left «loading»; the next load asks for nothing", JSON.stringify({ s1: [s1.d3, s1.why], m1, s2: [s2.d3, s2.why] }));
     await c.close();
   }
-  /* a hand-back lets the context go at once (WEBGL_lose_context), not at the next garbage collection */
+  /* a hand-back lets the context go (WEBGL_lose_context), not at the next garbage collection: once the GPU has done
+     what was queued and the page is still (iOS round: at once, it froze the page for 6-11 s, see section 8) */
   {
     const { c, pg } = await ctx({ spoof: { gpu: GPU } });
     await pg.goto(base + "?guard=100000,100000", { waitUntil: "load" }); await settled(pg, 60000);
@@ -587,8 +604,193 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     await pg.evaluate(() => { window.__gl2 = document.querySelector(".porta__3d").getContext("webgl2");
       const P = WebGL2RenderingContext.prototype; for (const k of ["drawArrays", "drawElements"]) { const o = P[k]; P[k] = function () { if (window.__boom) throw new Error("boom"); return o.apply(this, arguments); }; } window.__boom = true; });
     await nudge(pg, 3); await pg.waitForTimeout(500);
+    const t0 = Date.now();
+    await pg.waitForFunction(() => window.__gl2.isContextLost(), null, { timeout: 8000, polling: 50 }).catch(() => {});
     const r = await pg.evaluate(() => ({ d3: document.documentElement.__porta.geo().d3, lost: window.__gl2.isContextLost(), buffer: window.__gl2.drawingBufferWidth + "x" + window.__gl2.drawingBufferHeight }));
-    report(r.d3 === "handed back" && r.lost, "a hand-back lets the WebGL context go at once", JSON.stringify(r));
+    r.after = Date.now() - t0 + 500;
+    report(r.d3 === "handed back" && r.lost, "a hand-back lets the WebGL context go once the GPU has caught up and the page is still (" + r.after + " ms after it)", JSON.stringify(r));
+    await c.close();
+  }
+  // ---------------------------------------------------------------- 8. iOS round: ready sooner, ?diag stages, the watchdog
+  const SAFARI = `(() => {
+    window.requestIdleCallback = undefined; window.cancelIdleCallback = undefined;
+    for (const k of ["scheduling", "deviceMemory", "connection"]) Object.defineProperty(Navigator.prototype, k, { configurable: true, get: () => undefined });
+    try { Object.defineProperty(window, "scheduler", { configurable: true, value: undefined }); } catch (e) {}
+    window.__fence = 0; window.__lt = []; window.__ev = [];
+    const P = WebGL2RenderingContext.prototype, fs0 = P.fenceSync, ds0 = P.deleteSync, fT = new WeakMap();
+    P.fenceSync = function () { const f = fs0.apply(this, arguments); if (f) fT.set(f, performance.now()); return f; };
+    P.deleteSync = function (f) { const t = f && fT.get(f); if (t) window.__fence += performance.now() - t; return ds0.apply(this, arguments); };
+    new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__lt.push([e.startTime, e.duration]); }).observe({ type: "longtask", buffered: true });
+    new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__ev.push([e.name, e.startTime, e.processingStart - e.startTime]); }).observe({ type: "event", durationThreshold: 16, buffered: true });
+  })();`;
+  const IUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.1 Mobile/15E148 Safari/604.1";
+  const iphone = async () => {
+    const c = await b.newContext({ viewport: { width: 390, height: 796 }, screen: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, userAgent: IUA });
+    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, "dia");
+    await c.addInitScript(spoof({ gpu: "Apple GPU" }));
+    await c.addInitScript(SAFARI);
+    const pg = await c.newPage(); await serve.offline(pg);
+    const cdp = await c.newCDPSession(pg);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    return { c, pg, cdp };
+  };
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const { c, pg } = await iphone();
+    await pg.goto(base, { waitUntil: "load" }); await settled(pg, 60000);
+    const d = await pg.evaluate(() => { const g = document.documentElement.__porta.geo(), nav = performance.getEntriesByType("navigation")[0], fcp = performance.getEntriesByName("first-contentful-paint")[0];
+      const at = (s) => { const e = g.d3log.find((x) => x.split("@")[0] === s); return e ? +e.split("@")[1] : -1; }, L = nav.loadEventStart;
+      return { d3: g.d3, why: g.d3why, ric: typeof window.requestIdleCallback, load: Math.round(L), fcp: fcp ? Math.round(fcp.startTime) : -1, gate: Math.round(at("gate")), on: Math.round(at("on") - L),
+        fence: Math.round(window.__fence), held: g.d3times && g.d3times.held, log: g.d3log, long: window.__lt.filter((x) => x[0] > L && x[1] > 50).map((x) => Math.round(x[0] - L) + "+" + Math.round(x[1])) }; });
+    const order = ["gate", "probe", "fetch", "eval", "context", "decode", "three", "scene", "theme", "upload", "compile", "warm", "frames", "on"].map((k) => { const e = d.log.find((x) => x.split("@")[0] === k); return e ? +e.split("@")[1] : -1; });
+    const ok = d.d3 === "on" && /^passed the gate: Apple GPU$/.test(d.why) && d.ric === "undefined" && order.every((t, i) => t >= 0 && (!i || t >= order[i - 1])) && d.gate - d.fcp < 1000
+      && d.on > 0 && d.on < 4000 && d.on - d.fence < 1500 && d.held < 300 && !d.long.length;
+    await c.close();
+    if (!ok && attempt === 1) { console.log("RETRY", "iPhone emulation, a still visitor (timing gate):", JSON.stringify({ ...d, log: undefined })); continue; }
+    report(ok, "iPhone emulation (4x)", "a still visitor: the gate " + (d.gate - d.fcp) + " ms after the first paint, «on» " + d.on + " ms after the load event (" + (d.on - d.fence) + " ms net of SwiftShader's fences), every stage in order, held " + d.held + " ms, no long task" + (attempt > 1 ? " (second attempt)" : ""),
+      JSON.stringify({ ...d, log: d.log.join(" ") }));
+    break;
+  }
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const { c, pg, cdp } = await iphone();
+    await pg.goto(base + "?guard=5000,9000", { waitUntil: "load" });
+    await pg.waitForFunction(() => performance.now() >= performance.getEntriesByType("navigation")[0].loadEventStart + 1000, null, { polling: 10 });
+    for (let f = 0; f < 3; f++) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 200, y: 620 }] });
+      for (let i = 1; i <= 12; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: 200, y: 620 - 14 * i }] }); await pg.waitForTimeout(16); }
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await pg.waitForTimeout(900);
+    }
+    /* the inputs while it loads: once on, it may take over mid-walk (below), and SwiftShader then draws each frame at
+       DPR 3 in 130-230 ms (the compositor waits for it: touches wait 100-340 ms); a phone's GPU does it in a fraction */
+    const d = await pg.evaluate(() => { const L = performance.getEntriesByType("navigation")[0].loadEventStart, g = document.documentElement.__porta.geo();
+      const on = g.d3log.find((x) => /^on@/.test(x)), until = on ? +on.split("@")[1] : Infinity;
+      const ev = window.__ev.filter((e) => e[1] > L + 900 && e[1] < until && /touch|pointer/.test(e[0]));
+      return { d3: g.d3, stage: g.d3stage, p: +g.p.toFixed(3), n: ev.length, worst: Math.round(Math.max(0, ...ev.map((e) => e[2]))), held: g.d3times && g.d3times.held, log: g.d3log.join(" ") }; });
+    const ok = d.p > 0.3 && d.n > 0 && d.worst <= 50;
+    await c.close();
+    if (!ok && attempt === 1) { console.log("RETRY", "iPhone emulation, flicks from 1 s (timing gate):", JSON.stringify(d)); continue; }
+    report(ok, "iPhone emulation (4x)", "a visitor flicking from 1 s after the load event while the 3D loads: no input waits over 50 ms (worst " + d.worst + " ms)" + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify(d));
+    break;
+  }
+  /* The client's own pattern (iOS round: «não há relevo na porta», then «já há puxadores»): he opens the page and
+     scrolls at once, before the 3D is ready. It takes over in that first walk-in, as soon as it is on, at the same
+     progress, by a cross-fade over --dur-handback (canvas from 0 to 1 over the CSS entrance, the photograph's layers
+     hidden only once it is opaque; never a frame with neither), with no long task over 50 ms; the next flick is drawn
+     in 3D. Until then it waited for rest or the flat colour: his first walk-in was always the CSS one. */
+  const REC = () => { window.__xf = []; (function f() { const p = document.documentElement && document.documentElement.__porta;
+    if (p && window.__xf.length < 600) { const g = p.geo(); if (g.d3 === "on") { const cv = document.querySelector(".porta__3d"), sc = document.querySelector(".scene");
+      window.__xf.push([performance.now(), g.r, cv ? getComputedStyle(cv).visibility : "none", cv ? +(+getComputedStyle(cv).opacity).toFixed(3) : 0, getComputedStyle(sc).visibility]); } }
+    requestAnimationFrame(f); })(); };
+  const flick = async (cdp, pg) => {
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 200, y: 620 }] });
+    for (let i = 1; i <= 12; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: 200, y: 620 - 14 * i }] }); await pg.waitForTimeout(16); }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+  const parked = (pg) => pg.waitForFunction(() => { const g = document.documentElement.__porta.geo(); return Math.abs(g.r - g.p) < 1e-4; }, null, { timeout: 15000, polling: 30 }).catch(() => {});
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const { c, pg, cdp } = await iphone();
+    await pg.addInitScript(REC);
+    await pg.goto(base + "?guard=5000,9000", { waitUntil: "load" });
+    await pg.waitForFunction(() => performance.now() >= performance.getEntriesByType("navigation")[0].loadEventStart + 300, null, { polling: 10 });
+    await flick(cdp, pg); await parked(pg);
+    const g0 = await pg.evaluate(() => { const g = document.documentElement.__porta.geo(); return { d3: g.d3, r: +g.r.toFixed(4) }; });
+    await onAt(pg);
+    await pg.waitForTimeout(1500);
+    const d = await pg.evaluate(() => { const L = performance.getEntriesByType("navigation")[0].loadEventStart, g = document.documentElement.__porta.geo(), f = window.__xf;
+      const on = g.d3log.find((x) => /^on@/.test(x)), tOn = on ? +on.split("@")[1] : 0;
+      const i0 = f.findIndex((e) => e[2] === "visible"), i1 = f.findIndex((e, i) => i > i0 && e[2] === "visible" && e[4] === "hidden");
+      return { d3: g.d3, on: Math.round(tOn - L), first: i0 >= 0 ? f[i0] : null, opaqueAt: i1 >= 0 ? Math.round(f[i1][0] - f[i0][0]) : -1, endOpacity: i1 >= 0 ? f[i1][3] : -1,
+        mid: f.filter((e) => e[2] === "visible" && e[4] === "visible" && e[3] > 0.02 && e[3] < 0.98).length,
+        blank: f.filter((e) => e[2] !== "visible" && e[4] === "hidden").length,
+        long: window.__lt.filter((x) => x[0] > tOn - 300 && x[1] > 50).map((x) => Math.round(x[0] - L) + "+" + Math.round(x[1])) }; });
+    /* the walk-in goes on in 3D */
+    await flick(cdp, pg); await parked(pg); await pg.waitForTimeout(300);
+    const s2 = await state(pg);
+    const ok = g0.d3 === "loading" && g0.r > 0.05 && d.d3 === "on" && d.first && Math.abs(d.first[1] - g0.r) < 0.002 && d.first[4] === "visible" && d.first[3] < 0.5
+      && d.mid >= 2 && d.opaqueAt >= 120 && d.opaqueAt < 700 && d.endOpacity === 1 && !d.blank && !d.long.length
+      && s2.d3 === "on" && s2.canvas === "visible" && s2.scene === "hidden" && s2.r > g0.r + 0.05 && s2.r < 0.66;
+    await c.close();
+    if (!ok && attempt === 1) { console.log("RETRY", "iPhone emulation, the scroll-at-once take-over:", JSON.stringify({ g0, ...d, s2 })); continue; }
+    report(ok, "iPhone emulation (4x)", "opened and scrolled at once (p " + g0.r + " while «" + g0.d3 + "»): the 3D takes over mid-walk at the same progress when on (+" + d.on + " ms), a cross-fade of "
+      + d.opaqueAt + " ms (" + d.mid + " frames between), never a blank frame, no long task; the next flick in 3D (r " + s2.r + ")" + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify({ g0, ...d, s2 }));
+    break;
+  }
+  /* A hand-back never freezes the page (iOS round, review: the context was lost 60 ms after it, in the visitor's
+     gesture, and Chromium waited for the GPU's whole backlog: one main-thread task of 6-11 s, the next flick 12 s
+     late). Forced here (?guard=25,60: SwiftShader draws a DPR 3 frame in 130-230 ms; the frame rule or the GPU-lag
+     rule hands back): no long task over 50 ms in the next 2 s; the context is let go later, once the GPU has caught up
+     and the page is still, in a short task. */
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const { c, pg, cdp } = await iphone();
+    await pg.addInitScript(() => { window.__lose = []; window.__hbAt = 0; const g0 = WebGL2RenderingContext.prototype.getExtension;
+      WebGL2RenderingContext.prototype.getExtension = function (n) { const x = g0.call(this, n); if (x && n === "WEBGL_lose_context" && !x.__w) { const l = x.loseContext.bind(x);
+        x.loseContext = function () { const t = performance.now(); l(); window.__lose.push([t, performance.now() - t]); }; x.__w = 1; } return x; };
+      (function f() { const p = document.documentElement && document.documentElement.__porta; if (p && !window.__hbAt && /hand/.test(p.geo().d3)) window.__hbAt = performance.now(); requestAnimationFrame(f); })(); });
+    await pg.goto(base + "?guard=25,60", { waitUntil: "load" }); await onAt(pg);
+    await pg.waitForTimeout(600);
+    await flick(cdp, pg); await pg.waitForTimeout(400); await flick(cdp, pg);
+    await pg.waitForFunction(() => window.__hbAt > 0, null, { timeout: 15000 }).catch(() => {});
+    await pg.waitForFunction(() => performance.now() > window.__hbAt + 2000, null, { timeout: 15000 }).catch(() => {});
+    await pg.waitForFunction(() => window.__lose.some((x) => x[0] > window.__hbAt), null, { timeout: 30000, polling: 100 }).catch(() => {});
+    const d = await pg.evaluate(() => { const H = window.__hbAt, g = document.documentElement.__porta.geo(), lo = window.__lose.filter((x) => x[0] > H);
+      return { d3: g.d3, why: g.d3why, hb: H > 0, long2s: window.__lt.filter((x) => x[0] >= H - 20 && x[0] < H + 2000 && x[1] > 50).map((x) => Math.round(x[0] - H) + "+" + Math.round(x[1])),
+        lose: lo.map((x) => [Math.round(x[0] - H), +x[1].toFixed(1)]), longAtLose: lo.length ? window.__lt.filter((x) => x[1] > 50 && x[0] <= lo[0][0] && x[0] + x[1] >= lo[0][0]).map((x) => Math.round(x[1])) : [] }; });
+    const ok = d.hb && d.d3 === "handed back" && /^(a frame of \d+ ms \(limit 60\)|median frame [\d.]+ ms \(limit \d+\)|the GPU \d+ ms behind, \d+ frames \(limit 60\))$/.test(d.why) && !d.long2s.length && d.lose.length === 1 && d.lose[0][1] < 50 && !d.longAtLose.length;
+    await c.close();
+    if (!ok && attempt === 1) { console.log("RETRY", "iPhone emulation, a forced hand-back:", JSON.stringify(d)); continue; }
+    report(ok, "iPhone emulation (4x)", "a forced hand-back (" + d.why + "): no long task over 50 ms in the next 2 s; the context let go " + (d.lose[0] ? d.lose[0][0] + " ms later, in " + d.lose[0][1] + " ms" : "never") + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify(d));
+    break;
+  }
+  /* Time away is not stillness (iOS round, review): the main thread held 12 s in «upload», as iOS suspends a page in
+     the background and fires the overdue tick on its return, used to refuse the 3D for the session (4 of 6 runs,
+     «timeout: upload n/19 (no progress in 12.0 s)»); a tick now counts 500 ms at most and a hidden page's none. */
+  {
+    const { c, pg, cdp } = await iphone();
+    await pg.goto(base + "?guard=5000,9000", { waitUntil: "load" });
+    await pg.waitForFunction(() => document.documentElement.__porta.geo().d3stage.indexOf("upload") === 0, null, { polling: 5, timeout: 30000 }).catch(() => {});
+    await pg.waitForTimeout(100);
+    const at = await pg.evaluate(() => document.documentElement.__porta.geo().d3stage);
+    await cdp.send("Debugger.enable"); await cdp.send("Debugger.pause");
+    await new Promise((r) => setTimeout(r, 12000));
+    await cdp.send("Debugger.resume"); await cdp.send("Debugger.disable");
+    await settled(pg, 60000);
+    const s = await state(pg), memo = await pg.evaluate(() => sessionStorage.getItem("ab-3d"));
+    report(/^upload/.test(at) && s.d3 === "on" && /^1\|/.test(memo || ""), "iPhone emulation (4x): the main thread held 12 s in «" + at + "» (a page suspended in the background): the 3D still comes on, nothing refused or remembered", JSON.stringify({ at, d3: s.d3, why: s.why, memo }));
+    await c.close();
+  }
+  /* ?diag while loading and once on */
+  {
+    const { c, pg } = await ctx({ spoof: { gpu: GPU } });
+    await pg.goto(base + "?guard=5000,9000&diag", { waitUntil: "load" });
+    const seen = [];
+    for (let i = 0; i < 200; i++) {
+      const t = await pg.evaluate(() => { const p = document.querySelector("pre"); return p ? p.textContent.split("\n").filter((l) => /^path=|^3d steps/.test(l)).join(" || ") : ""; });
+      if (t && seen[seen.length - 1] !== t) seen.push(t);
+      if (/3d=on/.test(t)) break;
+      await pg.waitForTimeout(100);
+    }
+    const loading = seen.filter((t) => /path=CSS 3d=loading:[a-z]+( \d+\/\d+)? \d+ms why=passed the gate: ANGLE/.test(t)), last = seen[seen.length - 1] || "";
+    report(loading.length >= 2 && loading.some((t) => /3d=loading:upload \d+\/\d+ \d+ms/.test(t)) && /3d steps: load@\d+ gate@\d+ probe@\d+ fetch@\d+ .*upload@\d+ compile@\d+ warm@\d+ frames@\d+ on@\d+ held=\d+ms/.test(last) && /path=CSS 3d=on why=/.test(last),
+      "?diag while loading names the stage, its step and the time since the load began; once on, when each stage began", JSON.stringify({ n: seen.length, loading: loading.slice(0, 3), last }));
+    await c.close();
+  }
+  /* the watchdog: a band's crop that never resolves (a step that hangs) and a decode that never comes back (the worker) */
+  for (const [label, hang, re, kept] of [
+    ["a step that hangs (the facade's first band)", () => { const o = window.createImageBitmap; window.createImageBitmap = function (src) { return typeof ImageBitmap !== "undefined" && src instanceof ImageBitmap && arguments.length > 2 ? new Promise(() => {}) : o.apply(this, arguments); }; },
+      /^timeout: upload 1\/\d+ \(no progress in 8\.\d s\)$/, true],
+    ["a decode that never comes back (the worker)", () => { const W = window.Worker; window.Worker = function (u) { const w = new W(u); w.postMessage = function () {}; return w; }; },
+      /^timeout: decode \(no progress in 20\.\d s\)$/, false]]) {
+    const { c, pg, reqs } = await ctx({ spoof: { gpu: GPU } });
+    await pg.addInitScript(hang);
+    await pg.goto(base + "?guard=5000,9000&diag", { waitUntil: "load" }); await settled(pg, 40000);
+    await pg.waitForTimeout(700);           /* ?diag writes every 500 ms */
+    const s = await state(pg), memo = await pg.evaluate(() => sessionStorage.getItem("ab-3d")), n1 = reqs.length;
+    const diag = await pg.evaluate(() => document.querySelector("pre").textContent);
+    await pg.reload({ waitUntil: "load" }); await pg.waitForTimeout(2500);
+    const s2 = await state(pg);
+    report(s.d3 === "refused" && re.test(s.why) && s.canvas === "none" && s.scene === "visible" && /path=CSS 3d=refused why=timeout: /.test(diag)
+      && (kept ? /^0\|timeout: upload/.test(memo || "") && s2.d3 === "refused" && /^earlier in this session: timeout: upload/.test(s2.why) && reqs.length === n1 : /^1\|/.test(memo || "") && s2.d3 !== "refused"),
+      "the watchdog: " + label + ": the CSS entrance, named" + (kept ? ", remembered for the session" : ", not remembered (tried again on the next load)"), JSON.stringify({ why: s.why, memo, next: [s2.d3, s2.why] }));
     await c.close();
   }
   console.log("door3d", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);

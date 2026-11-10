@@ -633,13 +633,15 @@ picture.t-noite { display: var(--t-noite); }
   min-block-size: calc(100lvh - var(--stick, 0px));
 }
 .porta__probe { position: absolute; inset-block-start: 0; inline-size: 0; block-size: 100vh; block-size: 100svh; visibility: hidden; }
-/* the 3D entrance (site.js, door3d.js): one canvas over the whole pinned stage, under the text and the cue, over the
-   photograph's layers. Hidden until it draws (site.js shows it while 0 < r < the flat colour and hides the layers it
-   replaces); never a target. */
+/* the 3D entrance (site.js, door3d.js): one canvas over the whole pinned stage, under the text, the cue and the flood
+   (z-index 2, later in the document), over the photograph's layers (one above .scene: at the same z-index the scene,
+   later in the document, covered it, so a cross-fade between the two showed only its last frame; iOS round 2).
+   Hidden until it draws (site.js shows it while 0 < r < the flat colour and hides the layers it replaces); never a
+   target. */
 .porta__3d {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: calc(var(--z-scene) + 1);
   display: block;
   inline-size: 100%;
   block-size: 100%;
@@ -659,12 +661,21 @@ picture.t-noite { display: var(--t-noite); }
   align-content: start;
   min-block-size: 100vh;
   min-block-size: 100svh;
-  padding-block: var(--lista-pad) var(--space-8);
+  padding-block: var(--space-4) var(--space-8);
   padding-inline:
     max(var(--gutter), env(safe-area-inset-left))
     max(var(--gutter), env(safe-area-inset-right));
 }
-.lista { --lista-pad: clamp(var(--space-7), 22svh, 14rem); }   /* the title sits a little above the optical centre */
+/* the block (title to button) stands in the middle of the small viewport, between the safe areas, wherever the page
+   lands on the list (#lista): the padding above it is half of what the screen leaves around it (client, 9 Nov:
+   «centrado a meio na altura da página»; it started 22svh down before). With the sequence on, it is placed against
+   the page's end instead (below). --lista-b is the block's height at rest, measured by site.js (no message shown, so
+   a message lengthens the form downwards and nothing above it moves); without JavaScript 30rem (the form and the line
+   under it, at 390px). A block taller than the screen starts --space-4 from the top, the field in view. */
+.lista { --lista-b: 30rem; padding-block-start: max(var(--space-4), env(safe-area-inset-top), calc((100vh - var(--lista-b)) / 2)); }
+@supports (height: 100svh) {
+  .lista { padding-block-start: max(var(--space-4), env(safe-area-inset-top), calc((100svh - var(--lista-b) + env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2)); }
+}
 .lista { grid-template-columns: minmax(0, 1fr); }   /* the column can always shrink to the screen (large text sizes) */
 .lista__inner { inline-size: min(100%, var(--measure-form)); min-inline-size: 0; overflow-wrap: anywhere; }
 /* the room you walked into: with the sequence on, the list is pulled up by one large viewport, so it starts
@@ -672,16 +683,47 @@ picture.t-noite { display: var(--t-noite); }
    content comes up with the scroll, hidden (site.js holds it at opacity 0, no pointer target) until the screen is
    one flat colour; then it rises in on that light and is at rest when the run ends. Its first screen is
    transparent (the stage behind it is the same flat colour); its own colour starts exactly where the pinned
-   stage ends, the same token, so there is no seam. It is at least one large viewport tall, so the footer always
-   starts below the stage. */
+   stage ends, the same token, so there is no seam. It is one large viewport tall less the footer's height (--foot-h,
+   site.js), so the footer closes that same screen, over the foot of the stage (the same flat colour), and the page
+   ends where the run ends: the scroll stops with the block in the middle (it went on before by the footer's height,
+   114px at 390 x 844, and carried the block up to the top). A list too tall for that pushes the footer below it. */
 .porta-on .lista {
   z-index: 1;
   margin-block-start: -100vh;
   margin-block-start: -100lvh;
-  min-block-size: 100vh;
-  min-block-size: 100lvh;
+  min-block-size: calc(100vh - var(--foot-h, 0px));
   background: none;
 }
+@supports (height: 100lvh) {
+  .porta-on .lista { min-block-size: calc(100lvh - var(--foot-h, 0px)); }
+}
+/* The scroll stops at the page's end, one large viewport after the run's end, so that is where the block must stand
+   in the middle of what the visitor sees, the dynamic viewport (client, iPhone, 10 Nov: «centrado a meio na altura da
+   página. Não em cima»). Centred in the small viewport from the list's top, it rested 40px high on the client's
+   iPhone with Safari's bars shown (796 of 836px: 40px of scroll remain after the run) and 20px high with them hidden.
+   So the padding above it is the large viewport less half of the dynamic one and of the block, between the safe
+   areas: centred at the page's end whether the bars are shown or not (dvh = lvh = svh elsewhere: as before). Where
+   the footer would not fit under it with --lista-g clear (short phones), the block stands that far above the footer,
+   and the list's foot padding is that same gap, so the page still ends one large viewport after the run: a flick
+   never rests with the block high or its title cut (the page went on 100px at 320 x 568, 51px at 375 x 667).
+   --lista-g is --space-6, shrinking (to --space-4 at least) where the title would come within 16px of the top (an
+   iPhone SE with Safari's bars: 553px for a 411px block and a 114px footer: 16px, the title 12px down). site.js lands
+   the hero action, #lista and Tab on the page's end too. */
+.porta-on .lista {
+  --lista-g: var(--space-6);
+  padding-block-end: var(--lista-g);
+  padding-block-start: max(var(--space-4), env(safe-area-inset-top),
+    min(calc((100vh - var(--lista-b)) / 2), calc(100vh - var(--foot-h, 0px) - var(--lista-b) - var(--lista-g))));
+}
+@supports (height: 100dvh) {
+  .porta-on .lista {
+    --lista-g: clamp(var(--space-4), calc(100dvh - var(--foot-h, 0px) - var(--lista-b) - var(--space-4)), var(--space-6));
+    padding-block-start: max(var(--space-4), env(safe-area-inset-top),
+      min(calc(100lvh - (100dvh + var(--lista-b) - env(safe-area-inset-top) + env(safe-area-inset-bottom)) / 2),
+        calc(100lvh - var(--foot-h, 0px) - var(--lista-b) - var(--lista-g))));
+  }
+}
+.porta-on .foot { position: relative; z-index: 1; }   /* over the pinned stage, which it may overlap at the end */
 .porta-on .lista::before {
   content: "";
   position: absolute;
