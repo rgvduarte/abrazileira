@@ -41,11 +41,14 @@ def pairs():
            ("Texto · lede", "nogueira", "parede", "texto"),
            ("Texto discreto · controlos, rodapé", "castanho", "parede", "texto"),
            ("Latão-texto · estado", "latao-texto", "parede", "texto"),
-           ("Emblema · ponto do rótulo do logótipo", "latao-marca", "parede", "gráfico mín. 3:1"),
+           ("Brasão · ouro, paragem escura (o corpo vai de 1,56 a 3,09:1, como no quadro; decorativo: o nome é texto)", "ouro-escuro", "parede", "decorativo"),
            ("Foco · linha do chão", "nogueira", "parede", "não-texto mín. 3:1")]
     noite = [("Texto · wordmark, rótulos, lede", "linho", "parede-noite", "texto"),
              ("Texto discreto · controlos, rodapé", "linho-escuro", "parede-noite", "texto"),
-             ("Latão · estado, emblema, ponto do rótulo, foco", "latao", "parede-noite", "texto")]
+             ("Latão · estado, foco", "latao", "parede-noite", "texto"),
+             ("Brasão · ouro, paragem clara", "ouro-claro", "parede-noite", "gráfico mín. 3:1"),
+             ("Brasão · ouro, paragem média", "ouro", "parede-noite", "gráfico mín. 3:1"),
+             ("Brasão · ouro, paragem escura", "ouro-escuro", "parede-noite", "gráfico mín. 3:1")]
     hall = []
     for h in ("sala-dia", "sala-noite"):
         hall += [("Título, rótulos, ligações · " + h, "tinta", h, "texto"),
@@ -62,7 +65,8 @@ def pairs():
     return rows
 
 
-def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head="", photo=None, wordmark=None):
+def render(crest_svg, scene_markup, lockup_html, T=None, waitlist=None, theme_head="", photo=None, wordmark=None,
+           crest_defs=None, monogram_svg=None):
     prims = primitives()
     wm = wordmark() if wordmark else ""
     wm_small = wm.replace('class="lockup__name" ', '', 1)      # the drawing alone, sized by its wrapper
@@ -152,6 +156,12 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=
     ]
     trows = "\n".join(f"<tr><td>{a}</td><td>{b}</td><td class=\"sg-num\">{c}</td><td>{d}</td><td>{e}</td></tr>" for a, b, c, d, e in timeline)
 
+    def circle(ground, variant):
+        """the board's circle application: a ground, a ring (gold; white on black) and the crest at 0.7"""
+        return (f'<svg class="sg-circle sg-circle--{ground}" viewBox="0 0 100 100" role="img" aria-label="A Brazileira">'
+                f'<circle class="sg-circle__fundo" cx="50" cy="50" r="49.6"/><circle class="sg-circle__anel" cx="50" cy="50" r="48.9"/>'
+                f'<g transform="matrix(.7 0 0 .7 14.14 11.6)">{crest_svg("sg", defs=False, variant=variant, bare=True)}</g></svg>')
+
     def panel(theme, scene_html, style, day, night):
         pressed_d = "true" if theme == "dia" else "false"
         pressed_n = "true" if theme == "noite" else "false"
@@ -159,7 +169,7 @@ def render(emblem, scene_markup, lockup_html, T=None, waitlist=None, theme_head=
 <p class="sg-tag">{theme.capitalize()}</p>
 <div class="sg-panel__grid">
 <div class="sg-panel__text">
-{lockup_html('p', 'sg-' + theme)}
+{lockup_html('p', 'sg', defs=False)}
 <p class="lede">Brevemente, abrimos as portas.</p>
 <p class="cta-row"><a class="cta" href="#sg-lista">Entrar na lista de espera</a></p>
 <div class="sg-controls">
@@ -245,59 +255,122 @@ body {{ display: block; font-size: var(--size-ui); }}
 .sg-space li {{ display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-1); }}
 .sg-bar {{ block-size: var(--space-3); background: var(--color-text-muted); }}
 .sg-rules li {{ padding-block: var(--space-2); border-block-end: var(--hairline) solid var(--color-surface); max-inline-size: 48em; }}
+.crest-defs {{ position: absolute; inline-size: 0; block-size: 0; overflow: hidden; }}
 .sg-logos {{ display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); margin-block-start: var(--space-5); }}
 .sg-logo {{ margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: var(--space-5); padding: var(--space-6) var(--space-4) var(--space-4); background: var(--color-bg); color: var(--color-text-muted); border: var(--hairline) solid var(--color-ground); font-size: var(--size-ui); text-align: center; }}
 .sg-logo .lockup {{ font-size: min(4rem, 8.5vw); }}
-/* clear space: the height of RAZILEIR's capitals (0.098 of the wordmark's width) on every side, drawn as a dashed edge */
-.sg-clear {{ padding: calc(var(--lockup-wordmark) * 0.098); outline: var(--hairline) dashed var(--color-ground); }}
-/* the home page's one-line line (site.css, inside its container query), shown here as the pitch draws it */
-.sg-line .lockup__label {{ font-size: var(--lockup-label-line); margin-inline-end: calc(var(--track-label) * -1); }}
-.sg-line .lockup__kind, .sg-line .lockup__place {{ display: inline-block; margin-inline-end: 0; }}
-.sg-line .lockup__dot {{ display: inline; }}
+/* clear space: the height of the wordmark's capitals (0.096 W) on every side, drawn as a dashed edge */
+.sg-clear {{ box-sizing: content-box; padding: calc(var(--lockup-wordmark) * 0.096); outline: var(--hairline) dashed var(--color-ground); }}
+/* the board's variants, each on its own ground (tokens): the tile's ground is also the colour the one-ink crest's
+   leaf veins are cut in (--crest-ground) */
+.sg-ids {{ display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); margin-block: var(--space-3) var(--space-5); }}
+.sg-id {{ margin: 0; display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center; gap: var(--space-3); padding: var(--space-5) var(--space-4) var(--space-3); border: var(--hairline) solid var(--color-ground); background: var(--sg-ground); color: var(--sg-ink, var(--verde-torres)); --crest-ground: var(--sg-ground); }}
+.sg-id figcaption {{ font-size: var(--size-ui); color: var(--sg-cap, var(--castanho)); text-align: center; }}
+.sg-id .crest {{ display: block; inline-size: min(100%, 11rem); block-size: auto; }}
+.sg-id .monogram {{ inline-size: 4.5rem; }}
+.sg-id--branco {{ --sg-ground: var(--branco); --sg-ink: var(--preto); }}
+.sg-id--marfim {{ --sg-ground: var(--marfim); }}
+.sg-id--preto {{ --sg-ground: var(--preto); --sg-ink: var(--branco); --sg-cap: var(--linho-escuro); }}
+.sg-circles {{ grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); }}
+.sg-circle {{ display: block; inline-size: min(100%, 9.5rem); block-size: auto; overflow: visible; }}
+.sg-circle__fundo {{ fill: var(--c-ground); }}
+.sg-circle__anel {{ fill: none; stroke: url(#sg-g); stroke-width: 0.9; }}
+.sg-circle--marfim {{ --c-ground: url(#sg-marfim); --crest-ground: var(--marfim); }}
+.sg-circle--branco {{ --c-ground: var(--branco); }}
+.sg-circle--verde {{ --c-ground: var(--verde-fundo); }}
+.sg-circle--castanho {{ --c-ground: var(--castanho-fundo); }}
+.sg-circle--preto {{ --c-ground: var(--preto); --crest-ground: var(--preto); color: var(--branco); }}
+.sg-circle--preto .sg-circle__anel {{ stroke: var(--branco); }}
+.sg-s-marfim {{ stop-color: var(--marfim); }}
+.sg-s-marfim-sombra {{ stop-color: var(--marfim-sombra); }}
+/* the board's horizontal version: crest | a hairline | the wordmark over its line. W (--w) drives it, the ratios are
+   the board's (crest 0.391 W wide, the rule 0.208 W tall, 0.038 W after the crest and 0.068 W before the letters) */
+.lockup-h {{ --w: min(26rem, 52vw); display: flex; align-items: center; color: var(--color-brand-ink); }}
+.lockup-h .lockup__crest {{ inline-size: calc(var(--w) * 0.391); flex: none; }}
+.lockup-h__rule {{ flex: none; inline-size: 0; block-size: calc(var(--w) * 0.208); margin-inline: calc(var(--w) * 0.038) calc(var(--w) * 0.068); border-inline-start: var(--hairline) solid color-mix(in srgb, currentColor 40%, transparent); }}
+.lockup-h__words {{ inline-size: var(--w); container-type: inline-size; display: flex; flex-direction: column; align-items: center; }}
+.lockup-h .lockup__name {{ margin: 0; }}
 .sg-mins {{ display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: var(--space-6); }}
 .sg-mins figure {{ margin: 0; display: grid; justify-items: center; gap: var(--space-2); }}
 .sg-mins .lockup {{ font-size: var(--size-lockup-min); }}
+.sg-mins .crest {{ display: block; inline-size: 100%; block-size: auto; }}
 .sg-wm {{ display: block; color: var(--color-brand-ink); }}
 .sg-wm svg {{ display: block; inline-size: 100%; block-size: auto; }}
-.sg-em {{ display: block; color: var(--color-mark); }}
-.sg-em svg {{ display: block; inline-size: 100%; block-size: auto; }}
+.sg-idsw {{ display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding: 0; margin-block: var(--space-3) var(--space-5); list-style: none; }}
+.sg-idsw li {{ display: flex; align-items: center; gap: var(--space-2); }}
+.sg-idsw .sg-chip {{ inline-size: var(--space-6); block-size: var(--space-6); }}
 code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.875em; }}   /* this page only: token names */
 </style>
 </head>
 <body>
+{crest_defs("sg")}
+<svg class="crest-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><radialGradient id="sg-marfim" cx="50" cy="44" r="56" gradientUnits="userSpaceOnUse"><stop offset="0" class="sg-s-marfim"/><stop offset="1" class="sg-s-marfim-sombra"/></radialGradient></defs></svg>
 <main class="sg">
 <header class="sg-intro">
-{lockup_html('p', 'sg-head')}
+{lockup_html('p', 'sg', defs=False)}
 <div><h1>Sistema de design · v1.0</h1><p>Página interna, não indexada nem ligada ao site. Mostra os tokens e componentes reais (tokens.css, site.css).</p></div>
 </header>
 
 <h2>Logótipo</h2>
-<p class="sg-note">O emblema atual (a coroa, os louros e o B) sobre o wordmark do pitch de identidade e a sua linha em capitais Cinzel muito espaçadas, nas proporções do pitch. O wordmark é o próprio lettering do pitch, vetorizado: o A grande, o B ornamental com a espiral e o fio ao lado, RAZILEIR em capitais menores com as pernas dos R lançadas, o A final grande. O monograma em escudo do pitch está em pausa, por decisão do cliente: fica o emblema atual.</p>
+<p class="sg-note">A identidade do quadro do cliente: o brasão (a coroa de cinco pontas com folhas e pérolas na banda, o escudo de contorno duplo com os ombros enrolados, o monograma B com o gancho da haste, entre dois ramos de oliveira), o lettering «A Brazileira» e BOUTIQUE HOTEL em capitais espaçadas. Tudo desenhado à mão em vetores a partir do quadro (nenhuma imagem do quadro entra no site). Um só desenho do brasão por página: as variantes abaixo reutilizam-no, e todas as cores são tokens.</p>
+<ul class="sg-idsw">
+<li><span class="sg-chip" style="background:linear-gradient(160deg, var(--ouro-claro), var(--ouro) 45%, var(--ouro-escuro))"></span><code>--ouro-claro · --ouro · --ouro-escuro</code></li>
+<li><span class="sg-chip" style="background:var(--ouro-luz)"></span><code>--ouro-luz</code></li>
+<li><span class="sg-chip" style="background:var(--ouro-sombra)"></span><code>--ouro-sombra</code></li>
+<li><span class="sg-chip" style="background:var(--marfim)"></span><code>--marfim</code></li>
+<li><span class="sg-chip" style="background:var(--verde-fundo)"></span><code>--verde-fundo</code></li>
+<li><span class="sg-chip" style="background:var(--castanho-fundo)"></span><code>--castanho-fundo</code></li>
+<li><span class="sg-chip" style="background:var(--preto)"></span><code>--preto</code></li>
+<li><span class="sg-chip" style="background:var(--verde-torres)"></span><code>--verde-torres</code> (letras)</li>
+</ul>
+<p class="sg-tag sg-tag--row">O brasão</p>
+<div class="sg-ids">
+<figure class="sg-id sg-id--branco">{crest_svg("sg", defs=False, label="A Brazileira")}<figcaption>Dourado (referência)</figcaption></figure>
+<figure class="sg-id sg-id--marfim">{crest_svg("sg", defs=False, label="A Brazileira")}<figcaption>Dourado sobre marfim</figcaption></figure>
+<figure class="sg-id sg-id--preto">{crest_svg("sg", defs=False, variant="plano", label="A Brazileira")}<figcaption>Branco sobre preto</figcaption></figure>
+<figure class="sg-id sg-id--branco">{crest_svg("sg", defs=False, variant="plano", label="A Brazileira")}<figcaption>Preto (monocromático)</figcaption></figure>
+</div>
+<p class="sg-tag sg-tag--row">Aplicações em círculo</p>
+<div class="sg-ids sg-circles">
+{"".join(f'<figure class="sg-id sg-id--marfim">{circle(g, v)}<figcaption>{cap}</figcaption></figure>' for g, v, cap in (("marfim", "ouro", "Dourado, fundo marfim"), ("branco", "ouro", "Dourado, fundo branco"), ("verde", "ouro", "Dourado, fundo verde"), ("castanho", "ouro", "Dourado, fundo castanho"), ("preto", "plano", "Branco, fundo preto")))}
+</div>
+<p class="sg-tag sg-tag--row">Monograma (variantes mínimas)</p>
+<div class="sg-ids">
+<figure class="sg-id sg-id--branco">{monogram_svg("sg", label="A Brazileira")}<figcaption>Monograma dourado</figcaption></figure>
+<figure class="sg-id sg-id--branco">{monogram_svg("sg", variant="plano", label="A Brazileira")}<figcaption>Monograma preto</figcaption></figure>
+<figure class="sg-id sg-id--preto">{monogram_svg("sg", variant="plano", label="A Brazileira")}<figcaption>Monograma branco</figcaption></figure>
+</div>
+<p class="sg-tag sg-tag--row">Com texto</p>
 <div class="sg-logos">
-<figure class="sg-logo sg-line" data-theme="dia">{lockup_html('p', 'sg-logo-dia', ' sg-clear')}<figcaption>Dia · wordmark e linha em Verde Torres, emblema e « · » em latão-marca · tracejado: a área de proteção</figcaption></figure>
-<figure class="sg-logo sg-line" data-theme="noite">{lockup_html('p', 'sg-logo-noite', ' sg-clear')}<figcaption>Noite · wordmark e linha em linho, emblema e « · » em latão</figcaption></figure>
+<figure class="sg-logo" data-theme="dia"><p class="lockup-h"><span class="lockup__crest">{crest_svg("sg", defs=False)}</span><span class="lockup-h__rule" aria-hidden="true"></span><span class="lockup-h__words"><span class="sr">A Brazileira</span>{wm}<span class="sr">, </span><span class="lockup__label">Boutique Hotel</span></span></p><figcaption>Versão horizontal: brasão, um filete e as letras (para faixas baixas: cabeçalhos, assinaturas)</figcaption></figure>
+</div>
+<div class="sg-logos">
+<figure class="sg-logo" data-theme="dia">{lockup_html('p', 'sg', ' sg-clear', defs=False)}<figcaption>Versão vertical, Dia (a do primeiro ecrã): letras e linha em Verde Torres, brasão em ouro · tracejado: a área de proteção</figcaption></figure>
+<figure class="sg-logo" data-theme="noite">{lockup_html('p', 'sg', ' sg-clear', defs=False)}<figcaption>Versão vertical, Noite: letras e linha em linho, o mesmo ouro (cada paragem 4,12:1 ou mais sobre a Parede-noite)</figcaption></figure>
 </div>
 <div class="sg-logos">
 <figure class="sg-logo" data-theme="dia"><div class="sg-mins">
-<figure>{lockup_html('p', 'sg-min-dia')}<figcaption>logótipo no mínimo: 30px (wordmark 204px)</figcaption></figure>
-<figure><span class="sg-wm" style="inline-size:120px">{wm_small}</span><figcaption>wordmark sozinho: 120px</figcaption></figure>
-<figure><span class="sg-em" style="inline-size:32px">{emblem('sg-em32')}</span><figcaption>emblema: 32px</figcaption></figure>
-<figure><span class="sg-em" style="inline-size:16px">{emblem('sg-em16')}</span><figcaption>16px (favicon)</figcaption></figure>
+<figure>{lockup_html('p', 'sg', defs=False)}<figcaption>vertical no mínimo: 30px (W 162px)</figcaption></figure>
+<figure><span class="sg-wm" style="inline-size:140px">{wm_small}</span><figcaption>letras sozinhas: 140px</figcaption></figure>
+<figure><span style="inline-size:48px;display:block">{crest_svg("sg", defs=False)}</span><figcaption>brasão: 48px</figcaption></figure>
+<figure><span style="inline-size:24px;display:block">{monogram_svg("sg")}</span><figcaption>monograma: 24px</figcaption></figure>
+<figure><img src="../favicon.svg" width="16" height="16" alt=""><figcaption>favicon: 16px</figcaption></figure>
 </div><figcaption>Tamanhos mínimos em ecrã</figcaption></figure>
 <figure class="sg-logo" data-theme="noite"><div class="sg-mins">
-<figure>{lockup_html('p', 'sg-min-noite')}<figcaption>30px</figcaption></figure>
-<figure><span class="sg-wm" style="inline-size:120px">{wm_small}</span><figcaption>120px</figcaption></figure>
-<figure><span class="sg-em" style="inline-size:32px">{emblem('sg-em32n')}</span><figcaption>32px</figcaption></figure>
-<figure><span class="sg-em" style="inline-size:16px">{emblem('sg-em16n')}</span><figcaption>16px</figcaption></figure>
+<figure>{lockup_html('p', 'sg', defs=False)}<figcaption>30px</figcaption></figure>
+<figure><span class="sg-wm" style="inline-size:140px">{wm_small}</span><figcaption>140px</figcaption></figure>
+<figure><span style="inline-size:48px;display:block">{crest_svg("sg", defs=False)}</span><figcaption>48px</figcaption></figure>
+<figure><span style="inline-size:24px;display:block">{monogram_svg("sg")}</span><figcaption>24px</figcaption></figure>
+<figure><img src="../favicon.svg" width="16" height="16" alt=""><figcaption>16px</figcaption></figure>
 </div><figcaption>Os mesmos, de noite</figcaption></figure>
 </div>
 <ul class="sg-rules">
-<li><strong>Ficheiros</strong>: <code>assets/img/wordmark.svg</code> (uma forma por letra, 218 nós, 5,4 KB; medido contra o pitch: IoU 0,974) e <code>assets/img/emblem.svg</code>. O wordmark não é uma fonte: vai inline no h1, <code>aria-hidden</code>, com <code>fill="currentColor"</code>, e o nome lê-se uma vez do texto escondido «A Brazileira, Boutique Hotel, Torres Vedras».</li>
-<li><strong>Proporções</strong> (medidas no pitch; W = largura do wordmark, 2316,2 × 369, <code>--lockup-wordmark</code> 6.8em do tamanho do logótipo: 245px a 36px, 490px a 72px): emblema 0.257 W de largura (a área do monograma do pitch, 160 × 143 px em 579) · o pé do emblema desce 0.0073 W abaixo do topo do B, longe das letras · das pernas dos R às capitais da linha 0.0286 W · a linha numa só linha: capitais 0.019 W (Cinzel a 0.0271 W, nunca menos de 11,2px), tracking 0.42em, 0.81 W de largura; em duas linhas, max(0.32em, 11px).</li>
-<li><strong>Área de proteção</strong>: a altura das capitais de RAZILEIR (0.098 W) em todos os lados do logótipo; 20px no tamanho mínimo.</li>
-<li><strong>Tamanhos mínimos</strong> em ecrã: o logótipo completo a 30px (wordmark 204px, a linha presa a 11px); o wordmark sozinho a 120px de largura (o B ornamental e as pernas dos R ainda se leem); abaixo disso, só o emblema (favicon e ícones), que se aguenta a 16px.</li>
-<li><strong>Cores</strong> (do pitch, <code>colours.json</code>): Verde Torres <code>--verde-torres</code> #24281B (o círculo da paleta; o traço medido é #1A1C10) é a tinta do wordmark e da linha de dia, 13,00:1 sobre a Parede; de noite, linho (11,98:1 sobre a Parede-noite). O emblema fica em latão-marca de dia e latão de noite. O Latão Antigo do pitch (#987245) pertence ao monograma em pausa e não é usado; o fundo do quadro (#F5F2EA) não substitui a Parede. Cores forçadas: CanvasText.</li>
-<li><strong>Não</strong>: redesenhar ou compor o wordmark numa fonte, esticar, contornar, recolorir fora dos dois esquemas, pôr sobre a fotografia, juntar-lhe o monograma do pitch enquanto está em pausa, animar o emblema.</li>
+<li><strong>Ficheiros</strong> (<code>assets/img/</code>): <code>crest-gold.svg</code> (o brasão em ouro com relevo), <code>crest.svg</code> (uma tinta, <code>currentColor</code>, nervuras recortadas), <code>crest-circle.svg</code> (aplicação em círculo, dourado sobre marfim), <code>monogram-gold.svg</code> e <code>monogram.svg</code> (o monograma mínimo), <code>wordmark.svg</code> (as letras do quadro, 11 formas, 5,6 KB) e <code>favicon.svg</code> (o monograma com contorno, para 16 a 32px). Na página, o brasão vai inline uma vez (<code>build.py › crest_svg</code>, ids com prefixo, cores por classe a partir dos tokens) e é <code>aria-hidden</code>: o nome lê-se uma vez, do texto escondido «A Brazileira», com a linha «Boutique Hotel» em texto vivo. Sozinho (aqui), o brasão tem <code>role="img"</code> e um só nome: «A Brazileira».</li>
+<li><strong>Proporções</strong> (medidas no quadro; W = largura das letras, 1042,6 × 151,5, <code>--lockup-wordmark</code> 5.4em do tamanho do logótipo: 194px a 36px, 389px a 72px): brasão 0.526 W de largura, centrado, com a ponta do escudo à altura do topo do B (a 0.026 W acima das capitais) · da cauda dos R às capitais da linha 0.037 W (0.056 W abaixo da linha de base) · BOUTIQUE HOTEL com capitais de 0.031 W (Cinzel a 0.0443 W, nunca menos de 11px) e 0.745 W de largura (tracking 0.61em; com o mínimo de 11px, o tracking cede primeiro, nunca abaixo de 0.25em). Horizontal: brasão 0.391 W, filete 0.208 W de altura, a 0.038 W do brasão e a 0.068 W das letras.</li>
+<li><strong>Área de proteção</strong>: a altura das capitais das letras (0.096 W) em todos os lados; 16px no tamanho mínimo.</li>
+<li><strong>Tamanhos mínimos</strong> em ecrã: a versão vertical com W de 160px (a linha presa a 11px); a horizontal com W de 200px; as letras sozinhas a 140px (o B alto e as caudas dos R ainda se leem); o brasão sozinho a 48px (abaixo disso a coroa e os ramos empastam); por baixo, o monograma (24px) e o favicon (16 a 32px, com contorno escuro para ler em separadores claros e escuros).</li>
+<li><strong>Cores</strong>: o ouro do quadro em três paragens (<code>--ouro-claro</code>, <code>--ouro</code>, <code>--ouro-escuro</code>) com o relevo (<code>--ouro-luz</code>, <code>--ouro-sombra</code>, <code>--ouro-fundo</code>), igual de dia e de noite; as letras e a linha em Verde Torres de dia (13,00:1) e linho de noite (11,98:1). Fundos das aplicações: marfim, branco, verde, castanho, preto. Cores forçadas: o brasão plano em CanvasText.</li>
+<li><strong>Não</strong>: compor as letras numa fonte, esticar, contornar, mudar o ouro ou pôr o brasão em latão, separar a coroa ou os ramos, pôr sobre a fotografia, animar o brasão. O emblema antigo (coroa com cruz, coroa de louros fechada, laço) está retirado.</li>
 </ul>
 
 <h2>Materiais (primitivos)</h2>
@@ -354,8 +427,8 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
 <h2>Tipografia</h2>
 <div class="sg-type"><ul>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start">{wm_type}</span><small>O wordmark não é uma fonte: é o lettering do pitch vetorizado (<code>assets/img/wordmark.svg</code>, 11 formas, 5,4 KB, inline e <code>aria-hidden</code>) · <code>--lockup-wordmark</code> 6.8em do tamanho do logótipo (<code>--size-wordmark</code> 36 a 72px): 245 a 490px de largura · só no logótipo. A leitura do pitch do lettering da fachada: romana pesada de serifas abertas, o B ornamental e os dois R de perna lançada</small></li>
-<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__label" style="font-size:var(--lockup-label-line);margin:0"><span class="lockup__kind" style="display:inline;margin:0">Boutique Hotel</span><span class="lockup__dot" style="display:inline"> · </span><span class="lockup__place" style="display:inline;margin:0">Torres Vedras</span></span></span><small>Cinzel 400 (só capitais, 5,9 KB) · uma linha com « · », capitais a 0.019 da largura do wordmark (13,3px a 72px, nunca menos de 11,2px; 0.81 do wordmark, como no pitch) na página inicial a partir de 900 × 500 (lado a lado ou, nos tablets ao alto, empilhado), se couber na coluna; duas linhas a 0.32em (nunca menos de 11px) nos telemóveis e tablets estreitos, e no lado a lado nunca maiores do que a linha única · tracking 0.42em, o do pitch · das pernas dos R às capitais, 0.0286 do wordmark · Verde Torres de dia, linho de noite, o ponto em latão</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start">{wm_type}</span><small>As letras não são uma fonte: são o lettering do quadro de identidade, desenhado em vetores (<code>assets/img/wordmark.svg</code>, 11 formas, 5,6 KB, inline e <code>aria-hidden</code>) · <code>--lockup-wordmark</code> 5.4em do tamanho do logótipo (<code>--size-wordmark</code> 36 a 72px): 194 a 389px de largura · só no logótipo. Uma romana de serifas abertas em capitais da mesma altura, o B alto com a bandeira no topo, os dois R com a perna lançada numa cauda</small></li>
+<li><span class="lockup" style="font-size:var(--size-wordmark);align-items:flex-start"><span class="lockup__label" style="margin:0">Boutique Hotel</span></span><small>Cinzel 400 (só capitais, 5,9 KB) · capitais a 0.031 da largura das letras (Cinzel a 0.0443 W: 17,2px a 72px, nunca menos de 11px) · 0.745 W de largura, como no quadro (tracking 0.61em; onde o mínimo de 11px manda, o tracking cede, nunca abaixo de 0.25em) · das caudas dos R às capitais, 0.037 W · Verde Torres de dia, linho de noite</small></li>
 <li><span class="lista__title" style="text-align:start;margin:0">Lista de espera</span><small>Cinzel 400 · <code>--size-read</code> 19px · tracking 0.2em · capitais · o nome da secção, como o pitch nomeia as suas (nos nomes de secção da nota de privacidade, 17px)</small></li>
 <li><span class="notice__title" style="margin:0">Nota de privacidade</span><small>EB Garamond 400 · <code>--size-title</code> 28 a 38px · altura de linha 1.15 · o título de página</small></li>
 <li><span class="lede" style="margin:0">Brevemente, abrimos as portas.</span><small>EB Garamond 400 · <code>--size-lede</code> 19px (320) a 20px (390) a 28px · linha 1em + 7.2px (20/27, 28/35) · a única frase do primeiro ecrã; onde não cabe numa linha, parte-se depois da vírgula, «Brevemente, / abrimos as portas.»</small></li>

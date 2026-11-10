@@ -144,7 +144,7 @@ const [, , dir] = process.argv;
   for (const [n, w, h] of [["se320", 320, 568], ["m375", 375, 667], ["m390", 390, 844], ["land", 844, 390], ["d1440", 1440, 900]]) for (const [when, scheme, want] of [["2026-11-08T21:00:00Z", "light", "noite"], ["2026-11-08T13:00:00Z", "dark", "dia"]]) {
     const c = await ctx(w, h, { theme: null, colorScheme: scheme }); const pg = await c.newPage(); await pg.clock.install({ time: new Date(when) }); await serve.offline(pg);
     await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1000);
-    const r = await pg.evaluate(() => { const n = document.getElementById("sol-note"), e = document.querySelector(".lockup__emblem svg"), nr = n.getBoundingClientRect(), er = e.getBoundingClientRect();
+    const r = await pg.evaluate(() => { const n = document.getElementById("sol-note"), e = document.querySelector(".lockup__crest svg"), nr = n.getBoundingClientRect(), er = e.getBoundingClientRect();
       const vis = [...n.children].find((s) => getComputedStyle(s).display !== "none");
       return { theme: document.documentElement.dataset.theme, sol: document.documentElement.hasAttribute("data-sol"), w: Math.round(nr.width), h: Math.round(nr.height), text: vis && vis.textContent,
         font: getComputedStyle(n).fontFamily.split(",")[0], noteBottom: Math.round(nr.bottom), noteRight: Math.round(nr.right), emblemTop: Math.round(er.top), emblemLeft: Math.round(er.left) }; });

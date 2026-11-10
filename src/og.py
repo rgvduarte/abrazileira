@@ -1,4 +1,5 @@
-"""Render the 1200x630 Open Graph image (Noite) from the real lockup and the photograph of the entrance.
+"""Render the 1200x630 Open Graph image (Noite) from the real lockup (the identity board's vertical version: crest,
+letters, BOUTIQUE HOTEL) and the photograph of the entrance.
 
 Not part of the build: the shipped image is src/assets/img/og.jpg (build.py copies it). Run this only to redraw
 it, after `python3 src/build.py` (it reads the built tokens.css, site.css and photo layers):
@@ -27,10 +28,10 @@ html = f"""<!doctype html>
 html, body {{ width: 1200px; height: 630px; overflow: hidden; }}
 body {{ display: block; position: relative; min-height: 0; }}
 .og-text {{ position: absolute; z-index: 2; inset: 0 auto 0 0; width: 600px; display: flex; align-items: center; justify-content: center; padding-block-end: 8px; }}
-.og-text .lockup {{ font-size: 72px; }}   /* the wordmark 490px wide, the crest 126px: the home page's largest lockup */
-/* the line on two lines at 22px (0.3em): link previews show the card about 500px wide, where one line at the
-   pitch's ratio would be 5px; two lines keep BOUTIQUE HOTEL / TORRES VEDRAS readable at about 9px */
-.og-text .lockup__label {{ font-size: 0.3em; }}
+.og-text .lockup {{ font-size: 80px; }}   /* W 432px: the crest 227px wide, the board's vertical lockup at its largest */
+/* the line a little larger than the board's ratio (its tracking gives way, so it is still 0.745 W wide): link previews
+   show the card about 500px wide, where the ratio's 19px would be 8px; at 24px it reads at about 10px */
+.og-text .lockup__label {{ font-size: 5.6cqi; }}
 .og-art {{ position: absolute; inset: 14px 40px -8px 560px; }}   /* the photo's faded foot may leave the frame */
 .og-art .entrance {{ position: absolute; inset: 0; min-block-size: 0; max-block-size: none; margin: 0; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }}
 .og-art .scene {{ inset-inline-start: 0; }}

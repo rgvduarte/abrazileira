@@ -4,12 +4,12 @@ name: A Brazileira · Boutique Hotel
 description: >-
   A coming-soon page for a boutique hotel in Torres Vedras, Portugal, and step 1 of its design system.
   The canvas is the photograph's own wall: its lime plaster (parede #FAECDF) by day, never white, and the dusk
-  wall beyond the lantern (parede-noite #1C140F) by night, never black. The voice is the client's identity pitch:
-  the original crowned B in a laurel wreath over the pitch's own wordmark A BRAZILEIRA, drawn as a vector in Verde
-  Torres (a heavy flared Roman with the ornamental B and kicked R's, the pitch's reading of the façade's
-  lettering), and BOUTIQUE HOTEL · TORRES VEDRAS in widely spaced Cinzel capitals; the pitch's shield monogram is on
-  hold; everything the house says, and the interface, is
-  set in EB Garamond, in sentence case. Brass (latão) is ornament and logo by day and light by night. Two surface worlds, Dia and Noite,
+  wall beyond the lantern (parede-noite #1C140F) by night, never black. The voice is the client's identity board
+  (Nov 2026), in its vertical version: the gold crest (a five-point crown over a double-outlined shield with the B
+  monogram, between two olive branches) over A BRAZILEIRA in the board's own lettering (a flared Roman, the tall B
+  with its flag, the R's with a swash), drawn as vectors, in Verde Torres, and BOUTIQUE HOTEL in widely spaced Cinzel
+  capitals; everything the house says, and the interface, is
+  set in EB Garamond, in sentence case. Gold (ouro) is the crest's alone; brass (latão) is ornament by day and light by night. Two surface worlds, Dia and Noite,
   switch the whole page, including the photograph. The signature is a photograph of an arched limestone doorway
   (walnut double door, fanlight, wall lantern, an olive in a clay pot), cut into layers: scrolling swings the doors
   inwards, walks in through the doorway into a limestone-and-lime hall and on into its light, one flat colour, where
@@ -30,9 +30,21 @@ colors:
   castanho: "#804F1E"       # walnut doors by day; muted text 5.93:1 on parede
   nogueira: "#5F3819"       # text, focus, hairlines, field borders; 8.77:1 on parede
   tinta: "#2E1E14"          # strongest text, the button; 13.82:1 on parede
-  verde-torres: "#24281B"   # Verde Torres, the identity pitch's ink (its palette circle): the wordmark and its line by day; 13.00:1 on parede
+  verde-torres: "#24281B"   # Verde Torres, the identity pitch's ink (its palette circle; the board's lettering measures #1D2319): the wordmark and its line by day; 13.00:1 on parede
+  ouro-luz: "#F3DFAE"       # the crest's relief, lit edge (identity board)
+  ouro-claro: "#DCBD7A"     # the crest's gold, light stop; 8.13:1 on parede-noite #34251C
+  ouro: "#C09E5E"           # the crest's gold, middle stop; 5.81:1 on parede-noite
+  ouro-escuro: "#A3833F"    # the crest's gold, deep stop; 4.12:1 on parede-noite, 3.09:1 on parede
+  ouro-sombra: "#7A5C27"    # the crest's relief, shadow edge and leaf veins
+  ouro-fundo: "#5B4216"     # the crest's cast shadow (30%)
+  marfim: "#FBF7EC"         # ivory: the board's «dourado sobre marfim» ground (logo applications only)
+  marfim-sombra: "#F3E8D0"  # the ivory circle's rim
+  branco: "#FFFFFF"         # white: logo applications only, never the page
+  preto: "#0E0C0B"          # black: the board's black grounds and the one-colour crest
+  verde-fundo: "#283322"    # deep green circle («dourado fundo verde»)
+  castanho-fundo: "#523316" # brown circle («dourado fundo castanho»)
   latao: "#DB9E42"          # brass; 2.02:1 on parede = ornament only by day; 7.77:1 on parede-noite
-  latao-marca: "#A57638"    # emblem by day (graphic, 3.45:1), close to the original logo gold
+  latao-marca: "#A57638"    # brass mark by day (graphic, 3.45:1): the style guide's marks (the old emblem's gold, retired from the logo)
   latao-texto: "#83602C"    # brass-hued small text by day, 4.93:1 on parede
   noite: "#1C120B"          # walnut night: night surfaces and hairlines are mixed from it
   linho: "#F3E6D6"          # text by night, 14.79:1 on parede-noite
@@ -54,7 +66,7 @@ colors:
   color-text-muted-on-night: "#C2AE96" # linho-escuro
   color-accent-text: "#83602C"         # latao-texto: the status, the sun note, the control tick
   color-accent-text-on-night: "#DB9E42"   # latao
-  color-mark: "#A57638"                # latao-marca: the emblem (graphic)
+  color-mark: "#A57638"                # latao-marca: brass marks (graphic); the crest takes the ouro tokens, not this
   color-brand-ink: "#24281B"           # verde-torres: the wordmark and the lockup's line
   color-brand-ink-on-night: "#F3E6D6"  # linho
   color-mark-on-night: "#DB9E42"       # latao
@@ -85,16 +97,16 @@ colors:
   color-on-strong: "#F9F0E9"           # papel: text and tick on the tinta button / checked box
 
 typography:
-  wordmark:                   # «A Brazileira»: not a font; the pitch's lettering as a vector (assets/img/wordmark.svg), inline
-    drawing: "assets/img/wordmark.svg, 2316.2 x 369, 11 paths, fill currentColor, aria-hidden"
+  wordmark:                   # «A Brazileira»: not a font; the identity board's lettering as a vector (assets/img/wordmark.svg), inline
+    drawing: "assets/img/wordmark.svg, 1042.6 x 151.5, 11 paths, fill currentColor, aria-hidden"
     fontSize: "clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem)"   # the lockup's em: 36 -> 72px
-    width: "6.8em of the lockup (--lockup-wordmark): 245px at 36px, 490px at 72px, 204px at the 30px minimum"
-  label-lockup:               # BOUTIQUE HOTEL · TORRES VEDRAS
+    width: "5.4em of the lockup (--lockup-wordmark, W): 194px at 36px, 389px at 72px, 162px at the 30px minimum"
+  label-lockup:               # BOUTIQUE HOTEL (the board's vertical lockup has no town line)
     fontFamily: "Cinzel, 'Cinzel lockup fallback', 'Times New Roman', serif"
-    fontSize: "max(0.32em, 11px) of the lockup on two lines (in the split layout never larger than the one line); max(0.0271 of the wordmark's width, 11.2px) on one line (home, from 900 x 500, when it fits the column)"
+    fontSize: "max(4.43cqi, 11px): capitals 0.031 W (17.2px at W 389)"
     fontWeight: 400
     lineHeight: 1.3
-    letterSpacing: 0.42em
+    letterSpacing: "max(0.25em, (74.5cqi - 8.933em) / 13): the line 0.745 W wide (0.61em at the ratio)"
     textTransform: uppercase
   label:                      # «Lista de espera» (19px); the privacy notice's section names (17px)
     fontFamily: "Cinzel, 'Cinzel list fallback', 'Times New Roman', serif"
@@ -163,10 +175,10 @@ spacing:
 components:
   lockup:
     textColor: "{colors.color-brand-ink}"
-    markColor: "{colors.color-mark}"
-    labelColor: "{colors.color-brand-ink}; its « · » {colors.color-mark}"
+    markColor: "{colors.ouro-claro} / {colors.ouro} / {colors.ouro-escuro} (the crest, the same by day and night)"
+    labelColor: "{colors.color-brand-ink}"
     typography: "{typography.wordmark}; {typography.label-lockup}"
-    minSize: "30px lockup em (--size-lockup-min): the wordmark 204px wide; the wordmark alone 120px"
+    minSize: "30px lockup em (--size-lockup-min): W 162px; the letters alone 140px; the crest alone 48px; below, the monogram"
   control:                    # theme buttons and language links share one recipe
     textColor: "{colors.color-text-muted}"
     typography: "{typography.ui}"
@@ -294,7 +306,7 @@ components:
 ## Overview
 
 A Brazileira reads like the hotel's own card left on a stone step: warm paper, the gold crest of the original
-logo over the wordmark of the client's identity pitch, one sentence in a Garamond, one action, and the house's door. The door is a photograph: an arched
+crest of the client's identity board over its lettering, one sentence in a Garamond, one action, and the house's door. The door is a photograph: an arched
 limestone doorway with a walnut double door and a fanlight, a wall lantern on the left and an olive in a clay
 pot on the right, the house number 11 on the keystone. It is graded to the brand (lime plaster, limestone in the
 Pedra family, walnut rich but not orange), and the page IS its wall: the page colour was sampled from the
@@ -327,19 +339,19 @@ doorway into a calm, out-of-focus vestibule and on into the arch of light at its
 colour, the hall's light; the waiting list rises in on that light at once. The hall surface is light in both themes (daylight by day, lamplight by
 night), so the form always reads dark ink on a light ground.
 
-Colour discipline: nogueira is the workhorse (text, focus ring, field borders). Latão is ceremonial: the emblem
-and the « · » of the lockup's line by day, the accent text by night. The photograph carries its own colour (graded to the
+Colour discipline: nogueira is the workhorse (text, focus ring, field borders). Gold (ouro) is the crest's and
+nothing else's; latão is the accent text, by night above all. The photograph carries its own colour (graded to the
 palette); the one colour sampled from it is the page itself (the wall), so the two cannot part. Barro (terracotta) exists only for form errors. The interface
 itself is 95% neutral.
 
 **Key characteristics**
 - Canvas `{colors.parede}` by day, `{colors.parede-noite}` by night (the photograph's wall); the hall
   `{colors.color-hall}`; all flat.
-- The pitch's lockup: the original emblem.svg inline over the pitch's own «A Brazileira» (its lettering drawn as a
-  vector: a large A, the ornamental B, RAZILEIR in smaller capitals with both R's kicked out on the baseline, a large
-  closing A) in Verde Torres and, close under it, BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel capitals, widely spaced.
-  The pitch's shield monogram is on hold (the client's call); the crowned laurel stays.
-- Three voices, as on the pitch: the wordmark (logo only), Cinzel capitals for labels (the lockup's line and
+- The identity board's vertical lockup: the crest in metallic gold, inline, over «A Brazileira» in the board's
+  lettering (a flared Roman in capitals of one height, the tall B with its flag, both R's with a swash) in Verde
+  Torres and, under it, BOUTIQUE HOTEL in Cinzel capitals, widely spaced (Logo usage). The old emblem (the crowned
+  laurel with the cross and the bow) is retired.
+- Three voices, as on the identity: the lettering (logo only), Cinzel capitals for labels (the lockup's line and
   section names), EB Garamond for everything said (400) and the interface (500), roman, sentence case.
 - One accent: brass, `{colors.latao-texto}` by day (4.93:1), `{colors.latao}` by night (7.77:1).
 - One action on the first screen: «Entrar na lista de espera» / «Join the waiting list».
@@ -354,72 +366,118 @@ itself is 95% neutral.
 
 ## Logo usage
 
-- **Sources**: `src/assets/img/emblem.svg` (vector rebuild of the original: crown with cross, dense laurel, bow,
-  Trajan-style B) and `src/assets/img/wordmark.svg` (the identity pitch's lettering of «A Brazileira», vectorised
-  from the board: 2316.2 × 369, one path per letter with its counters, 218 nodes, 5.4 KB; checked against the
-  pitch's large wordmark at IoU 0.974, mean edge deviation 0.11 px at the board's scale). Both are inlined in the h1
-  by `build.py` with `currentColor`, `aria-hidden` and `focusable="false"`; the wordmark carries `width`/`height`
-  attributes and CSS `aspect-ratio: 2316.2 / 369`, so it holds its box before anything loads (CLS 0). The
-  accessible name is the live text «A Brazileira, Boutique Hotel, Torres Vedras»: a visually hidden «A Brazileira»
-  (in mixed case: the lockup no longer uppercases it) reads the name once. The wordmark is not a font: there is no
-  wordmark face, preload or fallback any more.
-- **Monogram**: the pitch's shield monogram (the B with an F wound into it) is **on hold** by the client's decision
-  («temos de pensar melhor nisso»). The lockup keeps the current crowned-laurel emblem; do not use the pitch
-  monogram, its gold (Latão Antigo #987245) or its frame until it is redrawn and approved.
-- **Lockup** (the pitch's «Interpretação para a marca», measured on the board: wordmark 579 × 92 px, its line
-  471 px wide with 11 px capitals). One width drives it: the wordmark is `--lockup-wordmark` 6.8em of the
-  lockup's size (`--size-wordmark` 36 → 72px: 245 → 490px wide; 204px at the 30px minimum). Everything else is a
-  ratio of that width (W):
-  - the emblem's box 0.257 W wide (`--lockup-emblem`; 200 × 228, ink 182 × 228), sized to the area of the
-    pitch's monogram (160 × 143 px there), centred on the wordmark; its foot dips 0.0073 W under the B's top
-    (`--lockup-emblem-pull`), as the shield's point does on the board, clear of the letters under it;
-  - BOUTIQUE HOTEL · TORRES VEDRAS in Cinzel 400 capitals, tracking 0.42em (measured on the board; it was 0.32em),
-    its capitals 0.0286 W under the R's kick (`--lockup-under` on the wordmark, `--lockup-cap-top` -0.255em on the
-    line, so the gap is measured from the capitals, not the line box);
-  - on one line with a brass « · » where the wordmark is large (home, from 900 × 500: the split layout, and the
-    stacked layout on portrait tablets that wide; while it fits the column): `max(0.0271 W, 11.2px)`, capitals
-    0.019 W, the line 0.80 W wide as on the board (0.86 W where the 11.2px floor binds: 1366 × 657, 1440 × 700,
-    1024 × 1366); on two lines (`max(0.32em, 11px)`, 11.5px at 36px) on phones, portrait tablets below 900px and
-    short landscape phones. Review r2: the gate was 1024 × 700, so the most common laptop window (1366 × 768, 657px
-    tall in Chrome), 1280 × 600 and every split screen from 900 to 1023px wide took the phones' two lines at 0.32em
-    of a large lockup: a 17px two-line block 0.68 W wide, competing with the wordmark, and the label jumped from
-    11.2px (1440 × 700) to 17.2px (1366 × 657) to 13.3px (1440 × 900). Now 11.2, 11.2, 13.3; where two lines remain
-    in the split layout (900 to about 915px wide, enlarged text) they are capped at the one-line size
-    (`min(--lockup-label, --lockup-label-line)`).
-    Trailing tracking is compensated with a negative end margin so each line is optically centred.
-  Checked on a 1440 render with the same ink measure as the board: wordmark height 0.159 W (board 0.159), line
-  width 0.80 W (0.81), crest foot 0.005 W under the wordmark's top (0.007).
-  Polish pass (the client: «melhores o espaçamento entre A Brazileira, Boutique Hotel, Torres Vedras e o copy em
-  baixo»): the lockup's own proportions are the pitch's and stay as they are (re-measured: 1440 × 900, wordmark
-  490 × 78, crest 126 wide = 0.257 W, line 399 wide = 0.81 W on one line; 390 × 844, wordmark 245 × 39, the line on
-  two lines 166 wide = 0.68 W, as the pitch's horizontal version sets it); what changed is the space round it, so
-  wordmark and line read as one unit and the words below as a second thing (Layout › The first screen's rhythm:
-  51px between the line and the sentence on a phone, 73px at 1440, against 24 and 48 before).
-- **Enlarged text** (WCAG 1.4.4; root size at 125–200%): the wordmark never grows past its column
-  (`max-inline-size: 100%`, height from its ratio); the one-line label is a container query on the lockup
-  (`(min-width: 5.52em) and (min-width: 21rem)`: the line is 29.7 of its own size wide), so it falls back to two
-  lines as soon as one no longer fits; each label line may break between its words. At 200%: 320 × 640 and
-  390 × 844 keep the wordmark inside the screen (224 and 294px) with the line on four and three lines; 1024 × 768
-  takes the two-line label; nothing is cut. The top bar at 200% (fix r1): the sun note wraps inside the screen
-  (`max-inline-size: calc(100vw - 2 × gutter)`, balanced) instead of running off a 320px screen, a PT · EN row that
-  wraps sits under the note, and the stage clears the bar's real height (`--bar-h`, set by site.js only when the bar
-  wraps or the note takes more than one line); the consent's privacy link, one unit that never breaks at normal
-  sizes, wraps inside itself when it is wider than the line. Measured with the root at 200%: no sideways scroll at
-  320, 390 and 1280, PT and EN.
-- **Colour** (from the pitch, `colours.json`): Dia: wordmark and line `verde-torres` #24281B (the pitch's palette
-  circle VERDE TORRES; its stroke cores measure #1A1C10), 13.00:1 on parede; emblem and the « · » `latao-marca`.
-  Noite: wordmark and line `linho` (a light ink, 14.79:1 on parede-noite); emblem and the « · » `latao`. The semantic
-  role is `--color-brand-ink`; nothing else on the site was recoloured. Forced colours: CanvasText.
-- **Clear space**: the height of RAZILEIR's capitals (0.098 W) on every side of the lockup; 20px at the minimum.
-  The page keeps 24px or more.
-- **Minimum size** (screen): the full lockup at a 30px em (`--size-lockup-min`, the wordmark 204px wide; used as
-  the home link on the privacy notice, on landscape phones under 328px tall and on portrait screens up to 600px
-  tall, the line held at 11px; landscape phones take 9.15svh, 35.7px at 390px tall, to keep the old footprint); the wordmark alone at 120px wide (the B's spiral and the R's kicks still read at DPR 1). Below that,
-  use the emblem alone (favicon.svg, app icons), which holds at 16px.
-- **Icons**: favicon.svg, apple-touch-icon.png and icon-512.png stay emblem-based, unchanged.
-- **Don't**: redraw the letters or set «A Brazileira» in a font, stretch, outline, recolour outside the two
-  schemes, add a background plate, change the line's tracking, put the lockup on the photograph, pair it with the
-  pitch monogram while that is on hold, animate the emblem.
+The client's identity board (Nov 2026, «USA esta identidade») replaces the old emblem everywhere. Its parts, each an
+original vector drawn by hand from the board (no part of the board's bitmap is embedded, cropped or traced into the
+site; the board itself is confidential working material and is never shown):
+
+- **The crest** (`src/assets/img/crest-gold.svg`, 102.47 × 100): a five-point crown with leaf finials and pearls on
+  its band, on a shield with a double outline and curled shoulders, flanked by two olive branches (27 leaves a side);
+  inside the shield, the monogram: a Roman B whose stem carries a hooked flourish to the left. One drawing: the left
+  half (mirrored for the right), the centre (crown, B) and the leaf veins. `crest.svg` is the same drawing in one ink
+  (`currentColor`, the veins cut out), `crest-circle.svg` the circle application (gold on ivory). Measured against
+  the board: monogram IoU 0.96 at 4×; crown, shield and branches at the level of the best earlier vectors, cleaner by eye.
+- **The minimal monogram** (`monogram-gold.svg`, `monogram.svg`, 79.97 × 100): the B alone, for small marks.
+  `favicon.svg` is that B in gold with a dark outline (painted under the fill), so it reads on light and dark tabs at
+  16 to 32px.
+- **The lettering** (`wordmark.svg`, 1042.6 × 151.5, one path per letter, 11 paths, 5.6 KB, fill `currentColor`): the
+  board's «A BRAZILEIRA», a flared Roman in capitals of one height with a tall B (its top 0.3 of the capitals above
+  them, a flag curling to the left, the stem notched at its foot) and both R's with a long swash under the next
+  letter. Built from Cinzel's outlines (SIL OFL 1.1, the face the site already ships for labels; the licence allows
+  it in a logo) at weight 625 (between its 600 and 700 masters), fitted letter by letter to the board's horizontal
+  lockup with a scale and a shift (the A's two legs each their own, so its left leg takes the board's weight; no point
+  moved alone, so the curves stay the font's), the A's crossbar raised to the board's, the B drawn by hand from the
+  board's measures and the R's legs redrawn as the board's swash, growing out of the bowl's foot; IoU 0.84 against the board's letters at 4× (the old pitch wordmark scored 0.21 there: its large A's,
+  smaller RAZILEIR and spiral B were a different lettering, so the board was followed).
+- **The line**: BOUTIQUE HOTEL in Cinzel 400 capitals, live text. The board's lockups have no town line: Torres Vedras
+  is said in the footer, the sun note, the titles and the metadata.
+
+**Inline, once per page.** `build.py › crest_svg()` inlines the crest in the h1 with its ids prefixed and every colour
+turned into a class (`.crest__*` in site.css, which reads the `--ouro-*` tokens), so the markup holds no hex. The
+file draws its relief with two clip paths; Chromium paints clips of paths this large on the main thread (a 70–100 ms
+long task at 4× CPU on a phone, which failed door3d's «still visitor» check), so the inlined crest builds the same
+relief inside its filter instead (the shape's alpha shifted ±0.19: shadow rim, lit rim, gradient body; raster work,
+off the main thread): no extra long task, and the same look (mean luminance of the crest's ink 160.3 against 161.1). A page
+that shows several variants (the style guide) defines the drawing once (`crest_defs()`, a 0 × 0 svg, not
+`display: none`, so its gradients and filter stay live) and draws each variant with `<use>`. It is decorative
+(`aria-hidden`, `focusable="false"`), as are the drawn letters: the h1 reads «A Brazileira, Boutique Hotel», the
+name once, from a visually hidden «A Brazileira». Where the crest stands alone (the style guide), it has
+`role="img"` and the one name «A Brazileira».
+
+**The lockup** (home, privacy home link, 404, Open Graph image): the board's vertical version. One width drives it,
+the lettering's W (`--lockup-wordmark` 5.4em of the lockup's size, `--size-wordmark` 36 → 72px: 194 → 389px; 162px at
+the 30px minimum). The lockup is a block W wide and an inline-size container, so every part is set in `cqi` (1cqi =
+W/100), with the board's ratios (its vertical lockup measured: wordmark 270 px, crest 142 px, line 200 px with 8.6 px
+capitals; the horizontal lockup reads the same):
+- the crest 0.526 W wide (`--lockup-crest`), centred, its shield's point at the B's top (`--lockup-crest-pull` −0.006 W:
+  0.026 W above the capitals, as on the board);
+- the lettering, W wide;
+- BOUTIQUE HOTEL with its capitals 0.056 W under the baseline (0.037 W under the R's swash, `--lockup-under`, measured
+  from the capitals by `--lockup-cap-top`), capitals 0.031 W (`--lockup-label`, Cinzel at 4.43cqi, never under 11px),
+  the line 0.745 W wide (`--track-label` = (74.5cqi − 8.933em) / 13, 0.61em at the ratio; where the 11px floor binds,
+  on phones, the tracking gives way first, never under 0.25em, so the line stays near the board's width:
+  0.75 W at W 194, 0.83 W at 162). Trailing tracking is taken back, so the line is optically centred.
+Sizes on the first screen (Dia, measured): 390 × 844, W 194, crest 102 × 100, lockup 146px tall; 375 × 667 the same;
+320 × 568 W 162, 124px; 844 × 390 W 193, 145px; 768 × 1024 W 262, 193px; 1440 × 900 W 389, 287px; 1920 × 1080 W 437,
+323px.
+
+**The rest composition holds** (the door does not move): on the stacked layouts the photograph takes the height left
+under the text, so the lockup's height is paid for by the break under it. At the same em the vertical lockup is a
+little taller than the old one (3.06px at the phones' 36px em: 145.97 against 142.91px at 390 × 844; 0.77px at a
+portrait tablet's 48.5px; 1.2px at the 30px minimum), and the break gives exactly that back: `--lockup-growth`
+clamp(0.77px, 9.678px − 0.18376 × `--size-wordmark`, 3.06px) (measured, linear between) is taken off
+`--rhythm-break` (calc(clamp(2rem, 6svh, 3.25rem) − growth): 47.6px at 390 × 844, was 50.6; 28.9px at 375 × 667, was
+32; 14.8px at 320 × 568, was 16). Measured before → after (scene top / height / width, CSS px, to 0.02px): 390 × 844
+390.02 / 395.98 / 359.02 → 390.03 / 395.97 / 359.00; 375 × 667, 320 × 568, 360 × 780, 414 × 896 and 430 × 932
+identical; 768 × 1024 451.91 / 514.09 / 466.09 → 451.89 / 514.11 / 466.11; the sentence's top within 0.02px
+everywhere. 844 × 390, 1440 × 900 and 1920 × 1080 (split: the door has its own column) unchanged. The photograph
+stays full width at the foot on phones. (A first tuning, 5.6svh, left the 390 × 844 scene 0.3px wider: enough to
+shift the CSS paving's repeat by a pixel against the 3D street and fail door3d's take-over-frame equality, mean
+|dRGB| 2.35 against 1.45; exact compensation brings it back to 1.44.)
+
+**Enlarged text** (WCAG 1.4.4): the lockup never grows past its column (`max-inline-size: 100%`, and the crest and the
+line are ratios of the lockup's real width); the line's 11px floor grows with the root size and BOUTIQUE HOTEL may
+break between its two words.
+
+**Colour**:
+- The crest is the board's metallic gold in relief, the same by day and by night: a body gradient of three stops
+  (`--ouro-claro` #DCBD7A, `--ouro` #C09E5E, `--ouro-escuro` #A3833F), a lit edge top left (`--ouro-luz`) and a shadow
+  edge bottom right (`--ouro-sombra`, the shape minus itself shifted), the leaf veins in the shadow tone, a soft cast
+  shadow (`--ouro-fundo`, 30%). By night on parede-noite #34251C every body stop is a graphic of 4.12:1 or more
+  (8.13 / 5.81 / 4.12:1; the shadow edge, a thin rim at 42%, 2.37:1). By day, on parede, the body is 1.56 to 3.09:1
+  with its shadow edge at 5.35:1: the board's own light gold on a light ground (its «dourado sobre marfim»), kept as
+  the client's reference look; the crest is decorative (the name is text, the lettering 13.00:1), so no information
+  depends on it.
+- The lettering and the line: Verde Torres `--verde-torres` #24281B by day (13.00:1 on parede), linho by night;
+  `--color-brand-ink`.
+- Applications (style guide; `--marfim`, `--branco`, `--preto`, `--verde-fundo`, `--castanho-fundo`): gold on ivory,
+  gold on white, white on black, black (one colour); circles gold on ivory, white, deep green and brown, white on black.
+- Forced colours: the crest is drawn flat in CanvasText with its veins in Canvas (`forced-color-adjust: none` on the
+  svg), the lettering in CanvasText.
+
+**Clear space**: the height of the lettering's capitals (0.096 W) on every side; 16px at the minimum size. The
+first screen keeps 24px or more.
+
+**Minimum sizes** (screen): the vertical lockup at W 160px (30px em, the line at its 11px floor; the privacy notice's
+home link, the shortest phones); the horizontal version at W 200px; the lettering alone at 140px (the tall B and the
+R's swashes still read at DPR 1); the crest alone at 48px (below that the crown and the branches clog); under 48px,
+the minimal monogram (24px) and the favicon (16 to 32px).
+
+**Horizontal version** (style guide only; for low bands such as letterheads): crest | a hairline (currentColor at
+40%) | the lettering over its line; crest 0.391 W wide, the rule 0.208 W tall, 0.038 W after the crest and 0.068 W
+before the letters.
+
+**Icons**: `favicon.svg` the minimal monogram (gold, dark outline); `apple-touch-icon.png` (180) the crest in gold on
+ivory, full bleed (iOS rounds the corners); `icon-512.png` the circle application, gold on ivory, on transparent; the
+manifest lists the three. `src/icons.py` redraws the PNGs from the SVGs (256 colours: 4.8 / 23 KB). The Open Graph
+image (`og.py`, Noite) sets the vertical lockup at W 432 beside the night doorway.
+
+**Retired**: `emblem.svg` (the crowned laurel with the cross and the bow) and the pitch wordmark (2316.2 × 369), the
+lockup's TORRES VEDRAS line and its « · », the Cinzel place and dot fallbacks. The pitch's shield monogram (the B with
+an F) stays unused: the board's monogram is the B with the hooked swash.
+
+**Don't**: set the lettering in a font, stretch, outline or recolour it outside the two schemes; turn the crest's gold
+into brass or a flat fill on the page; separate the crown or the branches; put any of it on the photograph; animate
+it; add a plate behind it on the page.
 
 ## Colors
 
@@ -436,10 +494,14 @@ itself is 95% neutral.
 - **Nogueira** (`--nogueira` #5F3819): text, focus ring, hairlines and field borders (8.77:1); also the depth of
   the walnut the photograph is graded to (about #8E4F2A on its lit faces).
 - **Tinta** (`--tinta` #2E1E14): the strongest text and the button (13.82:1 on parede).
-- **Verde Torres** (`--verde-torres` #24281B): the identity pitch's ink, for the logo only: the wordmark and its
+- **Verde Torres** (`--verde-torres` #24281B): the identity's ink, for the logo only: the lettering and its
   line by day (13.00:1 on parede). Never interface text.
-- **Latão** (`--latao` #DB9E42): ornament by day (2.02:1 on parede: never text there); text, emblem and focus by
-  night (7.77:1 on parede-noite).
+- **Ouro** (`--ouro-claro` #DCBD7A, `--ouro` #C09E5E, `--ouro-escuro` #A3833F, with `--ouro-luz`, `--ouro-sombra`,
+  `--ouro-fundo` for its relief): the crest's metal, from the identity board, the same by day and by night. Never
+  text, never interface. The grounds of the logo's applications (`--marfim`, `--branco`, `--preto`, `--verde-fundo`,
+  `--castanho-fundo`) are for the logo only, never the page.
+- **Latão** (`--latao` #DB9E42): ornament by day (2.02:1 on parede: never text there); text and focus by
+  night (7.77:1 on parede-noite). It no longer colours the logo (the crest is gold).
 - **Oliva / Azulejo**: reserved (they coloured the drawing's olive). Never text, never interface.
 - **Barro** (`--barro` #9E3B1E): form errors on the hall surface only (text and the invalid field edge).
 - **Sala** (`--sala-dia` #F2DEC4, `--sala-noite` #FCE7BC): the lit hall. Stored as exact sRGB hex (not a
@@ -480,17 +542,18 @@ success colour: success is a sentence («Obrigado. Já está na lista.»), not a
 
 | Theme | Element | Foreground | Background | Ratio | Rule |
 |---|---|---|---|---|---|
-| Dia | Wordmark, lockup line (BOUTIQUE HOTEL · TORRES VEDRAS, 11–13.3px) | verde-torres #24281B | parede #FAECDF | 13.00:1 | text |
+| Dia | Lettering, lockup line (BOUTIQUE HOTEL, 11–17.2px) | verde-torres #24281B | parede #FAECDF | 13.00:1 | text |
 | Dia | Privacy section names, active control, CTA | tinta #2E1E14 | parede | 13.82:1 | text |
 | Dia | Active-control tick, sun note | latao-texto #83602C | parede | 4.93:1 | text / non-text ≥ 3:1 |
 | Dia | Lede, privacy body | nogueira #5F3819 | parede | 8.77:1 | text |
 | Dia | Inactive control, separators, footer, scroll cue | castanho #804F1E | parede | 5.93:1 | text / graphic |
 | Dia | Status | latao-texto #83602C | parede | 4.93:1 | text |
-| Dia | Emblem, the lockup line's « · » (aria-hidden) | latao-marca #A57638 | parede | 3.45:1 | graphic ≥ 3:1 (logo) |
+| Dia | Crest, gold body (aria-hidden; the board's reference look) | ouro-claro / ouro / ouro-escuro | parede | 1.56 / 2.19 / 3.09:1 (shadow edge 5.35) | decorative (the name is text) |
 | Dia | Focus ring | nogueira | parede | 8.77:1 | non-text ≥ 3:1 |
 | Noite | Wordmark, lockup line, section names, lede, active control, CTA | linho #F3E6D6 | parede-noite #1C140F | 14.79:1 | text |
 | Noite | Inactive control, separators, footer, scroll cue | linho-escuro #C2AE96 | parede-noite | 8.47:1 | text / graphic |
-| Noite | Status, emblem, the lockup line's « · », focus ring, active-control tick, sun note | latao #DB9E42 | parede-noite | 7.77:1 | text |
+| Noite | Status, focus ring, active-control tick, sun note | latao #DB9E42 | parede-noite | 7.77:1 | text |
+| Noite | Crest, gold body (the same gold as by day) | ouro-claro / ouro / ouro-escuro | parede-noite #34251C | 8.13 / 5.81 / 4.12:1 | graphic ≥ 3:1 |
 | Hall (Dia / Noite) | List name (Cinzel capitals), labels, consent link | tinta | hall #F2DEC4 / #FCE7BC | 12.21 / 13.18:1 | text |
 | Hall | List sentence, consent text | nogueira | hall | 7.75 / 8.37:1 | text |
 | Hall | Footer (home), muted | castanho | hall | 5.24 / 5.66:1 | text |
@@ -517,7 +580,7 @@ shows a lettered wordmark drawn from the façade («PASTEIS DE FEIJÃO», «CAF�
 widely spaced Roman capitals and a Garamond specimen for text. The site now follows it, three voices.
 
 ### Font family
-- The wordmark is not a face: «A Brazileira» is the pitch's lettering drawn as a vector
+- The wordmark is not a face: «A Brazileira» is the identity board's lettering drawn as a vector
   (`assets/img/wordmark.svg`, inline; see Logo usage). The modified Cinzel Decorative file that used to set it
   («Brazileira Wordmark», 3.0 KB) and its licence copy are gone.
 - **Cinzel** 400 (Cinzel 2.000, Natanael Gama, OFL), capitals only (A-Z, the Portuguese accented capitals,
@@ -545,8 +608,8 @@ and its name is a spaced label above it. 320px is 320 × 640, 390px is 390 × 84
 
 | Token | Family | 320px | 390px | 1440px | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|---|---|---|
-| wordmark | drawn (SVG), 6.8em of the lockup's 36–72px | 245px wide (204px when the screen is ≤ 600px tall, and on landscape phones) | 245px | 490px | — | — | — | A Brazileira, the pitch's lettering |
-| lockup line | Cinzel | 11.5px, two lines (11px) | 11.5px, two lines | 13.3px, one line with « · » | 400 | 1.3 | 0.42em | BOUTIQUE HOTEL · TORRES VEDRAS |
+| lettering | drawn (SVG), 5.4em of the lockup's 36–72px | 194px wide (162px when the screen is ≤ 600px tall) | 262px | 389px | — | — | — | A Brazileira, the identity board's lettering |
+| lockup line | Cinzel | 11px (0.31em tracking) | 11.6px (0.61em) | 17.2px (0.61em) | 400 | 1.3 | 0.745 W wide | BOUTIQUE HOTEL |
 | label | Cinzel | 19px | 19px | 19px | 400 | 1.3 | 0.2em | LISTA DE ESPERA (the privacy section names 17px, 1.47) |
 | title | EB Garamond | 28px | 28px | 38px | 400 | 1.15 | 0 | Nota de privacidade |
 | lede | EB Garamond | 19.2px | 20.25px | 28px | 400 | 1em + 7.2px (26.4 / 27.5 / 35.2px) | 0 | the sentence, the list sentence, 404, thank-you |
@@ -596,7 +659,9 @@ Tinos), and after it a twin for Android (below), each sized so that role's own s
 set to the web font's width in Chromium, with English variants where the sentence differs (`[lang|=en]` swaps
 the stacks). Centred multi-line text (the ledes) and wrapped text near a break (the consent, the privacy intro)
 are matched on the line that decides the break, not on the average. Values (size-adjust, PT / EN):
-lockup line BOUTIQUE HOTEL 103.15%, TORRES VEDRAS 98.6%, its « · » 80.49%;
+lockup line BOUTIQUE HOTEL 103.15% (the TORRES VEDRAS and « · » fallbacks are retired with that line; the line's
+tracking now follows the lockup's width, so a fallback may set it up to a few px wider before Cinzel lands, inside
+the lockup's own box: nothing under it moves);
 list name 97.37 / 101.77%; section names 102.05%;
 lede 94.41 / 94.01% (the polish pass's sentence; not yet regenerated for the 9 Nov sentence, see Roadmap and
 known gaps); list sentence 93.14 / 91.31%;
@@ -643,7 +708,7 @@ round them breathes. Tokens (`tokens.css`), phones height-aware (svh), the split
 |---|---|---|---|---|---|
 | `--rhythm-pair` | sentence → status (no status on the home page since 9 Nov) | 8px | 8px | 12px | 4px |
 | `--rhythm-apart` | sentence → action (status → action before 9 Nov) | clamp(16px, 2.6svh, 24px): 22px | 12px | 32px | 0 |
-| `--rhythm-break` | lockup's line → sentence | clamp(32px, 6svh, 52px): 51px | clamp(24px, 4.8svh, 32px) | clamp(56px, 8svh, 72px): 72px | 24px |
+| `--rhythm-break` | lockup's line → sentence | clamp(32px, 6svh, 52px) − the lockup's growth: 47.6px | clamp(24px, 4.8svh, 32px) − growth: 28.9px (14.8px at ≤ 600px tall) | clamp(56px, 8svh, 72px): 72px | 24px |
 | `--rhythm-air` | top bar → crest, action → façade | clamp(24px, 4.2svh, 40px): 35px | 20px | (the column is centred on the wall) | — |
 
 Measured between line boxes at 390 × 844: line → sentence 51px, sentence → status 8, status → action 23 (the action's
@@ -655,6 +720,12 @@ the sentence was from the lockup, so nothing grouped). Since the status line wen
 sentence at `--rhythm-apart` and nothing stands in for the line: measured line → sentence → action, between boxes,
 51 / 22 at 390 × 844, 72 / 32 at 1440 × 900, 16 / 12 at 320 × 568, 24 / 0 at 844 × 390 (there the action's 44px
 target alone holds it apart, about 20px of ink); the action → façade box 24 at 390 × 844.
+Identity round (Nov 2026): the board's vertical lockup is a compact block (crest, lettering, one line) 1–3px taller
+than the old lockup at the same em; the break gives exactly those pixels back (47.6px at 390 × 844, 28.9 at
+375 × 667, 14.8 at 320 × 568; `--lockup-growth`), so the sentence, the action and the door keep their places to
+0.02px on every stacked layout (Logo usage). With the
+crest now carrying the block's weight, the line → sentence gap still reads as the largest step (ink about 52px at
+390 × 844 against the 22px sentence → action).
 
 ### Grid and container
 - **Stacked** (portrait screens of any width, and every screen below 900px that is not landscape from 560px):
@@ -747,8 +818,9 @@ The arch is architecture, not a UI radius.
 
 ## Components
 
-**`lockup`** (h1 on the home page; a home link at the 30px minimum on the privacy notice): the emblem, the drawn
-wordmark (inline SVG) and its line; see Logo usage. States: none.
+**`lockup`** (h1 on the home page; a home link at the 30px minimum on the privacy notice; the 404): the identity
+board's vertical version, the gold crest over the drawn lettering (inline SVGs) and BOUTIQUE HOTEL; see Logo usage.
+States: none.
 
 **`control`** (`.ctl`, buttons and links): EB Garamond 500 17px, tracking 0.01em (PT · EN 0.08em), sentence
 case, muted colour, 44 × 44px minimum.
@@ -2163,9 +2235,9 @@ news, while the lockup and the photograph carry the place. The new pt-PT lines n
 The only contact on the site is inn@abrazileira.com (privacy notice, the no-JS line and the send error).
 The round 3 copy changes (sun note, success, send error, button label) are new pt-PT lines: they need the client's
 sign-off.
-Open Graph: `assets/img/og.jpg`, 1200 × 630, 60 KB, Noite: the lockup with the pitch's drawn wordmark at 72px (the
-wordmark 490px wide, the crest 126px; its line on two lines at 22px, 0.3em, so it still reads at about 9px when a
-link preview shows the card 500px wide) and the photograph of the entrance (doors
+Open Graph: `assets/img/og.jpg`, 1200 × 630, 59 KB, Noite: the identity board's vertical lockup at an 80px em (W
+432px, the crest 227px wide; BOUTIQUE HOTEL at 24px, 5.6cqi, its tracking giving way so the line keeps 0.745 W, so it
+still reads at about 10px when a link preview shows the card 500px wide) and the photograph of the entrance (doors
 closed, the lantern lit, the hall's light in the gap), rendered by `src/og.py` from the real components and
 layers (`--replace` writes it into `src/assets/img/`); JPEG, since it is a photograph (the PNG of the same frame is
 about ten times larger). `og:image:alt`: «… o logótipo e a fotografia de uma entrada em arco de pedra com portas de
@@ -2192,8 +2264,8 @@ Before the run brings it in, the list's content has no pointer target but stays 
 accessibility tree (nothing is made inert or hidden).
 
 ## Implementation notes (extension)
-- Source: `src/` (build.py, photo.py, site.css, site.js, tokens.tpl.css, noite.css, styleguide.py, og.py,
-  `assets/` with the emblem, the wordmark, fonts, icons, favicon, og.jpg and `photo/` (the layers per theme, AVIF + WebP, and
+- Source: `src/` (build.py, photo.py, site.css, site.js, tokens.tpl.css, noite.css, styleguide.py, og.py, icons.py,
+  `assets/` with the crest, the monogram, the wordmark, fonts, icons, favicon, og.jpg and `photo/` (the layers per theme, AVIF + WebP, and
   photo.json), `tests/`). `python3 src/build.py` rebuilds `docs/` completely with Python 3 alone; every path is
   relative to `build.py`, nothing is read from outside `src/`. `photo.py` turns photo.json into the markup (see
   Components › entrance); the photo files are encoded once by the asset pipeline and copied as they are (the build
@@ -2379,7 +2451,7 @@ accessibility tree (nothing is made inert or hidden).
 | Split | `(min-width: 56.25em) and (min-aspect-ratio: 1/1), (orientation: landscape) and (min-width: 35em)` | 5fr text \| 6fr entrance, 64px apart, container 86rem; lede 48px under the lockup; action 48px under the status; top bar inset follows the container; the cue band takes the same columns, the cue on the door's axis. Review r2: was `(min-width: 56.25em), (orientation: landscape) and (min-width: 37.5em)`: portrait tablets from 900px are stacked now, and the landscape threshold is 560px, so a 568 × 320 phone (iPhone SE 1st generation on its side), stacked before with only the lockup on plain page colour in its first screen and the door from y 365, now takes the compact split: wall, door and paving beside the text (the action's box ends at 324px, its text inside the screen; the steps are below the fold, as at 667 × 375) |
 | Short landscape | `(orientation: landscape) and (max-height: 31.25em)` | compact split: lockup 30–36px (`--size-lockup-short`, 9.15svh: 35.7px at 390px tall, so the drawn lockup keeps the 142px footprint the old one had and the photograph beside it keeps its size), the wordmark 204–245px wide (its line on two lines), lede 19px, status 4px under it, action right under it, entrance min 16rem |
 | Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 19px; then 21px |
-| Lockup line | `(min-width: 56.25em) and (min-height: 31.26em)`, then `@container (min-width: 5.52em) and (min-width: 21rem)` on the lockup; in the split layout from 500px tall the two-line fallback is capped at the one-line size | home only: BOUTIQUE HOTEL · TORRES VEDRAS on one line, as on the pitch, where it is at most 0.9 of the wordmark's width (0.86 where the 11.2px floor binds, 0.80 from 1440) and fits the column (two lines on phones, portrait tablets below 900px, short landscape phones, 900–915px split and with enlarged text). Review r2: was `(min-width: 64em) and (min-height: 43.75em)`, which sent 1366 × 657 (a 1366 × 768 laptop in Chrome), 1280 × 600 and 900–1023px split screens to a 15.7–17.2px two-line block |
+| Lockup line | none | BOUTIQUE HOTEL on one line everywhere (the board's lockup has no town line since the identity round, so the one-line / two-line switch and its container query are gone); with enlarged text it may break between its two words |
 | Footer lines | `(max-width: 29.99em)` | name, place and link on three lines, no separators |
 | Home sentence | `text-wrap: balance`, the object tied | one line where it fits (PT from about 335px at the phone size; EN from 320px); otherwise two, «Estamos a restaurar / um edifício antigo.» (below 335px, and in the split layout's narrow column from 900 to about 1080px) (the 13.4em one-phrase-a-line rule for the old three-phrase sentence is gone) |
 | Sun note | every width; `(min-width: 56.25em) and (min-height: 37.5em)` | its own line under Dia · Noite; the stage clears it by 12px (`--sol-h`) except on screens from 900 × 600, where the crest is far below; with very large text it wraps inside the screen and the stage clears the bar's real height (`--bar-h`) |
@@ -2392,7 +2464,7 @@ line); the field and the button are 48px. Nothing collapses into a menu: there a
 ## Do's and Don'ts
 
 Do:
-- Use the lockup exactly (emblem.svg, the pitch's drawn wordmark.svg, Cinzel capitals for its line), with the lockup at 30px or more (the wordmark 204px wide; 120px when it stands alone).
+- Use the lockup exactly (the gold crest, the board's drawn wordmark.svg, Cinzel capitals for BOUTIQUE HOTEL), with the lockup at 30px or more (W 162px; the lettering alone 140px; the crest alone 48px; below that the monogram).
 - Read colours through the semantic roles (`--color-*`) and the photograph's roles (`--t-*`, `--photo-lqip`,
   `--color-leaf-shade`); add new values to tokens.css first.
 - Keep one action per screen and give it the only full-ink underline there.

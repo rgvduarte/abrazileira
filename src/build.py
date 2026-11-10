@@ -1,7 +1,7 @@
 """Build the A Brazileira site into ../docs from the sources in this folder.
 
-Portable: every path is relative to this file. The folder is self-contained (assets/ holds the emblem,
-the wordmark, fonts, icons, favicon, the Open Graph image and the photographic entrance in assets/photo), so
+Portable: every path is relative to this file. The folder is self-contained (assets/ holds the crest,
+the monogram, the wordmark, fonts, icons, favicon, the Open Graph image and the photographic entrance in assets/photo), so
 `python3 src/build.py` works from any checkout with Python 3 alone (no image tools: the photo layers are encoded
 once by the asset pipeline and copied as they are). The build is deterministic and rewrites ../docs completely.
 """
@@ -29,20 +29,108 @@ def write(p, s):
         f.write(s)
 
 
-# ---------------------------------------------------------------- emblem
-def emblem(idp="ab-emblem"):
-    s = read(os.path.join(ASSETS, "img/emblem.svg"))
-    inner = re.sub(r"^<svg[^>]*>", "", s).replace("</svg>", "")
-    inner = inner.replace('id="v"', f'id="{idp}-mask"').replace("url(#v)", f"url(#{idp}-mask)")
-    inner = inner.replace('fill="#fff"', 'fill="white"').replace('stroke="#000"', 'stroke="black"')
-    assert "#" not in re.sub(r"url\(#[^)]*\)", "", inner), "raw colour left in emblem"
-    return f'<svg viewBox="0 0 200 228" aria-hidden="true" focusable="false">{inner}</svg>'
+# ---------------------------------------------------------------- crest
+# The client's identity board (Nov 2026): a five-point crown on a double-outlined shield with the B monogram, between
+# two olive branches. One drawing (assets/img/crest-gold.svg: the left half, mirrored; the centre; the leaf veins), hand
+# built as vectors from the board. It is inlined once per page with its ids prefixed and every colour taken from the
+# tokens (site.css › .crest: the gold stops, the light and the shadow of its relief), so no hex is left in the markup.
+# Variants on the same page (the style guide) reuse that one definition with <use>.
+CREST_W, CREST_H = 102.47, 100
+CREST_MIRROR = f'matrix(-1 0 0 1 {CREST_W} 0)'
+
+
+def _gold_svg(name, w, h, shapes, veins=()):
+    """one of the identity's gold drawings (assets/img/*-gold.svg) as (defs, body) for inlining. The file draws its
+    relief with two clipPaths (the shape, and the shape shifted up-left: a shadow rim, a lit rim and the gradient body);
+    Chromium paints clips of paths this large on the main thread (a 70-100 ms task at 4x CPU on a phone, review of the
+    identity round), so the same relief is rebuilt here inside the filter, from the shape's alpha shifted by the same
+    amount (raster work, off the main thread): shadow rim = shape out (shape up-left), lit rim = (shape in up-left)
+    out (shape down-right), body = the gradient in both. The file's cast shadow and inner edge follow unchanged. Every
+    colour becomes a class (site.css › .crest__*: the tokens). shapes / veins: (id, transform) the file draws."""
+    src = read(os.path.join(ASSETS, "img", name)).strip()
+    vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', src)
+    assert (float(vb[1]), float(vb[2])) == (w, h), name + " viewBox changed"
+    pre = re.search(r'<linearGradient id="([a-z]+)-g"', src)[1]
+    grad = re.search(r"<linearGradient .*?</linearGradient>", src)[0]
+    filt = re.search(r"<filter .*?</filter>", src)[0]
+    paths = "".join(re.findall(r'<path id="[^"]+" d="[^"]+"/>', src))
+    shift = float(re.search(r'translate\((\.?[\d.]+) ', src)[1])      # the file's own relief offset (its body's shift)
+    dd = f"{shift:g}".replace("0.", ".")
+    rims = (f'<feOffset in="SourceAlpha" dx="-{dd}" dy="-{dd}" result="up"/><feOffset in="SourceAlpha" dx="{dd}" dy="{dd}" result="dn"/>'
+            '<feComposite in="SourceAlpha" in2="up" operator="out" result="rd"/>'
+            '<feComposite in="SourceAlpha" in2="up" operator="in" result="ri"/><feComposite in="ri" in2="dn" operator="out" result="rl"/>'
+            '<feComposite in="SourceGraphic" in2="ri" operator="in"/><feComposite in2="dn" operator="in" result="bd"/>'
+            '<feFlood class="crest__fd"/><feComposite in2="rd" operator="in" result="rd2"/>'
+            '<feFlood class="crest__fl"/><feComposite in2="rl" operator="in" result="rl2"/>'
+            '<feMerge result="gold"><feMergeNode in="rd2"/><feMergeNode in="rl2"/><feMergeNode in="bd"/></feMerge>')
+    assert filt.count('<feMergeNode in="SourceGraphic"/>') == 1
+    filt = re.sub(r"(<filter [^>]*>)", lambda m: m[1] + rims, filt, count=1).replace('<feMergeNode in="SourceGraphic"/>', '<feMergeNode in="gold"/>')
+    defs = grad + filt + paths
+    uses = "".join(f'<use href="#{pre}-{i}"{f" transform={chr(34)}{t}{chr(34)}" if t else ""}/>' for i, t in shapes)
+    body = f'<g filter="url(#{pre}-f)"><g fill="url(#{pre}-g)">{uses}</g></g>'
+    if veins:
+        body += '<g class="crest__veios">' + "".join(f'<use href="#{pre}-{i}"{f" transform={chr(34)}{t}{chr(34)}" if t else ""}/>' for i, t in veins) + "</g>"
+    for a, b in (('stop-color="#dcbd7a"', 'class="crest__s1"'), ('stop-color="#c09e5e"', 'class="crest__s2"'),
+                 ('stop-color="#a3833f"', 'class="crest__s3"'), ('flood-color="#5b4216"', 'class="crest__fs"'),
+                 ('flood-color="#7a5c27"', 'class="crest__fe"')):
+        assert a in defs, name + ": " + a
+        defs = defs.replace(a, b)
+    out = defs + body
+    assert "#" not in re.sub(r'(url\(#[^)]*\)|href="#[^"]*")', "", out), name + ": a colour has no class"
+    return defs, body
+
+
+CREST_DEFS, CREST_BODY = _gold_svg("crest-gold.svg", CREST_W, CREST_H, (("h", ""), ("h", CREST_MIRROR), ("c", "")),
+                                   (("v", ""), ("v", CREST_MIRROR)))
+MONO_W, MONO_H = 79.97, 100
+MONO_DEFS, MONO_BODY = _gold_svg("monogram-gold.svg", MONO_W, MONO_H, (("p", ""),))
+
+
+def _a11y(label):
+    return f'role="img" aria-label="{label}"' if label else 'aria-hidden="true"'
+
+
+def crest_defs(idp):
+    """the crest's (and the monogram's) definitions alone, in a 0 x 0 svg: for a page that shows several variants and
+    defines the drawing once (the style guide). Not display:none, so its gradients and filter stay usable."""
+    return (f'<svg class="crest-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>'
+            f'{CREST_DEFS.replace("abzg-", idp + "-")}{MONO_DEFS.replace("abzm-", idp + "-m")}</defs></svg>')
+
+
+def crest_svg(idp="ab-crest", defs=True, variant="ouro", cls="", label=None, bare=False):
+    """the crest as an inline <svg>. variant "ouro": the board's metallic gold (relief: a light and a shadow edge, a
+    gradient body, a soft cast shadow); "plano": one ink (currentColor) with the leaf veins cut in the ground colour
+    (--crest-ground), as the board's one-colour versions. defs=False reuses a definition made earlier on the page
+    (crest_defs). Decorative (aria-hidden) unless a label is given (role img, one name). bare: the drawing only, no
+    <svg> (to place inside another drawing)."""
+    d = (CREST_DEFS if defs else "").replace("abzg-", idp + "-")
+    if variant == "ouro":
+        body = CREST_BODY.replace("abzg-", idp + "-")
+    else:
+        body = (f'<g class="crest__forma"><use href="#{idp}-h"/><use href="#{idp}-h" transform="{CREST_MIRROR}"/>'
+                f'<use href="#{idp}-c"/></g><g class="crest__recorte"><use href="#{idp}-v"/>'
+                f'<use href="#{idp}-v" transform="{CREST_MIRROR}"/></g>')
+    if bare:
+        return (f"<defs>{d}</defs>" if d else "") + body
+    return (f'<svg class="crest crest--{variant}{(" " + cls) if cls else ""}" viewBox="0 0 {CREST_W} {CREST_H}" '
+            f'width="{round(CREST_W)}" height="{round(CREST_H)}" {_a11y(label)} focusable="false">'
+            + (f"<defs>{d}</defs>" if d else "") + body + "</svg>")
+
+
+def monogram_svg(idp="ab-crest", defs=False, variant="ouro", cls="", label=None):
+    """the board's minimal monogram (the B with its hooked swash): gold in relief, or one ink (currentColor)"""
+    d = (MONO_DEFS if defs else "").replace("abzm-", idp + "-m")
+    body = (MONO_BODY.replace("abzm-", idp + "-m") if variant == "ouro"
+            else f'<use class="crest__forma" href="#{idp}-mp"/>')
+    return (f'<svg class="crest monogram crest--{variant}{(" " + cls) if cls else ""}" viewBox="0 0 {MONO_W} {MONO_H}" '
+            f'width="{round(MONO_W)}" height="{round(MONO_H)}" {_a11y(label)} focusable="false">'
+            + (f"<defs>{d}</defs>" if d else "") + body + "</svg>")
 
 
 # ---------------------------------------------------------------- wordmark
 def wordmark():
-    """«A Brazileira» as drawn on the identity pitch (assets/img/wordmark.svg: the pitch's lettering vectorised, one
-    path per letter, filled with currentColor). Inline and aria-hidden: the lockup's hidden text carries the name.
+    """«A Brazileira» as lettered on the identity board (assets/img/wordmark.svg: one path per letter, filled with
+    currentColor; DESIGN.md › Logo usage). Inline and aria-hidden: the lockup's hidden text carries the name.
     The width and height attributes give it its ratio before CSS applies (no layout shift)."""
     s = read(os.path.join(ASSETS, "img/wordmark.svg"))
     vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', s)
@@ -171,16 +259,15 @@ TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
         '<path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg>')
 
 
-def lockup_html(level="h1", idp="ab-emblem", extra=""):
-    """the crest, the wordmark (the pitch's lettering, an inline SVG, aria-hidden: its name is read once from the hidden
-    «A Brazileira») and its line in spaced capitals; the text reads «A Brazileira, Boutique Hotel, Torres Vedras»
-    (the « · » is drawn, not read)"""
+def lockup_html(level="h1", idp="ab-crest", extra="", defs=True):
+    """the board's vertical lockup: the crest (gold), «A Brazileira» (the board's lettering, an inline SVG) and BOUTIQUE
+    HOTEL in spaced capitals. The crest and the drawn letters are aria-hidden; the name is read once, from the hidden
+    «A Brazileira», and the line is live text: «A Brazileira, Boutique Hotel». (The board's lockup has no town line:
+    Torres Vedras is said in the footer, the sun note and the metadata.)"""
     return (f'<{level} class="lockup{extra}">'
-            f'<span class="lockup__emblem">{emblem(idp)}</span>'
+            f'<span class="lockup__crest">{crest_svg(idp, defs=defs)}</span>'
             f'<span class="sr">A Brazileira</span>{wordmark()}<span class="sr">, </span>'
-            f'<span class="lockup__label"><span class="lockup__kind">Boutique Hotel</span>'
-            f'<span class="lockup__dot" aria-hidden="true"> · </span><span class="sr">, </span>'
-            f'<span class="lockup__place">Torres Vedras</span></span>'
+            f'<span class="lockup__label">Boutique Hotel</span>'
             f'</{level}>')
 
 
@@ -411,7 +498,7 @@ def page_privacy(k):
 <a class="skip" href="#conteudo">{t['skip']}</a>
 {topbar(t, pt_href, en_href, k)}
 <main id="conteudo" class="notice">
-<a class="notice__home" href="{home}">{lockup_html('span', 'ab-emblem', ' lockup--small')}<span class="sr"> · {c['back']}</span></a>
+<a class="notice__home" href="{home}">{lockup_html('span', 'ab-crest', ' lockup--small')}<span class="sr"> · {c['back']}</span></a>
 <h1 class="notice__title">{c['h1']}</h1>
 <p class="notice__intro">{c['intro']}</p>
 {secs}
@@ -599,7 +686,8 @@ def main():
     for f in ["cinzel-caps-400.woff2", "eb-garamond-400.woff2", "eb-garamond-500.woff2",
               "OFL-cinzel.txt", "OFL-eb-garamond.txt"]:
         copy("fonts/" + f, "assets/fonts/" + f)
-    for f in ["apple-touch-icon.png", "icon-512.png", "emblem.svg", "wordmark.svg", "og.jpg"]:
+    for f in ["apple-touch-icon.png", "icon-512.png", "crest-gold.svg", "crest.svg", "crest-circle.svg", "monogram.svg",
+              "monogram-gold.svg", "wordmark.svg", "og.jpg"]:
         copy("img/" + f, "assets/img/" + f)
     shipped = 0
     for theme in ("dia", "noite"):                 # the photo layers, exactly the files photo.json lists
@@ -636,7 +724,8 @@ def main():
         ],
     }, ensure_ascii=False, indent=2) + "\n")
     import styleguide
-    write(os.path.join(DOCS, "design/index.html"), styleguide.render(emblem, scene_markup, lockup_html, T, waitlist, THEME_HEAD, photo, wordmark))
+    write(os.path.join(DOCS, "design/index.html"), styleguide.render(crest_svg, scene_markup, lockup_html, T, waitlist, THEME_HEAD, photo, wordmark,
+                                                                     crest_defs=crest_defs, monogram_svg=monogram_svg))
     stamp(DOCS)
     fp = {t: {w: round(photo.bytes_first_paint(t, w) / 1024, 1) for w in (720, 1080, 1206, 1300)} for t in ("dia", "noite")}
     print("built", DOCS, "photo layers", round(shipped / 1024), "KB; first paint (AVIF KB by scene device px):", fp)

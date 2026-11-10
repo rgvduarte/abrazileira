@@ -187,42 +187,42 @@ svg { display: block; }
   text-align: center;
 }
 
-/* ---- Lockup (h1): the crest over the wordmark and its line, as on the identity pitch ------------------
-   The crest is the current emblem (the pitch's shield monogram is on hold). «A Brazileira» is the pitch's own
-   lettering (the façade's letters read as a heavy flared Roman: a large A, the ornamental B, RAZILEIR in
-   smaller capitals with kicked R's, a large A to close), drawn as an inline SVG in the logo's ink. Under it, close,
-   in widely spaced Roman capitals: BOUTIQUE HOTEL · TORRES VEDRAS on one line where the wordmark is large (the
-   home page from 900 x 500: the split layout, and portrait tablets that wide), on two lines everywhere else. Sizes are the pitch's ratios of
-   one width (--lockup-wordmark, in the lockup's em). Nothing is held at size by force: with text enlarged (200%)
-   the wordmark never grows past the column (max-inline-size), the line falls back to two lines when one does not
-   fit (container query) and each label line may break between its words. The name is read once, from the hidden
-   text «A Brazileira»; the drawn letters are aria-hidden. */
+/* ---- Lockup (h1): the identity board's vertical version ---------------------------------------------
+   The crest (gold, assets/img/crest-gold.svg inline), «A Brazileira» in the board's own lettering (an inline SVG in
+   the logo's ink) and, under it, BOUTIQUE HOTEL in widely spaced Roman capitals. The lockup is one block W wide
+   (--lockup-wordmark, in its em) and a size container, so every part is a ratio of W (tokens.css). Nothing is held at
+   size by force: with text enlarged (200%) the block never grows past the column (max-inline-size) and the line may
+   break between its two words. The name is read once, from the hidden text «A Brazileira»; the crest and the drawn
+   letters are aria-hidden. */
 .lockup {
   display: flex;
   flex-direction: column;
   align-items: center;
+  inline-size: var(--lockup-wordmark);
+  max-inline-size: 100%;
+  container-type: inline-size;
   font-size: var(--size-wordmark);
   color: var(--color-brand-ink);
 }
-.lockup__emblem {
-  inline-size: var(--lockup-emblem);
-  aspect-ratio: 200 / 228;
-  margin-block-end: var(--lockup-emblem-pull);
-  color: var(--color-mark);
+.lockup__crest {
+  display: block;
+  inline-size: var(--lockup-crest);
+  aspect-ratio: 102.47 / 100;               /* the drawing's own box: no layout shift */
 }
-.lockup__emblem svg { inline-size: 100%; block-size: 100%; }
+.lockup__crest .crest { display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
 .lockup__name {
   display: block;
-  inline-size: var(--lockup-wordmark);
-  max-inline-size: 100%;
+  inline-size: 100%;
   block-size: auto;
-  aspect-ratio: 2316.2 / 369;               /* the drawing's own box: no layout shift, whatever loads first */
-  margin-block-end: var(--lockup-under);    /* the line's capitals sit this far under the R's kick, as on the pitch */
+  aspect-ratio: 1042.6 / 151.5;             /* the drawing's own box: no layout shift, whatever loads first */
+  margin-block-start: var(--lockup-crest-pull);
   overflow: visible;
 }
 .lockup__label {
   display: block;
-  margin-block-start: var(--lockup-cap-top);   /* measured from the capitals, not from the line box */
+  margin-block-start: calc(var(--lockup-under) + var(--lockup-cap-top));   /* measured from the capitals, not from the line box */
+  /* trailing tracking taken back, so the line is optically centred under the wordmark */
+  margin-inline-end: calc(var(--track-label) * -1);
   font-family: var(--font-label-lockup);
   font-weight: var(--weight-label);
   font-size: var(--lockup-label);
@@ -231,28 +231,23 @@ svg { display: block; }
   text-transform: uppercase;
   text-align: center;
 }
-.lockup__kind, .lockup__place { display: block; margin-inline-end: calc(var(--track-label) * -1); }
-.lockup__place { font-family: var(--font-label-place); }   /* each piece has a fallback matched to its own width */
-.lockup__dot { display: none; font-family: var(--font-label-dot); color: var(--color-mark); }
-/* home, from 900 x 500 (review r2: it was 1024 x 700, so a 1366 x 768 laptop, 657px tall in Chrome, and every split
-   screen from 900 to 1023px wide fell back to the phones' two lines at 0.32em, a 17px block competing with the
-   wordmark): one line with « · », as on the pitch (capitals 0.019 of the wordmark's width, never under 11.2px), only
-   while it fits the text column: the lockup is the container and its em is the lockup size, so enlarged text (whose
-   0.7rem floor grows) drops it back to two lines. The line is 29.7 of its own size wide (Cinzel at 0.42em tracking):
-   5.47em at 0.0271 of a 6.8em wordmark, 20.8rem at the 0.7rem floor. Where two lines remain in the split layout (900
-   to about 915px wide, enlarged text) they are never set larger than the one line would be; the short landscape
-   phones (below 500px tall) keep theirs (11-11.5px). */
-@media (min-width: 56.25em) and (min-aspect-ratio: 1/1) and (min-height: 31.26em), (orientation: landscape) and (min-width: 35em) and (min-height: 31.26em) {
-  .porta .lockup__label { font-size: min(var(--lockup-label), var(--lockup-label-line)); }
-}
-@media (min-width: 56.25em) and (min-height: 31.26em) {
-  .porta .lockup { align-self: stretch; container-type: inline-size; }
-  @container (min-width: 5.52em) and (min-width: 21rem) {
-    .porta .lockup__label { font-size: var(--lockup-label-line); margin-inline-end: calc(var(--track-label) * -1); }
-    .porta .lockup__kind, .porta .lockup__place { display: inline-block; margin-inline-end: 0; }
-    .porta .lockup__dot { display: inline; }
-  }
-}
+
+/* ---- The crest's colours (one drawing, its colours from the tokens) -------------------------------------
+   «ouro»: the board's reference, metallic gold in relief: the body is a gradient of three stops, a lit edge top left
+   and a shadow edge bottom right (the shape minus itself shifted, built inside the crest's filter: no clip paths,
+   which Chromium paints on the main thread), the leaf veins in the shadow tone, a soft cast shadow. It is the same gold by day and by night (on parede-noite each body stop is 4.12:1 or more).
+   «plano»: one ink (currentColor) with the leaf veins cut in the ground's colour (--crest-ground), as the board's
+   white-on-black and black versions. */
+.crest__s1 { stop-color: var(--ouro-claro); }
+.crest__s2 { stop-color: var(--ouro); }
+.crest__s3 { stop-color: var(--ouro-escuro); }
+.crest__fl { flood-color: var(--ouro-luz); }
+.crest__fd { flood-color: var(--ouro-sombra); }
+.crest__veios { fill: var(--ouro-sombra); fill-opacity: 0.55; }
+.crest__fs { flood-color: var(--ouro-fundo); }
+.crest__fe { flood-color: var(--ouro-sombra); }
+.crest__forma { fill: currentColor; }
+.crest__recorte { fill: var(--crest-ground, var(--color-bg)); }
 
 /* ---- Message ------------------------------------------------------------------ */
 /* the sentence the house says: EB Garamond, the largest text after the logo */
@@ -1097,9 +1092,9 @@ picture.t-noite { display: var(--t-noite); }
 
 /* Short portrait phones (320 x 568-640): tighter rhythm; the page may scroll. */
 @media (orientation: portrait) and (max-height: 42.5em) {
-  /* the same intervals, in proportion: pair 8, apart 12, break 24-32, air 20 */
+  /* the same intervals, in proportion: pair 8, apart 12, break 24-29, air 20 */
   :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); --rhythm-apart: var(--space-3);
-    --rhythm-break: clamp(1.5rem, 4.8svh, 2rem); --rhythm-air: 1.25rem; }
+    --rhythm-break: calc(clamp(1.5rem, 4.8svh, 2rem) - var(--lockup-growth)); --rhythm-air: 1.25rem; }   /* break 28.9px at 375 x 667 (was 32: the lockup's growth) */
   .stage { padding-block-start: var(--space-3); }
   .entrance { min-block-size: clamp(13rem, 38svh, 18rem); }
   .entrance { --scene-clear: var(--space-4); }       /* the photo's faded top stays clear of the action */
@@ -1109,7 +1104,7 @@ picture.t-noite { display: var(--t-noite); }
    tighter rhythm, no scroll cue, and a photograph that takes the height that is left, so the whole door and its
    steps are inside the first screen (tested: the photo's foot is never below the small viewport). */
 @media (orientation: portrait) and (max-height: 37.5em) {
-  :root { --rhythm-break: var(--space-4); --rhythm-air: var(--space-4); }
+  :root { --rhythm-break: calc(var(--space-4) - 1.2px); --rhythm-air: var(--space-4); }   /* break 14.8px: at the 30px em the vertical lockup is 1.2px taller than the old one */
   .lockup { font-size: var(--size-lockup-min); }
   .entrance { min-block-size: clamp(9rem, 28svh, 18rem); }
   .porta__band { display: none; }   /* no room for the cue: the photo keeps the height (the action invites on) */
@@ -1124,7 +1119,14 @@ picture.t-noite { display: var(--t-noite); }
   .surface-hall { --color-text-muted: var(--tinta); }
 }
 @media (forced-colors: active) {
-  .lockup__emblem, .lockup__name, .lockup__place, .status { color: CanvasText; }
+  .lockup__name, .status { color: CanvasText; }
+  /* the crest in the system's text colour, flat (no relief, no shadow), its veins cut in the system's ground */
+  .crest { forced-color-adjust: none; }
+  .crest [class^="crest__s"] { stop-color: CanvasText; }
+  .crest__forma { fill: CanvasText; }
+  .crest__fl, .crest__fd { flood-color: CanvasText; }
+  .crest__veios, .crest__recorte { fill: Canvas; fill-opacity: 1; }
+  .crest__fs, .crest__fe { flood-color: transparent; }
   .ctl[aria-current="page"], .ctl[aria-pressed="true"] { color: Highlight; }
   /* forced colours: the photograph stays (images keep their colours); the light layers go */
   .ph--spill, .leaf__shade, .porta__flood { display: none; }
