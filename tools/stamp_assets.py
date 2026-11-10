@@ -25,7 +25,7 @@ def digest(path: pathlib.Path) -> str:
 # The photographs (assets/photo/<theme>/...): many files, and paths the scripts build from a stem (door3d.js adds
 # ".avif" / ".webp"), so they are versioned as a set: a copy under assets/photo/v<hash>/, the hash of every file in
 # the set, and every page points there. A page from this deploy can then never be paired with a photograph cached
-# from an earlier one (seen on iOS Safari, 9 Nov: the previous facade, same file name, framed by the new street).
+# from an earlier one (iOS Safari could show the previous facade, same file name, framed by the new street).
 PHOTO = DOCS / "assets" / "photo"
 PREF = re.compile(r"assets/photo/(?:v[0-9a-f]{10}/)?(dia|noite)/")
 CREF = re.compile(r"((?:\.\./)*(?:assets/)?)photo/(?:v[0-9a-f]{10}/)?(dia|noite)/")
@@ -46,7 +46,7 @@ if PHOTO.is_dir():
         if new != text:
             page.write_text(new, encoding="utf-8")
             print(f"photos {ver} in {page.relative_to(DOCS)}")
-    # the stylesheets too (review, door finish): the street's paving strips are CSS backgrounds in tokens.css
+    # the stylesheets too (since the door finish): the street's paving strips are CSS backgrounds in tokens.css
     # (url("../photo/<theme>/street-....avif")). Left unversioned, the CSS entrance drew this deploy's facade inside a
     # street Safari may hold from an earlier one, and the 3D path (which reads the strip's stem from the page) fetched
     # the same strip a second time under the versioned name. Rewritten here, before the CSS/JS fingerprint pass below,

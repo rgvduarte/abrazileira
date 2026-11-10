@@ -9,17 +9,17 @@
    ========================================================================== */
 
 /* ---- Fonts: self-hosted, OFL (licences in ../fonts/) --------------------
-   The client's identity, three voices: the wordmark (the identity board's lettering: a flared Roman, the tall B with
+   The identity's three voices: the wordmark (its own lettering: a flared Roman, the tall B with
    its flag, the R's with a swash), spaced Roman capitals for labels, and a classical book serif for everything said.
-   The wordmark is not a font: it is the board's own lettering, drawn as a vector (assets/img/wordmark.svg, inlined
+   The wordmark is not a font: it is the identity's own lettering, drawn as a vector (assets/img/wordmark.svg, inlined
    by build.py), so no face is loaded for it. */
 /* labels: Cinzel Regular 2.000, capitals only (labels are always set in capitals), Portuguese accents, figures,
    . , : ; · - – — ‘ ’ “ ” « » ? ! … ' & ( ) / © º ª: 5.9 KB. Cinzel 2.000 (2020) declares no Reserved Font Name,
    so the subset keeps its name (OFL-cinzel.txt) */
 @font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-caps-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-/* the lockup's BOUTIQUE HOTEL: Cinzel Bold 2.000, its ten letters only (B E H I L O Q T U, space): 1.5 KB. The board
-   sets the line in a firm roman about twice the weight of Cinzel Regular (its ink, as a share of the wordmark's: 0.145;
-   Cinzel 400 0.072, 700 0.138; review of the identity round) */
+/* the lockup's BOUTIQUE HOTEL: Cinzel Bold 2.000, its ten letters only (B E H I L O Q T U, space): 1.5 KB. The line
+   is set in a firm roman about twice the weight of Cinzel Regular (its ink, as a share of the wordmark's: Cinzel 400
+   0.072, 700 0.138) */
 @font-face { font-family: "Cinzel"; src: url("../fonts/cinzel-caps-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; unicode-range: U+0020, U+0042, U+0045, U+0048, U+0049, U+004C, U+004F, U+0051, U+0054, U+0055; }
 /* everything said: EB Garamond 400 (sentences) and 500 (the interface). Subset to Latin + Portuguese
    (U+0020-007E, U+00A0, © ª « ° · º », À-Ã Ç-Ê Í Ñ Ó-Õ Ú Ü and lower case, – — ‘ ’ “ ” • … €, × ÷ −), layout
@@ -40,9 +40,9 @@
    so it has no fallback: it is there with the HTML.) Regenerate after a copy change (the values follow the strings, not just the face).
    Each role has a twin, «… noto», after it in its stack: Android has none of the Times faces (there «Times New Roman»
    is only an alias of the system serif, Noto Serif, about 18% wider than EB Garamond), so without it the Portuguese
-   sentence set in two lines until the font came, then one (review r2: CLS 0.04-0.07 on 360-412px phones). Its
-   size-adjust is the Times value times the role's own Liberation / Noto width ratio (final2/work/fix-r2/tools:
-   noto_ratio.js, noto_faces.py). A screen with Times never reaches it. */
+   sentence set in two lines until the font came, then one (CLS 0.04-0.07 on 360-412px phones). Its
+   size-adjust is the Times value times the role's own Liberation / Noto width ratio. A screen with Times never
+   reaches it. */
 /*FB-START*/
 @font-face { font-family: "Garamond fallback"; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos"); size-adjust: 93.15%; ascent-override: 108.11%; descent-override: 31.99%; line-gap-override: 0%; }
 @font-face { font-family: "Garamond fallback noto"; src: local("Noto Serif"), local("NotoSerif-Regular"), local("NotoSerif"), local("Droid Serif"), local("DroidSerif"); size-adjust: 78.92%; ascent-override: 127.60%; descent-override: 37.76%; line-gap-override: 0%; }
@@ -110,7 +110,7 @@
 
 :root {
   /* ==== 1. Primitives ===================================================== */
-  /* house materials, sampled from the brand boards */
+  /* house materials */
   --papel: #F9F0E9;          /* paper: form fields on the hall by day, text on the button */
   --areia: #F0DFCF;          /* sand                                     */
   --pedra: #DECDBD;          /* limestone                                */
@@ -137,10 +137,9 @@
   /* the hall you walk into: ONE colour per theme, used by the doorway's final light AND the waiting list */
   --sala-dia: #F2DEC4;       /* lime-washed hall by day (papel warmed by latao, 22%) */
   --sala-noite: #FCE7BC;     /* lamplight by night (luz-nucleo 72% in luz)           */
-  /* the identity pitch's ink (pitchlogo/out/colours.json, its palette circle VERDE TORRES): the wordmark and its line by day
-     (the identity board's lettering measures #1D2319, the same green near-black) */
-  --verde-torres: #24281B;   /* Verde Torres: the logo's ink by day, a green near-black (13.00:1 on parede) */
-  /* the identity board (Nov 2026): the crest's gold and the grounds of its applications, sampled from the board. The
+  /* the identity's ink, Verde-tinta: the wordmark and its line by day */
+  --verde-tinta: #24281B;    /* Verde-tinta: the logo's ink by day, a green near-black (13.00:1 on parede) */
+  /* the identity (Nov 2026): the crest's gold and the grounds of its applications. The
      gold is one metal in three stops and its relief (the light and shadow edges, the leaf veins, the cast shadow); it is
      the same by day and by night (on parede-noite every body stop is 4.12:1 or more; DESIGN.md › Logo usage) */
   --ouro-luz: #F3DFAE;       /* the relief's light: every slope that faces the top left               */
@@ -149,23 +148,23 @@
   --ouro-escuro: #A3833F;    /* gold, deep stop   (4.12:1 on parede-noite; 3.09:1 on parede)          */
   --ouro-sombra: #7A5C27;    /* the leaf veins (5.35:1 on parede)                                     */
   --ouro-fundo: #5B4216;     /* the relief's shade (slopes facing away) and its faint cast shadow (20%) */
-  --marfim: #FBF7EC;         /* ivory: the board's «dourado sobre marfim» ground and circle            */
-  /* the gold a step lighter, where the board lightens it: the crest and its ring on the deep green and brown circles */
+  --marfim: #FBF7EC;         /* ivory: the gold-on-ivory ground and circle                              */
+  /* the gold a step lighter: the crest and its ring on the deep green and brown circles */
   --ouro-vivo-claro: #E6CC8F;
   --ouro-vivo: #CDAE6E;
   --ouro-vivo-escuro: #B5944F;
-  --branco: #FFFFFF;         /* white: «dourado fundo branco», «branco sobre preto» (logo only, never the page) */
-  --preto: #0E0C0B;          /* black: the board's black grounds and the one-colour crest («preto»)  */
-  --verde-fundo: #283322;    /* deep green: «dourado fundo verde» (circle)                            */
-  --castanho-fundo: #523316; /* brown: «dourado fundo castanho» (circle)                              */
+  --branco: #FFFFFF;         /* white: gold on white, white on black (logo only, never the page) */
+  --preto: #0E0C0B;          /* black: the dark grounds and the one-colour crest                      */
+  --verde-fundo: #283322;    /* deep green: gold on green (circle)                            */
+  --castanho-fundo: #523316; /* brown: gold on brown (circle)                              */
 
   /* ---- Type ----------------------------------------------------------------
-     Three voices, as on the identity. The wordmark (the identity board's lettering, drawn: a flared Roman with the
+     Three voices. The wordmark (the identity's lettering, drawn: a flared Roman with the
      tall flagged B and the swashed R's; an SVG, not a font) is the logo and nothing else. Cinzel 400, in spaced capitals, is the label voice: the lockup's
      «Boutique Hotel», the waiting list's name and the privacy notice's section names. EB Garamond
      is everything said: 400 for sentences, titles, the privacy notice, the consent and the email a guest types;
      500 for the interface (controls, status, the action, labels, messages, the button, the footer). One book face
-     at two weights, so the page reads like the pitch's specimen: Roman capitals over a Garamond. */
+     at two weights: Roman capitals over a Garamond. */
   --font-label: "Cinzel", "Cinzel fallback", "Cinzel fallback noto", "Times New Roman", serif;                          /* spaced capitals (left-aligned) */
   --font-label-lockup: "Cinzel", "Cinzel lockup fallback", "Cinzel lockup fallback noto", "Times New Roman", serif;            /* the lockup's BOUTIQUE HOTEL */
   --font-label-list: "Cinzel", "Cinzel list fallback", "Cinzel list fallback noto", "Times New Roman", serif;                /* the waiting list's name */
@@ -192,22 +191,22 @@
   --weight-ui: 500;          /* EB Garamond Medium: the interface         */
   --weight-label: 400;       /* the only Cinzel file (capitals)           */
   --weight-label-lockup: 700; /* the lockup's line only: its own ten-letter file */
-  /* lockup: the identity board's VERTICAL version, crest over «A Brazileira» over BOUTIQUE HOTEL. One size (the
-     lockup's em, --size-*) and one width in that em, the wordmark's (W); everything else is a ratio of W measured on the
-     board (its vertical lockup: wordmark 270 px, crest 142 px wide with its shield's point at the B's top, the line 200
-     px wide with 8.6 px capitals 15 px under the baseline; the horizontal version reads the same ratios). The lockup is
+  /* lockup: the identity's VERTICAL version, crest over «A Brazileira» over BOUTIQUE HOTEL. One size (the
+     lockup's em, --size-*) and one width in that em, the wordmark's (W); everything else is a fixed ratio of W (the
+     crest 0.526 W wide with its shield's point at the B's top, the line 0.745 W wide with capitals 0.031 W, 0.056 W
+     under the baseline; the horizontal version keeps the same ratios). The lockup is
      a container W wide, so its parts are set in cqi (1cqi = W / 100). */
   --size-wordmark: clamp(min(2.25rem, 16vw), min(1.35rem + 3.5vw, 8.2svh), 4.5rem);   /* the lockup's em: 36 -> 72px; with text enlarged on a phone, never wider than the screen (16vw) */
   --size-lockup-min: min(1.875rem, 12.5vw);   /* 30px em: the smallest the lockup is ever set (privacy home link; short screens); 12.5vw only binds with text enlarged (W 5.4em = 0.675 of the screen: inside a 320px screen's 224px column at 200% text) */
-  --size-lockup-short: clamp(var(--size-lockup-min), 9.15svh, 2.25rem);     /* landscape phones: 30 -> 36px, 35.7px at 390px tall (the board's lockup is 1.2-3.4px taller there than the old one was; the break under it gives that back: site.css › landscape phones) */
-  --size-lockup-plain: clamp(var(--size-lockup-min), min(1.25rem + 2.5vw, 12.5vw), 2.875rem);   /* 404: 30 -> 46px; never wider than the screen allows with text enlarged (review of the identity round: the 404 scrolled sideways at 180-200% on a 320px phone) */
+  --size-lockup-short: clamp(var(--size-lockup-min), 9.15svh, 2.25rem);     /* landscape phones: 30 -> 36px, 35.7px at 390px tall (the new lockup is 1.2-3.4px taller there than the old one was; the break under it gives that back: site.css › landscape phones) */
+  --size-lockup-plain: clamp(var(--size-lockup-min), min(1.25rem + 2.5vw, 12.5vw), 2.875rem);   /* 404: 30 -> 46px; never wider than the screen allows with text enlarged (before, the 404 scrolled sideways at 180-200% on a 320px phone) */
   --lockup-wordmark: 5.4em;     /* W, the drawn wordmark's width (1042.6 x 151.5): 194px at a 36px em, 389px at 72px, 162px at the 30px minimum */
   --lockup-crest: 52.6cqi;      /* the crest's width (102.47 x 100), centred on the wordmark */
-  --lockup-crest-pull: -0.6cqi; /* the shield's point reaches the B's top, a hair under the capitals' line (board: 0.026 W above the capitals) */
+  --lockup-crest-pull: -0.6cqi; /* the shield's point reaches the B's top, a hair under the capitals' line (0.026 W above the capitals) */
   --lockup-under: 3.7cqi;       /* the wordmark's foot (the R's swash) to the line's capitals (0.056 W under the baseline) */
   --lockup-cap-top: -0.255em;   /* of the line: its capitals' top below its line box (Cinzel ascent 0.976 - cap 0.70, leading 1.3) */
   --lockup-label: max(4.43cqi, 0.6875rem);   /* BOUTIQUE HOTEL: capitals 0.031 W (17.2px at W 389), never under 11px */
-  /* its tracking sets the line 0.745 W wide, as on the board (0.56em at the ratio; Cinzel Bold's own capitals are
+  /* its tracking sets the line 0.745 W wide (0.56em at the ratio; Cinzel Bold's own capitals are
      9.572em of the 14 characters, kerned); where the 11px floor binds (phones) the tracking gives way first, never
      under 0.25em */
   --track-label: max(0.25em, calc((74.5cqi - 9.572em) / 13));
@@ -262,7 +261,7 @@
        air    bar -> crest, action -> façade   24-40px */
   --rhythm-pair: var(--space-2);
   --rhythm-apart: clamp(1rem, 2.6svh, 1.5rem);
-  /* the board's vertical lockup is a little taller than the old lockup was at the same em (3.06px at the phones' 36px,
+  /* the vertical lockup is a little taller than the old lockup was at the same em (3.06px at the phones' 36px,
      0.77px at a portrait tablet's 48.5px; measured, linear between): the break under it gives that back, so on the
      stacked layouts the sentence, the action and the photograph keep their places to the pixel (DESIGN.md › Logo usage) */
   --lockup-growth: clamp(0.77px, 9.678px - 0.18376 * var(--size-wordmark), 3.06px);
@@ -362,7 +361,7 @@
   --color-text-muted: var(--castanho);     /*  5.93:1 */
   --color-accent-text: var(--latao-texto); /*  4.93:1 */
   --color-mark: var(--latao-marca);        /*  3.45:1, graphic (the style guide's hairline marks) */
-  --color-brand-ink: var(--verde-torres);  /* 13.00:1 on parede: the wordmark and its line, in the pitch's ink */
+  --color-brand-ink: var(--verde-tinta);   /* 13.00:1 on parede: the wordmark and its line, in the identity's ink */
   --color-ground: var(--nogueira);         /* hairline rules (styleguide), 3:1 and up */
   --color-link-line: color-mix(in srgb, currentColor 45%, transparent);   /* a text link's resting underline (pointer screens) */
   --color-focus: var(--nogueira);          /*  8.77:1 */

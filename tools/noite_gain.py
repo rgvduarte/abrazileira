@@ -1,7 +1,7 @@
 """Brighten the Noite photograph by a gain K (sRGB values x K, clipped), consistently across every layer that the
 street composite has to meet: the facade, the leaves, the street strips, the street's wall stops and the colour below
 the strip (the night lights are colour-dodge gains: K x base / (1 - light) = K x composite, so they stay), the LQIP and
-the page's wall token. The hall, the plate, the doorway's shade and the lamplight on the steps are the interior's own
+the page's wall token. The hall, the plate, the doorway's shade and the lamplight on the steps are the indoor
 light and stay as they are (the hall colour hand-off stays exact).
 usage: python3 -I noite_gain.py <src_dir> <K>"""
 import base64, io, json, pathlib, re, sys
@@ -49,7 +49,7 @@ def scale(c): return [int(min(255, round(v * K))) for v in c]
 st = P["street"]["noite"]
 st["wall"] = [[y, scale(c)] for y, c in st["wall"]]
 st["below"] = scale(st["below"])
-if "rows" in st:                         # the strip's mean colour by row (fix r2): the band under the strip
+if "rows" in st:                         # the strip's mean colour by row: the band under the strip
     st["rows"] = [[y, [min(255.0, round(v * K, 1)) for v in c]] for y, c in st["rows"]]
 old = P["wall"]["noite"]; rgb = [int(old[i:i + 2], 16) for i in (1, 3, 5)]
 new = "#" + "".join(f"{v:02X}" for v in scale(rgb)); P["wall"]["noite"] = new
@@ -67,6 +67,6 @@ for key in ("strip", "strip3"):
             p = N / f"{'street' if key == 'strip' else 'street3'}-{r['w']}.{fmt}"
             if p.exists(): r[fmt] = p.stat().st_size
 P.setdefault("noiteGain", {})["k"] = K
-P["noiteGain"]["note"] = "Noite brightened x K in sRGB (client, 9 Nov: «à noite está demasiado escura»); hotfix tools/noite_gain.py"
+P["noiteGain"]["note"] = "Noite brightened x K in sRGB; tools/noite_gain.py"
 (SRC / "assets/photo/photo.json").write_text(json.dumps(P, ensure_ascii=False, indent=1), encoding="utf-8")
 print(f"{done} files; wall {old} -> {new}; below {st['below']}")

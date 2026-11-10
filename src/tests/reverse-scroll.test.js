@@ -1,4 +1,4 @@
-// Regression test: the site title must never disappear when scrolling back up (reported on iPhone Safari).
+// Regression test: the site title must never disappear when scrolling back up (seen on iPhone Safari).
 // Usage (from the repository root, after python3 src/build.py; needs Playwright with Chromium):
 //   node src/tests/reverse-scroll.test.js docs
 // Scrolls down and back with wheel, touch drags, programmatic jumps, emulated rubber-band overscroll (scrollY < 0 and
@@ -7,7 +7,7 @@
 // camera/leaves/plate/shade/flood at rest. During every scenario: opacity stays within [0, 1], scale within [1, S].
 // Fast flicks (F): the title is back within 100ms of reaching the top, and a fling down never shows the list panel's
 // edge over a stage that is not yet flat hall colour.
-// The 3D path (review, door finish): each viewport runs again with ?3d=force (one theme each; R3D_ALL=1 for both), the 3D
+// The 3D path: each viewport runs again with ?3d=force (one theme each; R3D_ALL=1 for both), the 3D
 // on before it starts; each rest check waits for r = p = 0 and no inline style (15 s at most: SwiftShader is slow) and
 // also asks for the canvas hidden, the photograph shown and the 3D still on; during every scenario no frame shows neither
 // the canvas nor the photograph under a stage that is not yet flat colour.

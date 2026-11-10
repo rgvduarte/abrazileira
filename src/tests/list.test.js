@@ -1,5 +1,5 @@
 // The waiting list: arrival, focus and states. Usage: node src/tests/list.test.js docs
-// A. A tap or a click into the form never moves the page (round 2 blocker): at 390 x 844 and 375 x 667 (touch) and
+// A. A tap or a click into the form never moves the page: at 390 x 844 and 375 x 667 (touch) and
 //    1440 x 900 and 1280 x 720 (mouse), resting part-way through the list's rise, at the end of the run and at the
 //    end of the page: the first press on the email field or on the button leaves scrollY where it was; the button's
 //    first press runs the validation (both messages shown).
@@ -15,17 +15,17 @@
 //    it); the note is visible on phones too, in the serif, and never touches the crest.
 // F. The walk-in is fluid on portrait screens: the doorway's foot, sampled every 0.004 of progress from 0.3 to 0.6
 //    (settled), never changes speed by more than 1.8px from one step to the next (1.5px before the 9 Nov shorter
-//    walk-in compressed the same curve; the camera's rise was clipped, a bob of about 6px per step, review r1).
+//    walk-in compressed the same curve; the camera's rise was clipped, a bob of about 6px per step).
 // G. The list stays at rest when the screen changes size under it: a keyboard that resizes the page (focus in the
 //    email field at the end of the run and at the page end, the page 300px shorter, then back) and a rotation round
 //    trip: the field stays opaque and in view, and the page comes back where it was.
 // H. The doors start on the first pixel, also where the stage first scrolls to its pin (390 x 664: stick < 0).
-// I. No pale pinstripe round the doors at rest (review r1: the page colour showed through along the hinges and the
+// I. No pale pinstripe round the doors at rest (before: the page colour showed through along the hinges and the
 //    head): at 393 x 852 @3, 844 x 390 @3, 1440 x 900 @2 and 768 x 1024 @2, Dia, with the layers as loaded and
 //    promoted, no unsaturated pixel within 1.5 device px of the doorway's edge is 40 levels brighter than the walnut
 //    3px either side of it (brass hinges and the gap excepted).
-// J. Where the scroll stops the block (title to button) stands in the middle of what the visitor sees (client, 9 and
-//    10 Nov: «centrado a meio na altura da página. Não em cima»): at 320 x 568, 375 x 667, 390 x 844, 390 x 796,
+// J. Where the scroll stops the block (title to button) stands in the middle of what the visitor sees (centred in the
+//    page's height): at 320 x 568, 375 x 667, 390 x 844, 390 x 796,
 //    430 x 932, 844 x 390, 768 x 1024, 1024 x 768, 1440 x 900 and 1920 x 1080, Dia and Noite, PT and EN, settled, at
 //    the end of the run and at the end of the page. Where the block and the footer fit on one screen (16px between
 //    them), the page ends one large viewport after the run, and there the block is within 8px of the middle when the
@@ -33,10 +33,10 @@
 //    field whole (320 x 568, 375 x 667: the page went on 100px and 51px before, the title cut by the top). Taller than
 //    that (844 x 390): where the run ends the block starts 16px from the top, the field whole. Opaque.
 //    An iPhone with Safari's bars, emulated (serve.ios: stylesheets served with svh, lvh, dvh in px; headless Chromium
-//    has svh = lvh = dvh): 390 wide, 796 shown / 836 hidden (the client's diag), 393 x 695 / 735, 375 x 553 / 627 (SE):
+//    has svh = lvh = dvh): 390 wide, 796 shown / 836 hidden (Safari 26), 393 x 695 / 735, 375 x 553 / 627 (SE):
 //    with the bars shown the page ends 40px (74px) after the run, with them hidden at the run's end; in both, where the
 //    scroll stops, the same rule as above; the hero action's flight and #lista on load land there, the focus in the
-//    field. Before 10 Nov the block was 40px (bars shown) and 20px (hidden) high there on the client's iPhone.
+//    field. Before, the block was 40px (bars shown) and 20px (hidden) high there.
 //    The hero action's flight in Chromium (390 x 796, 1440 x 900): centred, focus in the field; the messages of a failed
 //    check lengthen the form downwards (the title and the field do not move).
 // K. Reduced motion and no JavaScript (390 x 844, 1440 x 900): the list starts at the photograph's foot (no void), and
@@ -110,7 +110,7 @@ const [, , dir] = process.argv;
     await c.close();
   }
 
-  // C. scroll from the top to the readable form, in viewport heights  (0.6-1.0 since 9 Nov: the client found the walk-in too long; it was 0.9-1.2)
+  // C. scroll from the top to the readable form, in viewport heights  (0.6-1.0 since the 9 Nov shorter walk-in; it was 0.9-1.2)
   for (const [n, w, h] of [["m390", 390, 844], ["m430", 430, 932], ["m375", 375, 667], ["land", 844, 390], ["d1440", 1440, 900], ["d1920", 1920, 1080]]) {
     const c = await ctx(w, h); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
     const g = await geo(pg);
@@ -257,10 +257,10 @@ const [, , dir] = process.argv;
         JSON.stringify({ end, listY: g.listY, pageEndPastRun: past, together: together(run), run: { top: run.top, bot: run.bot, h: run.h, off: run.off, foot: run.foot }, pageEnd }));
       await c.close();
     }
-  /* an iPhone with Safari's bars, emulated (serve.ios): the client's (390 wide, 796 shown, 836 hidden: the diag of 9 and
-     10 Nov), a 393 x 695 / 735 phone and an iPhone SE (375 x 553 / 627). Bars shown, the page ends one large viewport
+  /* an iPhone with Safari's bars, emulated (serve.ios): a 390-wide iPhone (796 shown, 836 hidden, Safari 26), a
+     393 x 695 / 735 phone and an iPhone SE (375 x 553 / 627). Bars shown, the page ends one large viewport
      after the run, 40px (74px) past it, and the block must be in the middle there, where the scroll stops; bars hidden
-     (a finger scroll), the page ends with the run. Before 10 Nov the block was centred in the small viewport from the
+     (a finger scroll), the page ends with the run. Before, the block was centred in the small viewport from the
      list's top: 40px high at the page's end with the bars shown, 20px high with them hidden. The hero action's flight
      and #lista land at the page's end, the block centred, the focus in the field. */
   for (const [n, w, sv, lv, themes] of [["ios390", 390, 796, 836, ["dia", "noite"]], ["ios393", 393, 695, 735, ["dia"]], ["iosSE", 375, 553, 627, ["dia"]]])

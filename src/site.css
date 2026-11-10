@@ -110,7 +110,7 @@ svg { display: block; }
   letter-spacing: 0;
   color: var(--color-text-muted);
   /* one line at every normal size; with very large text (resize text to 200%) it wraps inside the screen instead of
-     running off it (review r1: clipped at 320px, and the page scrolled sideways), and site.js moves what is under
+     running off it (before: clipped at 320px, and the page scrolled sideways), and site.js moves what is under
      it (--bar-h, below) */
   inline-size: max-content;
   max-inline-size: calc(100vw - 2 * var(--gutter));
@@ -187,8 +187,8 @@ svg { display: block; }
   text-align: center;
 }
 
-/* ---- Lockup (h1): the identity board's vertical version ---------------------------------------------
-   The crest (gold, assets/img/crest-gold.svg inline), «A Brazileira» in the board's own lettering (an inline SVG in
+/* ---- Lockup (h1): the identity's vertical version ---------------------------------------------
+   The crest (gold, assets/img/crest-gold.svg inline), «A Brazileira» in its own drawn lettering (an inline SVG in
    the logo's ink) and, under it, BOUTIQUE HOTEL in widely spaced Roman capitals. The lockup is one block W wide
    (--lockup-wordmark, in its em) and a size container, so every part is a ratio of W (tokens.css). Nothing is held at
    size by force: with text enlarged (200%) the block never grows past the column (max-inline-size) and the line may
@@ -233,13 +233,13 @@ svg { display: block; }
 }
 
 /* ---- The crest's colours (one drawing, its colours from the tokens) -------------------------------------
-   «ouro»: the board's reference, metallic gold in relief: the body is a gradient of three stops; the crest's filter
+   «ouro»: metallic gold in relief: the body is a gradient of three stops; the crest's filter
    (build.py › _gold_svg) softens the shape's alpha at the strokes' own scale and compares it with itself seen from the
    top left, so every stroke, leaf and letter is lit on the slope that faces the light (--ouro-luz) and shaded on the
-   one that faces away (--ouro-fundo), its flat top in the gradient, as the board's embossed gold; the leaf veins in the
+   one that faces away (--ouro-fundo), its flat top in the gradient, an embossed gold; the leaf veins in the
    shadow tone; a faint cast shadow. Raster work only (no clip paths, which Chromium paints on the main thread). It is
    the same gold by day and by night (on parede-noite each body stop is 4.12:1 or more).
-   «plano»: one ink (currentColor) with the leaf veins cut in the ground's colour (--crest-ground), as the board's
+   «plano»: one ink (currentColor) with the leaf veins cut in the ground's colour (--crest-ground): the
    white-on-black and black versions. */
 .crest__s1 { stop-color: var(--ouro-claro); }
 .crest__s2 { stop-color: var(--ouro); }
@@ -326,7 +326,7 @@ svg { display: block; }
 @media (max-width: 29.99em) {
   .foot__sep { display: none; }
   /* its tap box takes back most of the footer's bottom padding, not all of it: a focus ring (2px at a 3px offset)
-     still fits inside the page at its foot (review r1) */
+     still fits inside the page at its foot */
   .foot__link { display: flex; justify-content: center; inline-size: fit-content; margin-inline: auto; margin-block-end: calc(var(--space-2) - var(--space-3)); }
 }
 /* each piece of the footer line has a fallback matched to its own width, so a late font moves nothing */
@@ -382,13 +382,13 @@ svg { display: block; }
 }
 /* the placeholder until the photo has loaded (a 24px image, drawn blurred): its own layer over the street and under
    the hall, the door and the facade (which cover it wherever they are drawn), inset by the facade's outer fade so it
-   never shows through that fade (photo.py › lqip_vars: the fade's widest, 10% of the width at the top and sides since
-   fix r1; until the load the street stands in for the margins, which are the street anyway); site.js drops it after
+   never shows through that fade (photo.py › lqip_vars: the fade's widest, 10% of the width at the top and sides;
+   until the load the street stands in for the margins, which are the street anyway); site.js drops it after
    the load (without JavaScript the layers above cover it) */
 .ph--lqip {
   --x: var(--lqip-x); --y: var(--lqip-y); --w: var(--lqip-w); --h: var(--lqip-h);
   background: var(--photo-lqip) var(--lqip-pos) / var(--lqip-size) no-repeat;
-  /* feathered on every side, as the facade is (review r2: its hard edges, the bottom one 57 levels in 8px at
+  /* feathered on every side, as the facade is (before: its hard edges, the bottom one 57 levels in 8px at
      1440 x 900, drew a blurred rectangle on the page for the whole download); the street under it already shows
      the paving's tone (photo.py › street_wall), so the foot fades into paving, not into wall */
   --lqip-mask: linear-gradient(90deg, transparent, black 12%, black 88%, transparent), linear-gradient(transparent, black 9%, black 93%, transparent);
@@ -399,7 +399,7 @@ svg { display: block; }
 }
 .scene.is-loaded .ph--lqip { display: none; }
 /* until the facade is in, the placeholder alone stands for the whole scene: the small doorway files (leaves, the
-   hall) would otherwise paint sharp over the blur, doors floating without their arch (review r1). With JavaScript
+   hall) would otherwise paint sharp over the blur, doors floating without their arch. With JavaScript
    only (data-theme on the root is set by the head script): without it nothing marks the load, and nothing is
    hidden; the home page only (the style guide shows its scenes without site.js). */
 :root[data-theme] .porta .scene:not(.is-loaded) :is(.door, .ph--hall) { visibility: hidden; }
@@ -455,7 +455,7 @@ svg { display: block; }
 /* A phone held upright sees less than one scene width of street, so the 1-width strip never shows a repeat there.
    Wider screens (tablets, landscape, desktops: up to 2.7 scene widths at 2560 px) take the strip three scene widths
    wide (photo.json › street › strip3: the same strip, then two quilted from it), at the same densities: the ladder
-   above picks the density, this swaps in the wider files (review r1: the paving repeated every scene width) */
+   above picks the density, this swaps in the wider files (with one width the paving repeated every scene width) */
 @media (min-width: 37.5em), (orientation: landscape) {
   .ph--street {
     --street-tile: var(--street-size3, var(--street-size));
@@ -465,7 +465,7 @@ svg { display: block; }
 }
 /* Very wide, short windows (5:2 and wider: 1600 x 400, 1920 x 450, 2560 x 600): the scene is sized by the height and
    stands in the right-hand column, so its left edge can be more than the box's three scene widths from the window's
-   edge (review r2: a step from the wall to the page colour, the paving cut, up to 214px at 1920 x 450). There the box
+   edge (before: a step from the wall to the page colour, the paving cut, up to 214px at 1920 x 450). There the box
    gains a copy of itself to its left, the same height and width, so the same tiles fall on whole strip periods and
    the wall's gradient (vertical only) runs on; no lights (they end in black, color-dodge's identity, well inside the
    box). Only on those windows, so the camera layer is no larger anywhere else. */
@@ -486,7 +486,7 @@ svg { display: block; }
 .ph--hall { --x: var(--door-x); --y: var(--door-y); --w: var(--door-w); --h: var(--door-h); overflow: clip; }   /* the doorway */
 /* a ring of the frame's own walnut just outside the doorway, under the facade (which covers it: its hole is 4 master px
    smaller than the doorway): where the compositor leaves a sub-pixel gap at the leaves' outer edges (promoted layers
-   at fractional positions), it shows the frame, never the page colour as a pale pinstripe (review r1). overflow: clip
+   at fractional positions), it shows the frame, never the page colour as a pale pinstripe. overflow: clip
    does not clip the box's own shadow. */
 .ph--hall { box-shadow: 0 0 0 3px var(--color-door-ring); }
 .ph--plate { --x: var(--plate-x); --y: var(--plate-y); --w: var(--plate-w); --h: var(--plate-h); transform-origin: var(--plate-ox) var(--plate-oy); }
@@ -632,7 +632,7 @@ picture.t-noite { display: var(--t-noite); }
 .porta__probe { position: absolute; inset-block-start: 0; inline-size: 0; block-size: 100vh; block-size: 100svh; visibility: hidden; }
 /* the 3D entrance (site.js, door3d.js): one canvas over the whole pinned stage, under the text, the cue and the flood
    (z-index 2, later in the document), over the photograph's layers (one above .scene: at the same z-index the scene,
-   later in the document, covered it, so a cross-fade between the two showed only its last frame; iOS round 2).
+   later in the document, covered it, so a cross-fade between the two showed only its last frame).
    Hidden until it draws (site.js shows it while 0 < r < the flat colour and hides the layers it replaces); never a
    target. */
 .porta__3d {
@@ -664,8 +664,8 @@ picture.t-noite { display: var(--t-noite); }
     max(var(--gutter), env(safe-area-inset-right));
 }
 /* the block (title to button) stands in the middle of the small viewport, between the safe areas, wherever the page
-   lands on the list (#lista): the padding above it is half of what the screen leaves around it (client, 9 Nov:
-   «centrado a meio na altura da página»; it started 22svh down before). With the sequence on, it is placed against
+   lands on the list (#lista): the padding above it is half of what the screen leaves around it (centred in the
+   page's height; it started 22svh down before). With the sequence on, it is placed against
    the page's end instead (below). --lista-b is the block's height at rest, measured by site.js (no message shown, so
    a message lengthens the form downwards and nothing above it moves); without JavaScript 30rem (the form and the line
    under it, at 390px). A block taller than the screen starts --space-4 from the top, the field in view. */
@@ -695,9 +695,9 @@ picture.t-noite { display: var(--t-noite); }
   .porta-on .lista { min-block-size: calc(100lvh - var(--foot-h, 0px)); }
 }
 /* The scroll stops at the page's end, one large viewport after the run's end, so that is where the block must stand
-   in the middle of what the visitor sees, the dynamic viewport (client, iPhone, 10 Nov: «centrado a meio na altura da
-   página. Não em cima»). Centred in the small viewport from the list's top, it rested 40px high on the client's
-   iPhone with Safari's bars shown (796 of 836px: 40px of scroll remain after the run) and 20px high with them hidden.
+   in the middle of what the visitor sees, the dynamic viewport (centred in the page's height). Centred in the small
+   viewport from the list's top, it rested 40px high on a 390-wide iPhone with Safari's bars shown (796 of 836px: 40px
+   of scroll remain after the run) and 20px high with them hidden.
    So the padding above it is the large viewport less half of the dynamic one and of the block, between the safe
    areas: centred at the page's end whether the bars are shown or not (dvh = lvh = svh elsewhere: as before). Where
    the footer would not fit under it with --lista-g clear (short phones), the block stands that far above the footer,
@@ -740,7 +740,7 @@ picture.t-noite { display: var(--t-noite); }
   color: var(--color-text-strong);
   text-wrap: balance;
 }
-/* the list's name is a label, as the pitch names its sections: Roman capitals, spaced, strong ink; the sentence
+/* the list's name is a label: Roman capitals, spaced, strong ink; the sentence
    under it carries the size */
 .lista__title {
   position: relative;
@@ -873,7 +873,7 @@ picture.t-noite { display: var(--t-noite); }
 .check__text { min-inline-size: 0; }
 .check__more { display: block; }                      /* «Ler a nota de privacidade.» on its own line */
 /* «nota de privacidade» reads and taps as one unit (an inline block moves to the next line whole); with very large
-   text, wider than the line, it wraps inside itself instead of running off a 320px screen (review r1, 200% text) */
+   text, wider than the line, it wraps inside itself instead of running off a 320px screen (200% text) */
 .check__text .link-inline { display: inline-block; max-inline-size: 100%; white-space: normal; text-wrap: balance; }
 /* its tap area reaches 44px tall into the free space under the line (never up into the consent sentence,
    which toggles the box), without moving anything or enlarging the focus ring */
@@ -996,7 +996,7 @@ picture.t-noite { display: var(--t-noite); }
 .notice__title { margin-block-start: var(--space-8); max-inline-size: var(--measure-title); }
 .notice__intro { margin-block-start: var(--space-4); font-family: var(--font-intro); font-size: var(--size-intro); max-inline-size: var(--measure-lede); text-wrap: pretty; }
 .notice__item { margin-block-start: var(--space-6); }
-/* section names are signposts, not titles: labels, as on the pitch (Roman capitals, spaced), strong ink */
+/* section names are signposts, not titles: labels (Roman capitals, spaced), strong ink */
 .notice__item h2 {
   font-family: var(--font-label);
   font-weight: var(--weight-label);
@@ -1057,10 +1057,10 @@ picture.t-noite { display: var(--t-noite); }
   .entrance { margin: 0; min-block-size: 18rem; max-block-size: none; --scene-reach: 1; --scene-lift: 0; --scene-clear: 0px; }
   .scene { inset-inline-start: 0; }
   /* the scroll cue lies on the paving here too, seen from further away and at 1x: at the phone's 14px and 1.5px it
-     was the size and weight of the cobbles' own joints and sank into them (review r1); larger and firmer, it reads
+     was the size and weight of the cobbles' own joints and sank into them; larger and firmer, it reads
      as a mark on the stones, not one of them (no plate behind it) */
   .porta__cue svg { inline-size: 1.25rem; stroke-width: calc(var(--stroke-cue) * 1.9); }
-  /* ... and it stands on the door's axis, where the walk-in goes (review r2: centred on the window it lined up with
+  /* ... and it stands on the door's axis, where the walk-in goes (centred on the window it lined up with
      nothing, in the gutter between the text and the door): the band takes the stage's own columns, the cue the
      entrance's, and site.js (measure) nudges it by the photograph's asymmetry (--cue-dx: the door axis is 0.482 of
      the photograph's width, about 12px left of the column's centre at 1440 x 900); without JavaScript it is centred
@@ -1082,15 +1082,15 @@ picture.t-noite { display: var(--t-noite); }
   }
 }
 
-/* Split windows from 501px tall (the home page): the board's vertical lockup is taller than the old lockup was at the
+/* Split windows from 501px tall (the home page): the vertical lockup is taller than the old lockup was at the
    same em (about 0.5em: 21px at a 41px em, 28px at 55px), and where the text column is what sets the stage's row (short
    windows: 900-1680 x 501-570, 1920 x 501-620, 2560 x 501-725) the row grew with it: the photograph beside it grew by
-   as much, the paving went down and the scroll cue under the screen's edge, so site.js hid it (review of the identity
-   round). Here the lockup's em is held so that the column is never taller than the larger of what the old lockup made
+   as much, the paving went down and the scroll cue under the screen's edge, so site.js hid it. Here the lockup's em
+   is held so that the column is never taller than the larger of what the old lockup made
    it and what the stage gives it: the lockup's height may be the old lockup's at this em (3.22051em, its one-line
    label 1.045 x max(0.18428em, 0.7rem)) or the room the screen leaves it (the small viewport, less the top bar, the
    band, the stage's padding, the break, the sentence, the interval, the action's row and the padding under the
-   column), whichever is larger, and the em is the one that gives the board's lockup that height (3.73678em + 1.045 x
+   column), whichever is larger, and the em is the one that gives the new lockup that height (3.73678em + 1.045 x
    its line's size, max(0.23922em, 0.6875rem); inverted on both branches). So on a short window the photograph, the
    paving and the cue are where they were to the pixel and the lockup is a little smaller (0.86 of its em); with the
    height it grows back to its full em, continuously; nothing changes where the column already fitted. Measured
@@ -1110,10 +1110,10 @@ picture.t-noite { display: var(--t-noite); }
 
 /* Landscape phones: compact split; the page may scroll a little. */
 @media (orientation: landscape) and (max-height: 31.25em) {
-  /* the break gives back what the board's lockup adds to the old one's height here (the old line was two lines, BOUTIQUE
+  /* the break gives back what the new lockup adds to the old one's height here (the old line was two lines, BOUTIQUE
      HOTEL / TORRES VEDRAS at max(0.32em, 11px)): 3.73678e + 1.045 x max(0.23922e, 11px) less 3.22051e + 2.345 x
      max(0.32e, 11px), 1.2px at the 30px em, 3.4px at 34.4px, 3.1px at 36px; the sentence, the action and the
-     photograph beside them stay where they were (review of the identity round: +2.7 to +3.4px, the cue sliced at
+     photograph beside them stay where they were (before: +2.7 to +3.4px, the cue sliced at
      667 x 375). The home page's lockup only (the plain pages set theirs at --size-lockup-plain) */
   :root { --topbar-pad: max(var(--space-1), env(safe-area-inset-top)); --rhythm-pair: var(--space-1); --rhythm-apart: 0px; --rhythm-break: var(--space-5); }
   .porta { --rhythm-break: calc(var(--space-5) - (0.51627 * var(--size-lockup-short) + 1.045 * max(0.23922 * var(--size-lockup-short), 0.6875rem) - 2.345 * max(0.32 * var(--size-lockup-short), 0.6875rem))); }

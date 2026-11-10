@@ -5,7 +5,7 @@ are src/assets/img/apple-touch-icon.png and icon-512.png (build.py copies them).
     python3 src/icons.py --replace  # overwrites src/assets/img/apple-touch-icon.png and icon-512.png
 
 apple-touch-icon.png (180 x 180): the crest in gold on ivory, full bleed (iOS rounds the corners itself).
-icon-512.png (512 x 512): the board's circle application, gold on ivory, on a transparent square.
+icon-512.png (512 x 512): the circle application, gold on ivory, on a transparent square.
 Needs Node with Playwright (`require('playwright')` must resolve from the current directory or NODE_PATH).
 """
 import os, subprocess, sys, tempfile
@@ -24,7 +24,7 @@ def page(svg_file, size, bg, inset):
 work = tempfile.mkdtemp(prefix="ab-icons-")
 out = IMG if "--replace" in sys.argv else work
 jobs = [
-    # the ivory is the board's «dourado sobre marfim» ground (tokens.css --marfim)
+    # the ivory is the gold-on-ivory ground (tokens.css --marfim)
     ("apple-touch-icon.png", page("crest-gold.svg", 180, "#FBF7EC", 22), 180, False),
     ("icon-512.png", page("crest-circle.svg", 512, "transparent", 8), 512, True),
 ]
@@ -40,7 +40,7 @@ jp = os.path.join(work, "icons.js")
 open(jp, "w").write("\n".join(js))
 subprocess.run(["node", jp], check=True, cwd=os.environ.get("OG_NODE_CWD", os.getcwd()))
 # icon-512 (the circle: a flat gold gradient on flat ivory): 256 colours with alpha and no dither (about 5x smaller;
-# Floyd-Steinberg sprinkled speckle over the gold, review of the identity round). The apple-touch icon is the gold crest
+# Floyd-Steinberg sprinkled speckle over the gold). The apple-touch icon is the gold crest
 # in relief, whose tones a palette bands: it stays 24-bit (opaque, about 17 KB). Needs Pillow; without it the PNGs are
 # kept as rendered.
 try:

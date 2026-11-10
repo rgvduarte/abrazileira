@@ -1,5 +1,5 @@
 // The 3D entrance (door3d.js): ON BY DEFAULT where the device can draw it, with the CSS entrance as the automatic
-// fallback at every step (DOOR_FINISH_BRIEF); lazy, never on the first paint, a canvas that takes over only while the
+// fallback at every step; lazy, never on the first paint, a canvas that takes over only while the
 // doors move, and the CSS entrance whenever it cannot.
 // Usage: node src/tests/door3d.test.js docs
 // Headless Chromium has no GPU: by default the page refuses its software renderer (SwiftShader), as it should. The 3D
@@ -24,7 +24,7 @@
 //   with 50 ms of work in every frame) and an exception in a draw each hand back to the CSS entrance at the same
 //   progress (the slow cases dissolve over --dur-handback) and say why in ?diag. A slow hand-back is counted for the
 //   session (?diag «slow hand-backs 1/2»): the next load draws the 3D again, without a new probe; a second one refuses it
-//   for the session, with the reason (client's iPhone, 10 Nov: «?diag funciona! Mete na main page»). An exception is
+//   for the session, with the reason. An exception is
 //   refused for the session at once. In one tab: the old build's memo for one slow frame counts as 1/2 (probed again,
 //   the 3D on); a clean first second clears the count; the next slow hand-back is 1/2; a context lost during its
 //   dissolve (the page hidden) rebuilds nothing in that page view; the next load draws the 3D. Not the 3D's own work, not counted: a 2.5 s stall in a take-over's frames, in a
@@ -37,17 +37,17 @@
 //   facade outside the doorway aligns at a shift of (0, 0) device px (searched +-4) and differs by a mean of < 2 levels.
 // 6. A wheel or a touch drag 300 ms after the load event, at 4x CPU throttle, has no long task over 50 ms (the module is
 //   only fetched then; it is evaluated and mounted once the page is still). That last check is a timing gate: on a
-//   machine busy with other headless browsers a task of the machine's own can land in the window (review r2: one 81 ms
+//   machine busy with other headless browsers a task of the machine's own can land in the window (once: one 81 ms
 //   task in one run of three), so it fails only if a second attempt, in a fresh context, shows a long task too.
 // 6b. A touch drag that starts as the module is asked for, and one at the facade's first band (default path, 4x CPU
 //   throttle): no input waits more than 50 ms (the same timing gate).
-// 7. Review, door finish: the open leaves' width against the doorway is flat from p 0.34 (the 3D frame's own meshes,
+// 7. The open leaves' width against the doorway is flat from p 0.34 (the 3D frame's own meshes,
 //   projected); a shader that does not compile is refused at the mount (nothing drawn, remembered); a draw that throws
 //   while the mount warms up and a module that does not run are refused, named and remembered (the next load asks for
 //   nothing); a hand-back lets the WebGL context go once the GPU has caught up and the page is still. Section 1 also records every frame of a touch drag (390) and
 //   of the flight: while the camera moves, the canvas draws and the photograph is hidden, never a blank frame, the flight
 //   0.9-1.1 s; under the flat colour the photograph stays hidden; section 3: nothing is drawn while handing back.
-// 8. iOS round (9 Nov: on the client's iPhone the 3D passed the gate but was still «loading» when he walked in). Under an
+// 8. Ready sooner on iOS (the 3D should not still be «loading» at the first walk-in once the gate has passed). Under an
 //   iPhone emulation (Safari 26 user agent, DPR 3, 390 x 796, 4x CPU throttle, Safari's API surface: no
 //   requestIdleCallback, no navigator.scheduling, no scheduler, no deviceMemory, no navigator.connection; «Apple GPU»
 //   spoofed): a still visitor gets the 3D soon after the load event (the gate within 1 s of the first paint; «on»
@@ -57,7 +57,7 @@
 //   ?diag names the stage while loading («3d=loading:upload 5/19 840ms») and lists when each stage began. The
 //   watchdog: a step that hangs (a band's crop that never resolves) falls back to the CSS entrance after its limit,
 //   named, remembered for the session; a decode that hangs (the worker never answers) too, not remembered (a network
-//   fault is tried again on the next load). iPhone round 2 (client: «não há relevo na porta», then «já há puxadores»):
+//   fault is tried again on the next load). Then (10 Nov):
 //   opened and scrolled at once (p 0.2 before the 3D is ready), the 3D takes over in that first walk-in as soon as it is
 //   on, at the same progress, by a cross-fade over --dur-handback (never a blank frame, no long task over 50 ms), and the
 //   next flick is drawn in 3D; a forced hand-back (?guard=25,60) leaves no long task over 50 ms in the next 2 s and lets
@@ -168,7 +168,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
       const img = await shot(pg), want = hex(hall);
       let bad = 0;
       for (let y = 0; y < img.h; y += 3) for (const x of [2 * dpr, img.w - 3 * dpr]) { const p = img.px(x, y); if (Math.max(...p.map((v, i) => Math.abs(v - want[i]))) > 0) bad++; }
-      /* the photograph's layers stay hidden under the flood too (review, door finish: shown there, they were decoded and
+      /* the photograph's layers stay hidden under the flood too (before the door finish: shown there, they were decoded and
          painted just as the list rose in) */
       report(s.canvas === "hidden" && s.scene === "hidden" && fl === "1" && bad === 0, n, theme, "p=0.9: canvas and photograph hidden, flat --color-hall " + hall, JSON.stringify({ ...s, flood: fl, bad }));
     }
@@ -180,7 +180,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     /* every frame, after the driver wrote it (a ResizeObserver fires after the frame's rAF callbacks and layout): what
        the stage shows. While the camera moves (0.01 < r < flat) the canvas draws and the photograph is hidden; never a
        frame with neither the canvas nor the photograph under a stage that is not yet flat colour; never the camera at
-       rest (transform none) deep in the run before the flat colour (review, door finish) */
+       rest (transform none) deep in the run before the flat colour */
     if (mobile) {
       await pg.evaluate(REC3);
       const cdp = await c.newCDPSession(pg), gg = await geo(pg);
@@ -331,9 +331,9 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
       A = await shot(o.pg); rA = (await state(o.pg)).r; await o.c.close(); }
     /* a frame over the limit: dissolves into the CSS entrance at the same progress, counted for the session (1/2), said
        in ?diag; the next load of the tab draws the 3D again (no new probe); a second slow hand-back refuses it for the
-       session (client's iPhone, 10 Nov: one slow frame had refused it for the tab's session) */
+       session (before, one slow frame refused it for the tab's session) */
     const { c, pg, reqs, errs } = await ctx({ w, h, dpr, theme, spoof: { gpu: GPU } });
-    /* draws while the 3D hands back: none (its last frame is frozen and dissolves; review, door finish) */
+    /* draws while the 3D hands back: none (its last frame is frozen and dissolves) */
     await pg.addInitScript(() => { window.__hb = 0; const P = WebGL2RenderingContext.prototype;
       for (const k of ["drawArrays", "drawElements"]) { const o = P[k]; P[k] = function () { const r = document.documentElement.__porta; if (r && r.geo().d3 === "handing back") window.__hb++; return o.apply(this, arguments); }; } });
     await pg.goto(base + "?guard=100000,1500&diag", { waitUntil: "load" }); await settled(pg, 60000);
@@ -455,7 +455,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     await c.close();
   }
   {
-    /* The session memory (review, 10 Nov), one tab: what the build before 10 Nov wrote for one slow frame is read as one
+    /* The session memory (10 Nov), one tab: what the build before 10 Nov wrote for one slow frame is read as one
        slow hand-back (the probe asked again, the 3D on); a clean first second of 3D motion clears the count; the next
        load's slow hand-back is then 1/2, not refused; a context lost during its dissolve with the page hidden (taken
        for a loss in the background, as on iOS) ends the hand-back and rebuilds nothing in that page view; the load
@@ -634,7 +634,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     break;
   }
   // ---------------------------------------------------------------- 6b. a gesture that lands IN the mount (4x CPU throttle)
-  /* review, door finish: the mount used to run as tasks of 50-234 ms (the module and the context in one, the facade's
+  /* before the door finish the mount used to run as tasks of 50-234 ms (the module and the context in one, the facade's
      upload in one), so a finger that landed in one waited for all of it. A touch drag that starts the moment the module
      is asked for, and one that starts at the facade's first band, on the default path (a capable GPU spoofed): no input
      waits more than 50 ms (event timing: processingStart - startTime). A timing gate on a busy machine: it fails only
@@ -668,9 +668,9 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     break;
   }
 
-  // ---------------------------------------------------------------- 7. review, door finish
-  /* the open leaves keep their width against the doorway once the doors are open (client, 9 Nov: «as portas aumentam de
-     tamanho (largura) quando se entra»): the camera stays put from p 0.34 (the lens alone), the hall's camera keeps
+  // ---------------------------------------------------------------- 7. the door finish
+  /* the open leaves keep their width against the doorway once the doors are open (the doors do not grow as the
+     camera enters): the camera stays put from p 0.34 (the lens alone), the hall's camera keeps
      walking in. Read from the 3D frame itself (the leaves' meshes and the doorway, projected by the frame's camera). */
   for (const [w, h, dpr] of [[390, 844, 2], [1440, 900, 1]]) {
     const { c, pg } = await ctx({ w, h, dpr });
@@ -727,7 +727,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     await c.close();
   }
   /* a hand-back lets the context go (WEBGL_lose_context), not at the next garbage collection: once the GPU has done
-     what was queued and the page is still (iOS round: at once, it froze the page for 6-11 s, see section 8) */
+     what was queued and the page is still (lost at once, it froze the page for 6-11 s, see section 8) */
   {
     const { c, pg } = await ctx({ spoof: { gpu: GPU } });
     await pg.goto(base + "?guard=100000,100000", { waitUntil: "load" }); await settled(pg, 60000);
@@ -742,7 +742,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     report(r.d3 === "handed back" && r.lost, "a hand-back lets the WebGL context go once the GPU has caught up and the page is still (" + r.after + " ms after it)", JSON.stringify(r));
     await c.close();
   }
-  // ---------------------------------------------------------------- 8. iOS round: ready sooner, ?diag stages, the watchdog
+  // ---------------------------------------------------------------- 8. iOS: ready sooner, ?diag stages, the watchdog
   const SAFARI = `(() => {
     window.requestIdleCallback = undefined; window.cancelIdleCallback = undefined;
     for (const k of ["scheduling", "deviceMemory", "connection"]) Object.defineProperty(Navigator.prototype, k, { configurable: true, get: () => undefined });
@@ -803,7 +803,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     report(ok, "iPhone emulation (4x)", "a visitor flicking from 1 s after the load event while the 3D loads: no input waits over 50 ms (worst " + d.worst + " ms)" + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify(d));
     break;
   }
-  /* The client's own pattern (iOS round: «não há relevo na porta», then «já há puxadores»): he opens the page and
+  /* A common pattern on a phone: the visitor opens the page and
      scrolls at once, before the 3D is ready. It takes over in that first walk-in, as soon as it is on, at the same
      progress, by a cross-fade over --dur-handback (canvas from 0 to 1 over the CSS entrance, the photograph's layers
      hidden only once it is opaque; never a frame with neither), with no long task over 50 ms; the next flick is drawn
@@ -846,7 +846,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
       + d.opaqueAt + " ms (" + d.mid + " frames between), never a blank frame, no long task; the next flick in 3D (r " + s2.r + ")" + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify({ g0, ...d, s2 }));
     break;
   }
-  /* A hand-back never freezes the page (iOS round, review: the context was lost 60 ms after it, in the visitor's
+  /* A hand-back never freezes the page (before: the context was lost 60 ms after it, in the visitor's
      gesture, and Chromium waited for the GPU's whole backlog: one main-thread task of 6-11 s, the next flick 12 s
      late). Forced here (?guard=25,60: SwiftShader draws a DPR 3 frame in 130-230 ms; the frame rule or the GPU-lag
      rule hands back): no long task over 50 ms in the next 2 s; the context is let go later, once the GPU has caught up
@@ -872,7 +872,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     report(ok, "iPhone emulation (4x)", "a forced hand-back (" + d.why + "): no long task over 50 ms in the next 2 s; the context let go " + (d.lose[0] ? d.lose[0][0] + " ms later, in " + d.lose[0][1] + " ms" : "never") + (attempt > 1 ? " (second attempt)" : ""), JSON.stringify(d));
     break;
   }
-  /* Time away is not stillness (iOS round, review): the main thread held 12 s in «upload», as iOS suspends a page in
+  /* Time away is not stillness (10 Nov): the main thread held 12 s in «upload», as iOS suspends a page in
      the background and fires the overdue tick on its return, used to refuse the 3D for the session (4 of 6 runs,
      «timeout: upload n/19 (no progress in 12.0 s)»); a tick now counts 500 ms at most and a hidden page's none. */
   {

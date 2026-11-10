@@ -28,19 +28,19 @@ RECT = {"plate": G["interiorPlate"], "reveal": G["reveal"], "leaf-l": G["leafL"]
         "facade": dict(x0=0, y0=0, x1=1, y1=1), "spill": G["spillNoite"]}
 FIRST = ["facade", "leaf-l", "leaf-r", "plate"]          # what the first paint needs (preloaded)
 
-# The street (POLISH_BRIEF §1): the wall and the paving run on past the photograph to the screen's edges. One box
+# The street: the wall and the paving run on past the photograph to the screen's edges. One box
 # inside the scene (.ph--street) reaches STREET_KL scene widths to the left, STREET_KR to the right and from
 # STREET_TOP to STREET_BOT scene heights; it moves with the camera like every layer. Those are what the screens need
-# over the whole visible walk-in, measured from 320 x 568 to 5120 x 1440 (final2/work/polish/tools/extent.js: at most
+# over the whole visible walk-in, measured from 320 x 568 to 5120 x 1440 (at most
 # 2.69 widths to the left, the text column's side, 1.84 to the right, 0.47 heights below the photograph; above it the
 # page's own colour is the wall's), with a margin: the smaller the box, the less the compositor has to hold when the
 # camera layer is made or redrawn at a deep zoom (it was 11 x 3.3 scene sizes; it is 6 x 2.1). Its backgrounds, top to bottom: by night the lantern's and the
 # doorway's light (radial gains, color-dodge: B / (1 - S), so the cobbles keep their contrast), the paving strip
 # (periodic at exactly one scene width; its middle copy starts at the facade's left edge, so it IS the photograph's
 # paving there; where a screen shows more than one scene width, a strip three widths wide, [A | B | C], A that same
-# strip and B, C quilted from it with no verbatim run, so no stone repeats on screen: fix r1), and the wall: a
+# strip and B, C quilted from it with no verbatim run, so no stone repeats on screen), and the wall: a
 # vertical gradient, the page colour up top, a touch deeper by the paving (by day).
-# The facade's own margins were graded into this same composite (final2/work/polish/pipe), so nothing marks where the
+# The facade's own margins were graded into this same composite (by the asset pipeline), so nothing marks where the
 # photograph ends. All geometry is static percentages of the box (no var() in the theme tokens).
 ST = P.get("street")
 STREET_KL, STREET_KR, STREET_TOP, STREET_BOT = 3, 2, -0.3, 1.8
@@ -61,9 +61,9 @@ def _hex(c):
 def street_wall(theme):
     """the wall gradient: the theme's stops, then (just above the strip's end, which covers the step) the colour the
     paving blurs into, on down the box. Under the strip (opaque, from yg0) it is the paving's own mean colour row by
-    row (photo.json › street › rows, fix r2), so until the strip file arrives the band already reads as paving, in its
-    tone, and the placeholder above it has no edge on a bare wall (review r2: «a floating, blurred photo rectangle on
-    a flat page» while the files loaded)"""
+    row (photo.json › street › rows), so until the strip file arrives the band already reads as paving, in its
+    tone, and the placeholder above it has no edge on a bare wall (otherwise a floating, blurred photo rectangle
+    shows on a flat page while the files load)"""
     t = ST[theme]
     rows = t.get("rows")
     y0 = ST["yg0"] if rows else 9
@@ -130,12 +130,12 @@ def lqip_vars():
 
 
 # The scene's rendered width, in CSS terms, for `sizes` (site.css › The entrance), modelled on the layout and checked
-# against the rendered width at 145 viewports from 320 x 560 to 3840 x 2160 (shots/photoint-fix-r1/js/sizes.js:
-# slot / scene within 0.95-1.10). The facade is 0.9066 as wide as it is tall; stacked, it may rise 5% above its box
+# against the rendered width at 145 viewports from 320 x 560 to 3840 x 2160 (slot / scene within 0.95-1.10). The
+# facade is 0.9066 as wide as it is tall; stacked, it may rise 5% above its box
 # (so its width is 0.954 x the box's height less the clear space). Side by side from 900px: the right column
 # (6/11 of the width less the gutters and the 4rem gap), or the height under the top bar, at most 939px. Landscape
-# phones (first: a wide one is also 900px wide): as tall as the text column beside it. Portrait screens from 900px (stacked
-# since review r2: 1024 x 1366, 912 x 1368): the room under the text (the text block grows with the width up to the
+# phones (first: a wide one is also 900px wide): as tall as the text column beside it. Portrait screens from 900px (stacked:
+# 1024 x 1366, 912 x 1368): the room under the text (the text block grows with the width up to the
 # lockup's cap at 1440), at most the column plus its reach (99.2vw); fitted at 912 x 1368, 1024 x 1100-1366,
 # 1440 x 1500, 1080 x 1920. Portrait tablets: the room under the text, which grows with the
 # width. Phones: the room under the text, never less than the entrance's own minimum height (40svh; 38svh and 28svh

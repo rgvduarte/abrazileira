@@ -11,7 +11,7 @@
    sky, the hall's warm bounce, the knob's soft shadow), so the ratio is exactly 1 at rest and the photograph is never
    repainted. Brass adds the change of a restrained environment reflection (now minus rest), nothing more.
 
-   The world (metres) is the one the interior plate was ray-traced in (photo/py/plate2.py): the photograph's camera
+   The world (metres) is the one the hall plate was ray-traced in: the photograph's camera
    C0 stands 3 m in front of the door, its focal length is 1512 px of the 2388 px master, so the facade image is
    4.738 x 5.226 m on the plane z = 0. Origin: the hall point (the vanishing point) on that plane; x right, y up,
    z towards the street. The hall is the plate's own box (floor -1.1, ceiling 2.05, walls +-1.08, far wall 3.8 m
@@ -42,7 +42,7 @@ const PANELS = {
   r: [{ x0: 43, x1: 272, y0: 42, y1: 712, mw: [19, 21, 22, 24], bw: [30, 20, 19, 21] },
       { x0: 43, x1: 272, y0: 797, y1: 1169, mw: [19, 21, 22, 22], bw: [30, 20, 21, 23] }]
 };
-/* iPhone round 2 (9 Nov, «não há relevo na porta»): read again on the photograph, the moulding is a bolection, proud of
+/* The panels' relief, read again on the photograph: the moulding is a bolection, proud of
    the stiles and rails (the bottom one casts its shadow on the rail below it; on every side a bright rise from the
    stile to a crest, then a fall to a crease at the bevel's foot) and the field is raised, proud of the stile too; the
    old profile (everything 1-13 mm below the stile, a 9 degree bevel) turned too little to catch a raking light.
@@ -64,10 +64,10 @@ const HINGES = [[1002, 1057], [1516, 1575], [2043, 2104]];      /* master rows o
    doors open it takes the head's own lower face, from either side of it */
 const NOTCH = [1080, 1206, 907, 920];
 /* LOD bias of the photograph's samples: trilinear minification of the 2388 master is softer than the browser's own
-   image scaling, so the take-over frame lost grain and edges (review r1); -0.65 matches the page's <img> (sharp.js) */
+   image scaling, so the take-over frame lost grain and edges; -0.65 matches the page's <img> */
 const BIAS = -0.65;
 /* the canvas at the device's own pixel ratio, up to 3: at 2 a 3x screen's take-over frame is drawn at 2/3 of the page
-   photograph's resolution and upscaled (review r1). iOS too since 9 Nov (the brief's cap of 2 softened an iPhone's
+   photograph's resolution and upscaled. iOS too since 9 Nov (an earlier cap of 2 softened an iPhone's
    take-over frame against the photograph; the live safeguard watches the cost). MSAA only up to a ratio of 2 and a
    drawing buffer of 4.2 Mpx (create()). */
 const MAXDPR = 3, MSAA_PX = 4.2e6;
@@ -140,7 +140,7 @@ uniform vec2 uClampX;             /* as the leaf opens, the gap's light painted 
 uniform vec4 uGap;                /* the light through the gap at rest, on the leaf near its free edge: edge x, side, amount, reach */
 uniform float uGapNow;            /* 1 at rest, 0 once the gap is gone */
 uniform vec3 uEnvTop, uEnvHor, uEnvLow, uEnvIn;
-uniform float uBias;              /* LOD bias of the projected photo: as crisp as the page's own <img> (review r1) */
+uniform float uBias;              /* LOD bias of the projected photo: as crisp as the page's own <img> */
 uniform vec4 uMean;               /* brass: where the photograph saw this part head-on (leaf uv, or the hinge's x in metres
                                      when z = 1) and the mip level that averages it (w) */
 uniform float uRake;              /* see irrS() */
@@ -150,7 +150,7 @@ uniform float uSheen;             /* the oiled walnut's sheen of the key at graz
 varying vec3 vRest, vW, vNR, vNW;
 varying vec3 vFW, vFR, vOW, vOR;
 varying vec4 vX;
-/* The light a leaf, its brass and its edges receive (iOS round, 9 Nov: «não há relevo na porta»). As irr(), but behind
+/* The light a leaf, its brass and its edges receive (so that the panels' relief reads). As irr(), but behind
    the doorway's plane the street's light arrives through the opening, from its direction, instead of from a dome: a
    leaf that turns in takes it at a raking angle across its face, so the bevel and moulding facets that face the
    opening light up and the others fall into their own shade, as on a real door opened onto a bright street. A point in
@@ -172,7 +172,7 @@ vec3 env(vec3 r) {
   c = mix(uEnvLow, c, smoothstep(-0.25, 0.05, r.y));
   return mix(c, uEnvIn, smoothstep(0.05, -0.6, r.z));
 }
-/* The relief's key (iPhone round 2, 9 Nov: the client still saw «não há relevo na porta»). On a real door that turns
+/* The relief's key (the exposure ratio alone left the relief flat). On a real door that turns
    from a bright street into a hall, the relief reads because ONE light rakes across it: the bevels and beads that face
    it light up, those that face away and the creases under the mouldings' rims fall into shade. The exposure ratio above
    (irrS, sun + sky + hall) dilutes that contrast to a few percent, so the relief takes its contrast from the key alone:
@@ -255,7 +255,7 @@ void main() {
     float sN = pow(max(dot(nW, hN), 0.0), 22.0) * doorVis(vW, Ln) * sunK(vW);
     float sR = pow(max(dot(nR, hR), 0.0), 22.0) * doorVis(pR, Lr) * sunK(pR);
     /* never an absolute amount taken from the albedo: on dark walnut that empties the blue channel and the leaf turns
-       red-orange (review r1). A new sheen adds light; the photographed one going away scales the photo pixel as a
+       red-orange. A new sheen adds light; the photographed one going away scales the photo pixel as a
        whole (its own chroma kept), by at most 12 % */
     float dS = (sN - sR) * uSpec, sl = dot(uSun, vec3(0.333));
     c += max(dS, 0.0) * uSun;
@@ -274,7 +274,7 @@ void main() {
 /* the hall: the only part of the walk-in the photograph does not show. It stays the photograph's own plate (the
    ray-traced, defocused hall the page shows through the doorway), projected from C0 onto the plate's own box, so the
    doorway shows exactly the photograph's hall at rest and the walk-in has true parallax. It is never brought into
-   focus: a box drawn sharp read as CG (review r1), so the lens stays on the door and the hall goes softer as the
+   focus: a box drawn sharp read as CG, so the lens stays on the door and the hall goes softer as the
    camera walks in (the lens blur, frame()). Light only modulates it: by day the sun through the opened doorway, cut
    by the leaves' shadows, and the leaves' contact shadow on the floor. */
 const FS_HALL = GLSL + `
@@ -312,7 +312,7 @@ void main() {
     /* daylight through the opened doorway: a faint, soft pool of sun on the stone (the photograph's own light is soft:
        the lantern's and the olive's shadows are broad and faint), cut by the leaves' shadows with a wide penumbra, and
        let go as the camera passes the threshold (with the lens blur, uSoft). It was a bright wedge before, +35-40
-       levels with a long hard diagonal edge across the screen at 390 p 0.45-0.54 (review, door finish) */
+       levels with a long hard diagonal edge across the screen at 390 p 0.45-0.54 */
     if (uSunK > 0.0 && n.y > -0.5) {
       float ndl = max(dot(n, uSunDir), 0.0);
       if (ndl > 0.0) cl *= 1.0 + uSunK * uOpenK * (1.0 - 0.7 * uSoft / 3.0) * ndl * doorVisE(p, uSunDir, 0.08, 0.12) * leafSh(p, uSunDir, uDoor.x, uOpen) * leafSh(p, uSunDir, uDoor.y, uOpen);
@@ -330,8 +330,8 @@ void main() {
 /* the lintel's soffit, at the door's depth (so as sharp as the jambs, never in the hall's blur). Seen through the gap
    at rest, where it is the photograph's hall and the doorway's shade (exactly as the hall pass draws it there); as the
    doors open it becomes the pilasters' limestone in the lintel's shade: low-passed to mip 5 at least (its 5 mm pits
-   grew into dark blotches, 15-24 levels, as the camera neared at mip 3: review r1 and door finish), a warm bounce tint, lighter towards the light (the street by day, the lamplit hall
-   by night) (review r1) */
+   grew into dark blotches, 15-24 levels, as the camera neared at mip 3), a warm bounce tint, lighter towards the light (the street by day, the lamplit hall
+   by night) */
 const FS_SOFFIT = GLSL + `
 uniform sampler2D uPlate, uReveal, uTex;
 uniform vec4 uPlateR, uDoorR;
@@ -563,7 +563,7 @@ function tex(img) {
   return t;
 }
 /* A photograph over BIG pixels (the facade, the 2388 x 2634 master: one upload of it was a 94-169 ms task at 4x CPU
-   throttle, review, door finish) goes up in bands of rows, each its own step: the texture is allocated empty (every mip
+   throttle) goes up in bands of rows, each its own step: the texture is allocated empty (every mip
    level, no data, no mipmaps made), the bands are cut from the decoded bitmap off the main thread (createImageBitmap) and
    copied in one by one, then the mip chain is made in a step of its own (see upload()). */
 const BIG = 2.5e6, BAND = 6e5;
@@ -576,7 +576,7 @@ function banded(img) {
   return t;
 }
 
-/* The steps' clock (iOS round, 9 Nov). turn(): the next turn of the event loop, a message-channel task (Safari has no
+/* The steps' clock (9 Nov). turn(): the next turn of the event loop, a message-channel task (Safari has no
    requestIdleCallback; a 16 ms timeout per step and per fence poll cost ~0.9 s over a mount). sliceAt: when the
    current slice of work began (a turn or a fence poll resumed); a step may follow the last one in the same task while
    the slice is under SLICE ms and the page is still (fewer, larger tasks; never over ~SLICE plus one step). */
@@ -600,7 +600,7 @@ function staged(stage, e) {
 
 /* the context alone: the first step of the mount (10-30 ms on a phone). A shader that does not compile or link on the
    device's driver is caught here for the whole mount (three.js would only log it and draw on without the part it
-   failed: the leaves vanished from the doorway, review, door finish): it fails the mount, or hands back */
+   failed: the leaves vanished from the doorway): it fails the mount, or hands back */
 export function context(canvas, opt) {
   opt = opt || {};
   const ATTR = (msaa) => ({ antialias: msaa, alpha: false, depth: true, stencil: false, powerPreference: "default",
@@ -995,7 +995,7 @@ export function create(ctx, G, opt) {
     facadeMat.uniforms.uOpenK.value = ok3;
     /* the lens stays on the door: as the camera walks in, the hall (already the plate's defocus, magnified) goes
        softer still, with the walk-in's zoom s (not the camera's distance, which stops once the doors are open: the hall
-       would stay sharp, a CG look, review r1): the curve it had when the camera dollied all the way, 1 - s^-0.12 */
+       would stay sharp, a CG look): the curve it had when the camera dollied all the way, 1 - s^-0.12 */
     const fz = Math.min(1, Math.max(0, (1 - Math.pow(v.s || 1 / v.zc, -0.12)) / 0.6)), P = THEMES[theme], ez = fz * fz * (3 - 2 * fz), sig = P.blur * ez;
     hallMat.uniforms.uSoft.value = 3.0 * ez;
     if (sig < 0.05) {                 /* near rest: the plate as it is, full size */
@@ -1085,7 +1085,7 @@ export function create(ctx, G, opt) {
   /* rt: the variant it is drawn with (three.js makes one program for the canvas, one for a render target: the hall is
      drawn to both, the lens only to targets, the door's scene only to the canvas). The canvas variant is drawn into one
      scissored pixel of the (hidden) canvas: primed only in a target, the canvas programs were first used in the
-     first warm frame, a 61-87 ms task at 4x (iOS round) */
+     first warm frame, a 61-87 ms task at 4x */
   function prime(m, rt) {
     const was = m.parent, mw = m.matrixWorld.clone();
     renderer.setRenderTarget(rt);
@@ -1235,7 +1235,7 @@ export function create(ctx, G, opt) {
    texture is resized: the facade is the 2388 x 2634 master the page already holds for the walk-in (resizing it to
    2048 cost a 370 ms main-thread task at 4x CPU throttle and saved no byte); anything larger than 4096 px would be
    scaled down. Each file is decoded off the main thread (createImageBitmap from its bytes, from the HTTP cache, in a
-   worker: one made from the page's <img> re-decoded the master on the main thread, 126 ms at 4x throttle, review r1),
+   worker: one made from the page's <img> re-decoded the master on the main thread, 126 ms at 4x throttle),
    then uploaded, compiled and drawn once in small steps, each taken only while the page is still (env.quiet: no
    scroll being followed, no flight, no input waiting) and at idle, the next one only once the GPU has done the last
    (a fence): the context (mount()), three.js on it, the scene, the theme, each texture (the facade in bands of rows,
@@ -1284,7 +1284,7 @@ export function mount(env) {
   const loaded = (im) => (im.complete && im.naturalWidth ? Promise.resolve(im)
     : new Promise((ok, no) => { im.addEventListener("load", () => ok(im), { once: true }); im.addEventListener("error", no, { once: true }); }));
   /* the photographs are decoded in a worker: createImageBitmap(blob) on the page's own thread still spent 60-80 ms of
-     it on the facade's master (4x CPU throttle, review, door finish). A small worker made from a blob (no file to
+     it on the facade's master (4x CPU throttle). A small worker made from a blob (no file to
      fetch), fetching from the HTTP cache; where it cannot run (no workers, no createImageBitmap in them, an error), the
      page's own thread, as before. */
   let wk = null, wid = 0;
@@ -1360,7 +1360,7 @@ export function mount(env) {
     return cache[t];
   }
   const drop = (t) => { const c = cache[t]; if (!c) return; delete cache[t]; c.then((o) => { for (const v of Object.values(o)) if (v && v.close) v.close(); }, () => {}); };
-  /* the photographs are fetched and decoded (in the worker) while three.js and the scene are built (iOS round: the
+  /* the photographs are fetched and decoded (in the worker) while three.js and the scene are built (before 9 Nov the
      scene waited for the decode before) */
   function use(t) {
     want = t;
@@ -1441,7 +1441,7 @@ export function mount(env) {
     /* everything goes at once (the GPU's resources, the worker, the canvas), and the context itself
        (WEBGL_lose_context) as soon as the GPU has done what was queued and the page is still (release()), so its
        drawing buffer (MSAA on a phone: about 50 MB on an iPhone at 2x) is freed then, not whenever the canvas is
-       collected; a hand-back is often the sign of memory or GPU pressure (review, door finish) */
+       collected; a hand-back is often the sign of memory or GPU pressure */
     destroy() {
       if (gone) return;
       gone = true;
@@ -1458,8 +1458,8 @@ export function mount(env) {
   };
   /* The context is let go only once the GPU has done all it was given (a fence, polled every 100 ms, never waited on)
      and the page is still (env.quiet) or hidden. Lost at once, it waited for that work: Chromium tears the command
-     buffer down synchronously, and a hand-back comes exactly when the GPU is behind, in the visitor's gesture (iOS
-     round, review: on the iPhone emulation one main-thread task of 5.9-10.8 s right after the guard's hand-back, the
+     buffer down synchronously, and a hand-back comes exactly when the GPU is behind, in the visitor's gesture (on
+     the iPhone emulation one main-thread task of 5.9-10.8 s right after the guard's hand-back, the
      next flick 12 s late). A fence that never signals (a driver fault) counts as done after 30 s. */
   function release() {
     const t0 = performance.now();

@@ -1,4 +1,4 @@
-// The photograph's box never shows on the street (review r1: by night a darker ring, 1-2.5 levels and about 16px,
+// The photograph's box never shows on the street (before the fix: by night a darker ring, 1-2.5 levels and about 16px,
 // drew the facade's rectangle; by day a hairline). Usage: node src/tests/edge.test.js docs
 // At 375 x 667 @2, 390 x 844 @3, 430 x 932 @3, 768 x 1024 @2, 1440 x 900, 1920 x 1080 and 2560 x 1440, Dia and Noite,
 // at rest and in the walk-in (scrolled 20% of the screen), each frame is taken twice: as it is, and with the facade
@@ -8,7 +8,7 @@
 // 8-33%, above the olive's crown) the difference is averaged along the edge (trimmed mean, the central 60%), then
 // high-passed (minus a 10 px gaussian of itself), within 6% of the scene's width either side (the outer part of the
 // fade, where the photograph is the street). The largest |high-pass| is the straight-edge step: at most LIMIT levels.
-// LIMIT is 0.6: the review asked 0.5; headless Chromium's software raster, resampling semi-transparent pixels in
+// LIMIT is 0.6 rather than 0.5: headless Chromium's software raster, resampling semi-transparent pixels in
 // 8-bit premultiplied values, darkens the fade by up to 1 level per channel when the file is drawn smaller than its
 // size (a flat ramp at 720 -> 680 px; 0 at its own size), and that reaches 0.53 at 375 x 667 by night (it was 1.79).
 // By night the limit is LIMIT x 1.85 (1.11): the 9 Nov hotfix brightened every Noite layer 1.85x (tools/noite_gain.py,

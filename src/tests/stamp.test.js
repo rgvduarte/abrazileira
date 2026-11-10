@@ -1,11 +1,11 @@
 // The deploy step after the build: tools/stamp_assets.py (repository root) fingerprints the CSS/JS that the pages
-// reference. Review r1: a root-absolute stylesheet in 404.html's <noscript> made it stop («missing asset ...»), so the
+// reference. Once, a root-absolute stylesheet in 404.html's <noscript> made it stop («missing asset ...»), so the
 // documented pipeline could not deploy the build. This runs the build output through the tool, on a copy, and checks
 // that it exits cleanly and that every local CSS/JS reference of every page, in either quote style, names a file that
 // exists (page-relative from the page; 404.html and root-absolute ones from the site root), and that every photo
 // reference points into the one versioned photo set (assets/photo/v<hash>/) the tool made.
 // usage: node src/tests/stamp.test.js docs [path/to/stamp_assets.py]   (default: $STAMP_TOOL, else ../../tools/stamp_assets.py,
-// the repository's own when src/ sits at its root). A missing tool is a failure (review r2: it printed SKIP and exited 0,
+// the repository's own when src/ sits at its root). A missing tool is a failure (it once printed SKIP and exited 0,
 // so a «tests green» run outside the repository never checked the deploy step); STAMP_SKIP=1 skips on purpose. Outside
 // the repository pass the tool: node src/tests/stamp.test.js docs /path/to/repo/tools/stamp_assets.py
 const fs = require("fs"), path = require("path"), os = require("os"), { execFileSync } = require("child_process");
@@ -41,7 +41,7 @@ for (const p of pages) {
 }
 console.log(`${pages.length} pages, ${refs} CSS/JS references (${stamped} fingerprinted), all present: ${fails ? "no" : "yes"}`);
 if (!stamped) fail("nothing was fingerprinted");
-// The photographs (hotfix 9 Nov: Safari paired a new page with the previous deploy's facade): the tool versions the set
+// The photographs (Safari could pair a new page with the previous deploy's facade): the tool versions the set
 // under assets/photo/v<hash>/ and points every page there. Every photo reference of every page (attributes, inline
 // styles, the scene's JSON, where the scripts get a stem and add «.avif» / «.webp») names that one version, and the
 // file exists in it; no unversioned reference is left.
@@ -60,7 +60,7 @@ for (const p of pages) {
 }
 console.log(`${photos} photo references, version(s): ${[...vers].join(" ") || "none"}`);
 if (!photos) fail("no photo reference found (the home page draws the entrance from assets/photo)");
-// The stylesheets (review, door finish): the street's paving strips are CSS backgrounds (tokens.css, url("../photo/...")).
+// The stylesheets (since the door finish): the street's paving strips are CSS backgrounds (tokens.css, url("../photo/...")).
 // Every photo reference of every stylesheet, the fingerprinted copies the pages load included, names the pages' version,
 // relative to the sheet, and the file exists; an unversioned one (a facade of this deploy inside a street Safari kept from
 // an earlier one) fails.

@@ -131,7 +131,7 @@
     sky();
   })();
 
-  /* The top bar with very large text (resize text to 200%, review r1): its two groups wrap to two rows and the sun
+  /* The top bar with very large text (resize text to 200%): its two groups wrap to two rows and the sun
      note to two lines. A wrapped PT · EN row then sits under the note, not on it, and the home page's stage, which
      the bar overlays, clears the bar's real height (--bar-h). At every normal size nothing is set: the stylesheet's
      own measure holds (and on wide screens the note hangs in the room above the crest, by design). */
@@ -189,7 +189,7 @@
       return Promise.race([Promise.all(ps), new Promise(function (r) { setTimeout(r, wait || 800); })]);
     }
     /* The walk-in magnifies the facade and the leaves 3-6x: the files picked for the rest size (sizes = the scene's
-       width) are then drawn from too few pixels, the stone, the 11 and the walnut go soft (review r1). Once the page
+       width) are then drawn from too few pixels, the stone, the house number and the walnut go soft. Once the page
        has loaded and is idle, the larger files of the shown theme are fetched and decoded in a detached copy of
        each picture (sizes = 3x the scene: the 2388 master on almost every screen); the first time the sequence
        moves, the real pictures take the same sizes and swap to those files from the cache while the doors are
@@ -344,7 +344,7 @@
        holds at the visitor's feet and then leaves through the bottom edge (as when walking towards a door). It
        is centred by s = 1 + |dy| / foot distance, and in any case by p = 0.56, before the doorway covers the
        screen. Both terms ease into the centre with zero slope and combine smoothly (1 - (1 - a)(1 - b)): the rise
-       was clipped at 1 before, so its speed changed in one step mid walk-in (a bob of the threshold, review r1). */
+       was clipped at 1 before, so its speed changed in one step mid walk-in (a bob of the threshold). */
     var KNEE = 0.25;
     function knee(a) {                    /* a, eased into 1 over [1 - KNEE, 1 + KNEE]: C1, zero slope at the end */
       if (a <= 1 - KNEE) return a < 0 ? 0 : a;
@@ -369,7 +369,7 @@
     /* The walk-in: log(scale) through four keyframes, made per screen in measure(): 1 at p = 0.01; a first step
        to the threshold as the doors finish opening (0.34); the scale at which the doorway covers the screen
        (0.54); the end, a step past it (0.66), while the hall's light comes up over the whole stage. The walk-in
-       stops there: the client found the long push into the hall too much zoom and too slow (9 Nov). Between them a monotone cubic (Fritsch-Carlson): it never
+       stops there: since 9 Nov a shorter, shallower walk-in (the long push into the hall was too deep and too slow). Between them a monotone cubic (Fritsch-Carlson): it never
        goes back, never overshoots, starts softly (zero slope) and keeps going into the light (no landing: the
        screen is one colour by then). Equal steps of log(scale) read as equal steps forward. */
     var KY = [0, 1, 1.5, 2], KM = [0, 0, 0, 0];
@@ -405,7 +405,7 @@
     function measure() {
       /* while a field of the list has the focus and only the height changed (a keyboard that resizes the page, as
          Android in-app browsers do), the run keeps its length in px: the list, and the field in it, stay where they
-         are (svh would shorten the run under the keyboard and move the list up, review r1) */
+         are (svh would shorten the run under the keyboard and move the list up) */
       var fw = stage.clientWidth, focused = !!(list && document.activeElement && document.activeElement !== list && list.contains(document.activeElement));
       if (focused && held.w === fw && held.run > 0) wrap.style.setProperty("--porta-run", held.run + "px");
       else if (wrap.style.getPropertyValue("--porta-run")) wrap.style.removeProperty("--porta-run");
@@ -438,7 +438,7 @@
         (sh - vh / 2) / ((G.door[3] - G.hp[1]) * H)) * 1.05;
       /* the end: a short step past the doorway (1.15x), at most what the plate covers. It went on before into the
          arch of light at the end of the hall (G.light), 1.5x past the doorway at least: up to 9x on a phone, which
-         read as too much zoom and too long (client, 9 Nov). The hall's light now comes up over that last step. */
+         was too deep and too long (changed 9 Nov). The hall's light now comes up over that last step. */
       var end = Math.min(inDoor * 1.15, G.cover);
       /* the plate always covers the doorway: its zoom is end^kp with kp raised on very wide screens if needed */
       cam.kp = Math.max(G.k, 1 - Math.log(G.grow * 0.97) / Math.log(end));
@@ -446,7 +446,7 @@
       keys(Math.pow(inDoor, 0.3), inDoor, end);
       /* the timeline starts at the wrapper's top, not where the stage pins: on screens shorter than the rest
          composition (stick < 0) the doors open on the first pixel too, while the stage is still scrolling to its pin
-         (review r1); it ends where it did, at the pin plus the run */
+         ; it ends where it did, at the pin plus the run */
       var r = wrap.getBoundingClientRect(), natural = wrap.offsetHeight - stage.offsetHeight;
       if (!wrap.style.getPropertyValue("--porta-run")) held = { w: fw, run: natural };
       pin = r.top + window.pageYOffset;
@@ -469,7 +469,7 @@
       if ((Math.max(r, p - LAG) >= COVER_AT) !== lit) {
         lit = !lit;
         /* the root too: it paints the canvas beyond the body (overscroll, a viewport edge a frame uncovers), and the
-           browser's own bar takes the same colour (review r1) */
+           browser's own bar takes the same colour */
         document.body.style.backgroundColor = root.style.backgroundColor = lit ? "var(--color-hall)" : "";
         if (root.__tint) root.__tint();
       }
@@ -500,7 +500,7 @@
     }
 
     /* The 3D entrance (door3d.js, an ES module, with its own three.js subset; DESIGN.md › The 3D entrance). ON BY
-       DEFAULT wherever the device can draw it (client, 9 Nov: «Porta: desenvolve logo até ao fim, e publica no site»),
+       DEFAULT wherever the device can draw it (since 9 Nov),
        with the CSS entrance as the automatic fallback at every step:
        - the gate (gate(), gpu3d()): ES modules and WebGL 2 (three.js r187 has no WebGL 1 path); not reduced motion,
          ?semporta, ?sem3d, a data saver or a 2G link; a GPU-backed context (failIfMajorPerformanceCaveat), not a
@@ -512,20 +512,20 @@
          is probed and the module and three.js are fetched (module preloads, low priority: parsed, not run); they are
          evaluated, mounted, uploaded and compiled in short slices (about 10 ms of work each, a message-channel turn
          apart where there is no requestIdleCallback: Safari) whenever the page is still: no scroll being followed,
-         no flight, no touch, wheel, key or pointer for 150 ms, anywhere in the run (iOS round, 9 Nov: held to the top
+         no flight, no touch, wheel, key or pointer for 150 ms, anywhere in the run (when it was held to the top
          or the flat colour, a visitor who scrolled within 3 s of the load got the 3D only ~10 s later). Each step
          has a time limit (the watchdog): no step can leave «loading» for good.
        - the live safeguard (watch3d()): the frame intervals over the first second of 3D motion; a median over 25 ms
          (or 1.5x the display's own cadence where that is slower: a 30 Hz low-power mode), any frame over 120 ms, or a
-         drawn frame the GPU has not finished after 120 ms with 3 or more waiting (its own lag, door3d.js lag(): iOS
-         round 2) hands back to the CSS entrance at the same progress (it has followed r all along). Only the 3D's
+         drawn frame the GPU has not finished after 120 ms with 3 or more waiting (its own lag, door3d.js lag())
+         hands back to the CSS entrance at the same progress (it has followed r all along). Only the 3D's
          own frames count, not those around a take-over (on an iPhone the first frame of the first scroll, as Safari's
          toolbar starts to go), the end of a take-over's cross-fade, a resize (a toolbar, a rotation), a theme change
          or a return from the background (uncount()). A hand-back holds for the rest of that page view (no re-mount,
          no flip-flop, not even after a context lost during its dissolve: `backed`). A slow one is counted for the
          session ("ab-3d-slow"): the next load tries the 3D again; a second with no clean first second between them
-         refuses it for the session (client's iPhone, 10 Nov, «?diag funciona! Mete na main page»: one slow frame had
-         refused it for the tab's session, while a fresh tab, the ?diag address, drew it). A context lost while the
+         refuses it for the session (before, one slow frame could refuse it for the tab's session while a fresh
+         tab drew it). A context lost while the
          page is shown or an exception hands back too, and is remembered at once: the device cannot draw it.
        - a context lost in the background (iOS frees a hidden page's GPU memory, and may say so only on its return)
          is rebuilt from the cached files once the page is shown and still, twice at most.
@@ -539,8 +539,8 @@
        takes over as soon as it is ready, wherever the walk-in is: at rest or under the flat colour by a plain swap,
        in the middle of the walk-in at the same r by a cross-fade over --dur-handback (the CSS leaves turn in the
        stage's perspective, the 3D ones in the camera's: a swap at p 0.03-0.2 reshapes the leaves and deepens the
-       hall, doorway mean |dRGB| 4-6). Until the iOS round it waited for rest or the flat colour, so the client, who
-       opens the page and scrolls at once, never had the 3D in his first walk-in («não há relevo na porta»).
+       hall, doorway mean |dRGB| 4-6). Until 9 Nov it waited for rest or the flat colour, so a visitor who opens the
+       page and scrolls at once never had the 3D in the first walk-in.
        Whenever it cannot draw (a theme whose textures are still loading) the CSS entrance, which has been following
        r all along, is simply shown again. */
     var Q = location.search, F3 = /[?&]3d=force(&|$)/.test(Q), T3 = !F3 && /[?&]3d(=1)?(&|$)/.test(Q),
@@ -575,9 +575,9 @@
     function slows() { return +mem(undefined, "ab-3d-slow") || 0; }
     /* still: no scroll being followed (the loop at rest), no flight, and no touch, wheel, key or pointer for CALM ms,
        wherever the run is. The 3D module is evaluated, mounted and warmed only then, in slices of about 10 ms of work
-       (door3d.js), so a finger that lands meanwhile waits for one slice at most. (Until 9 Nov: 400 ms, and only at
-       rest or under the flat colour; on the client's iPhone, a visitor who started to scroll 1-3 s after the load
-       got the 3D 10-11 s after it, held for 7 s: iPhone timeline in Chromium, f43work/ios.js.) */
+       (door3d.js), so a finger that lands meanwhile waits for one slice at most. (Before: 400 ms, and only at
+       rest or under the flat colour; in an iPhone emulation in Chromium, a visitor who started to scroll 1-3 s after
+       the load got the 3D 10-11 s after it, held for 7 s.) */
     var moved = 0, touched = 0, CALM = 150;
     function quiet() {
       var sc = navigator.scheduling, t = performance.now();       /* Chromium: an input already waiting is not stillness */
@@ -602,9 +602,9 @@
        only s^-DOLLY of its rest distance (DOLLY 0.12) and narrows its field for the rest, and it moves in only while
        the doors open (s up to its value at DOOR[1], about 0.93 of the rest distance); past that the walk-in is the
        lens alone. A real dolly to the threshold (it went on through the doorway into the hall before) made the open
-       leaves, which reach a metre into the hall, sweep wider and wider as the camera neared them (client, 9 Nov: «as
-       portas aumentam de tamanho quando se entra»); a dolly kept up after the doors had opened still widened them,
-       by 9-11% between p 0.34 and 0.66 against the doorway (review, door finish). With the camera still once they
+       leaves, which reach a metre into the hall, sweep wider and wider as the camera neared them (the doors must not
+       grow as the camera enters; changed 9 Nov); a dolly kept up after the doors had opened still widened them,
+       by 9-11% between p 0.34 and 0.66 against the doorway (before the door finish). With the camera still once they
        are open, the open leaves keep their width against the doorway, as on the CSS path. The hall is drawn in a pass of
        its own, from a camera that keeps the dolly all the way (zh = s^-DOLLY), so it keeps the depth it had: held
        still with the rest, its far arch grew as s (8.3x at 1440 p 0.54, against s^kp, 5.6x, on the CSS path). */
@@ -647,14 +647,14 @@
       if (!d3 || !box3 || fading) return;
       var flat = Math.max(r, p - LAG) >= COVER_AT, ok;
       /* armed as soon as it is ready (on, or a theme's textures in), wherever the walk-in is: in the middle of it (the
-         iPhone visitor who opens the page and scrolls at once, iOS round: until then it waited for rest or the flat
+         visitor who opens the page and scrolls at once: before, it waited for rest or the flat
          colour, so that visitor's first walk-in was always the CSS one) it takes over at the same r with a cross-fade
          (xin); at rest, on the next scroll's first frame (equal to the photograph: no fade) */
       if (!d3arm) { d3arm = true; xin = r > 0 && !flat; }
       if (!(r > 0) || flat) xin = false;
       /* under the flat colour after the canvas has drawn: the canvas hidden and the photograph's layers left hidden. Shown
          again there (at rest scale, then at the camera's zoom), they were decoded and painted under the opaque flood
-         just as the list rose in: frames of 100-300 ms at 390 x 844 (review, door finish). On the way back up the
+         just as the list rose in: frames of 100-300 ms at 390 x 844 (before the door finish). On the way back up the
          canvas draws again; they come back only if it cannot (below) */
       if (flat && r > 0 && d3m && d3.ok) { show3d(2); return; }
       ok = r > 0 && !flat && d3.draw(view3d(r));
@@ -701,7 +701,7 @@
           lim = Math.max(GUARD.med, 1.5 * (cad || 16.7));
           if (GUARD.on && gd.med > lim) { handBack("median frame " + gd.med.toFixed(1) + " ms (limit " + Math.round(lim) + ")", true); return; }
           /* a clean first second: the slow hand-backs counted so far are cleared, so only two in a row refuse the 3D
-             (two stray slow frames hours apart in a tab's session did, review) */
+             (two stray slow frames hours apart in a tab's session did) */
           if (GUARD.on && slows()) mem(null, "ab-3d-slow");
         }
       }
@@ -734,7 +734,7 @@
     }
     /* The theme changed under the shown canvas (the 3D's new textures are not in yet): its last frame stays, at most
        300 ms, until the new theme's facade and leaves are decoded, so the CSS entrance never comes back for a frame
-       without its facade, a picture it had never painted while hidden (review r1). */
+       without its facade, a picture it had never painted while hidden. */
     var hold = null;
     function decoded() {
       var t = root.__photo.theme();
@@ -748,7 +748,7 @@
     }
     /* the canvas goes at once (the CSS entrance shows the same progress in this very frame); its resources a moment
        later, outside the frame, and the context itself only once the GPU has caught up and the page is still
-       (door3d.js release(): lost at once, it froze the page for 6-11 s on the iPhone emulation, iOS round) */
+       (door3d.js release(): lost at once, it froze the page for 6-11 s on the iPhone emulation) */
     function lost3d(st, why) {
       var m = cur || d3;
       if (d3) show3d(0);
@@ -762,13 +762,13 @@
     }
     /* The live safeguard's hand-back: the CSS entrance at the same progress, for the rest of the page view (nothing
        mounts the 3D again in it: `backed`, read by onLost and revive3d(), since "1|<gpu>" now stays and a context lost
-       during the dissolve, taken for the background's, rebuilt it, review). slow (the timing rules): counted for the
+       during the dissolve, taken for the background's, rebuilt it). slow (the timing rules): counted for the
        session ("ab-3d-slow"), and refused for it only at the SLOWS-th in a row ("0|slow hand-back 2/2: <why>"); until
        then the probe's "1|<gpu>" stays, so the next load tries the 3D again without probing. Otherwise (a context lost while shown, an exception: the device cannot
        draw it) remembered at once. When the canvas still shows a frame (a slow frame, a slow median), the CSS layers
        are shown under it at once and it dissolves into them over --dur-handback (180ms), its last frame frozen: the
        3D the guard has just found slow is not drawn again (drawn through a 400ms dissolve, it went on for 3 more slow
-       frames, review, door finish). The two differ by what 3D adds (the leaves' thickness and light, the hall's
+       frames, before the door finish). The two differ by what 3D adds (the leaves' thickness and light, the hall's
        depth; at p 0.3 a mean 2-4 levels, deep in the walk-in 20-26) and, in a scroll, by the few frames the CSS
        entrance moves on meanwhile. A lost context or an exception cannot draw: the swap is immediate. */
     function handBack(why, slow) {
@@ -807,8 +807,8 @@
       if (!wd && d3st === "loading") wd = setInterval(watchdog, 250);
     }
     /* Time away never counts: a hidden page's ticks are skipped, and one tick counts 500 ms at most (iOS suspends a
-       page in the background and fires the overdue tick on its return; until the iOS round it counted the whole
-       absence: 12 s away in «upload» refused the 3D for the tab's session in 4 of 6 runs, review). Back from the
+       page in the background and fires the overdue tick on its return; until 10 Nov it counted the whole
+       absence: 12 s away in «upload» refused the 3D for the tab's session in 4 of 6 runs). Back from the
        background (back3d()), the step starts a full limit afresh. */
     function watchdog() {
       var t = performance.now(), dt = Math.min(t - wdT, 500), why;
@@ -840,7 +840,7 @@
       if (F3 || T3) return "";
       m = mem();
       /* what the build before 10 Nov wrote for any slow hand-back ("0|a frame of …", "0|median frame …", "0|the GPU …
-         behind …"), still in a tab that ran it (the client's own, review): read as one slow hand-back, the probe asked
+         behind …"), still in a tab that ran it: read as one slow hand-back, the probe asked
          again */
       if (/^0\|(a frame of|median frame|the GPU )/.test(m)) { if (!slows()) mem("1", "ab-3d-slow"); mem(null); m = ""; }
       if (m.charAt(0) === "0") return "earlier in this session: " + m.slice(2);
@@ -848,7 +848,7 @@
       if (!IOS && hc && hc < 4) return "weak device (" + hc + " cores)";
       return "";
     }
-    /* The GPU (review r1): a device with no WebGL 2 worth having (none, disabled, a blocklisted GPU, a software
+    /* The GPU: a device with no WebGL 2 worth having (none, disabled, a blocklisted GPU, a software
        renderer, a clearly weak GPU) is known before a byte of the module is fetched: a throwaway context, released at
        once, probed once per session at idle. "" = go on. */
     function gpu3d() {
@@ -884,7 +884,7 @@
     }
     /* At the first idle moment after the first paint: the gate, then the fetch. The module is evaluated, mounted and
        warmed only while the page is still (quiet()): never in the middle of a gesture or of the action's flight (it
-       cost the hero's motion 100-300 ms frames at 4x CPU throttle, review r1), in slices of about 10 ms. */
+       cost the hero's motion 100-300 ms frames at 4x CPU throttle), in slices of about 10 ms. */
     function load3d() {
       if (d3st !== "off") return;
       d3t0 = performance.now();
@@ -904,7 +904,7 @@
           if (root.__door3d) return mount3d();        /* mounted before (a context was lost): the module is in */
           stg("eval");
           /* the module's evaluation is one task; the mount is the next, again only once the page is still (a gesture
-             that began meanwhile is not made to wait for both, review, door finish) */
+             that began meanwhile is not made to wait for both) */
           window.addEventListener("door3d", function () { if (d3st === "loading") stg("wait"); whenQuiet(mount3d); }, { once: true });
           var s = document.createElement("script"), t0;
           s.src = wrap.getAttribute("data-3d");
@@ -937,7 +937,7 @@
       try {
         var m = cur = root.__door3d.mount({ stage: stage, scene: scene, G: G, theme: root.__photo.theme, force: F3,
           /* the device's own pixel ratio, up to 3, on iOS too: at 2 an iPhone's take-over frame was softer than the
-             photograph (gradient energy 0.74 / 0.84 of the page's image), against «não perder o fotorrealismo»;
+             photograph (gradient energy 0.74 / 0.84 of the page's image), and the 3D must stay as real as the photograph;
              without MSAA above 2 its buffer is smaller (~24 MB against ~42 MB), and the live safeguard watches the
              2.25x pixels it shades (decided 9 Nov, after the door finish) */
           maxDpr: 3,
@@ -1084,7 +1084,7 @@
       if (!rq && !fl) endOff = g.p >= 1 ? g.y - pin - run : -1;
       /* a jump is the scroll's own change since the last frame (a link, a focus move, a restored position), never its
          distance from r: under the exponential follow that distance is about the scroll's speed x 99 ms, so a fast flick
-         (1300 px/s on a landscape phone) passed 0.35 and the walk-in cut ahead in one frame (review, door finish).
+         (1300 px/s on a landscape phone) passed 0.35 and the walk-in cut ahead in one frame (before the door finish).
          Otherwise r follows, at most LAGMAX behind or ahead of the scroll: after that it moves with the scroll itself,
          so a fling never leaves it far behind and never makes it jump. */
       if (shown < 0 || seen < 0 || Math.abs(g.p - seen) > JUMP) r = g.p;     /* first frame, or a jump: no replay */
@@ -1176,7 +1176,7 @@
     }
     /* journey share (0..1) -> scroll position, from a table of the weighted way (96 steps, built once). The list's
        arrival weighs too (--flight-weight-list x its change of opacity): the flight slows across it, so the words
-       rise in over about 300ms instead of 100ms at the flight's top speed (review r1) */
+       rise in over about 300ms instead of 100ms at the flight's top speed */
     function journey(y0, y1) {
       var N = 96, ys = [y0], J = [0], i, y, z, pz = zoomAt(y0), l, pl = listAt(y0);
       for (i = 1; i <= N; i++) {
@@ -1250,7 +1250,7 @@
       measure();
       /* the list was at rest and the screen changed size (a rotation, a keyboard closing in a browser that resizes
          the page): the run is measured again in svh but the scroll position is kept, so the page would land back
-         in the door sequence with the list hidden, a focused field invisible (review r1). Keep the list at rest,
+         in the door sequence with the list hidden, a focused field invisible. Keep the list at rest,
          at the same distance into it. */
       if (was >= 0 && !fl && (mw !== w0 || mh !== h0) && target().p < 1) window.scrollTo(0, pin + run + was);
       if (fl) { fl.y1 = fl.to(); fl.at = journey(fl.y0, fl.y1); }
@@ -1470,8 +1470,8 @@
     function listY() { return list.getBoundingClientRect().top + window.pageYOffset; }
     /* where the list is at rest: with the sequence on and the list closing within the run's last screen (the page
        ends one large viewport after the run, site.css), the page's end, where the block stands in the middle of the
-       screen; it is the run's end except on a phone with its toolbars shown (an iPhone: 40px further, review of
-       10 Nov). A longer list (a block taller than the screen): its top, the run's end. */
+       screen; it is the run's end except on a phone with its toolbars shown (a 390-wide iPhone in Safari: 40px
+       further). A longer list (a block taller than the screen): its top, the run's end. */
     var porta = document.querySelector(".porta");
     function rest() {
       var y = listY(), d = document.documentElement, end;
@@ -1533,7 +1533,7 @@
         fits = e.target.getBoundingClientRect().bottom - list.getBoundingClientRect().top <= window.innerHeight - 8;
       if (list.offsetHeight <= window.innerHeight + 2) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
       /* a list taller than the screen: its rest position whenever what took the focus is in view there (from either
-         side: the browser's own focus scroll may have gone past it and clipped the title, review r1); otherwise its
+         side: the browser's own focus scroll may have gone past it and clipped the title); otherwise its
          start, then whatever took the focus */
       else if (fits) { if (Math.abs(d) > 2) window.scrollTo(0, y); }
       else if (d > 2) {

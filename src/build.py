@@ -30,9 +30,9 @@ def write(p, s):
 
 
 # ---------------------------------------------------------------- crest
-# The client's identity board (Nov 2026): a five-point crown on a double-outlined shield with the B monogram, between
+# The identity's crest (Nov 2026): a five-point crown on a double-outlined shield with the B monogram, between
 # two olive branches. One drawing (assets/img/crest-gold.svg: the left half, mirrored; the centre; the leaf veins), hand
-# built as vectors from the board. It is inlined once per page with its ids prefixed and every colour taken from the
+# built as vectors. It is inlined once per page with its ids prefixed and every colour taken from the
 # tokens (site.css › .crest: the gold stops, the light and the shadow of its relief), so no hex is left in the markup.
 # Variants on the same page (the style guide) reuse that one definition with <use>.
 CREST_W, CREST_H = 102.47, 100
@@ -46,7 +46,7 @@ def _gold_svg(name, w, h, shapes, veins=()):
     the light take the lit gold, those facing away the shadow, the flat tops keep the gradient; then a soft cast
     shadow). Every value is in viewBox units, so the relief keeps its proportions at every size (the 102px crest of a
     phone as the 205px one of a desktop); filters are raster work, off the main thread (clip paths of paths this large
-    were a 70-100 ms main-thread paint at 4x CPU, review of the identity round). Every colour becomes a class
+    were a 70-100 ms main-thread paint at 4x CPU). Every colour becomes a class
     (site.css › .crest__*: the tokens). shapes / veins: (id, transform) the file draws."""
     src = read(os.path.join(ASSETS, "img", name)).strip()
     vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', src)
@@ -76,7 +76,7 @@ def _gold_svg(name, w, h, shapes, veins=()):
 
 CREST_DEFS, CREST_BODY = _gold_svg("crest-gold.svg", CREST_W, CREST_H, (("h", ""), ("h", CREST_MIRROR), ("c", "")),
                                    (("v", ""), ("v", CREST_MIRROR)))
-# the board's black version is line art (the leaves outlined, white inside, the midrib kept): one path in one ink, the
+# the black version is line art (the leaves outlined, white inside, the midrib kept): one path in one ink, the
 # solid half less the leaves' interiors (assets/img/crest-line.svg; drawn from the same model as the gold)
 _LINE = read(os.path.join(ASSETS, "img", "crest-line.svg"))
 assert re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', _LINE).groups() == (f"{CREST_W:g}", f"{CREST_H:g}"), "crest-line.svg viewBox changed"
@@ -97,9 +97,9 @@ def crest_defs(idp):
 
 
 def crest_svg(idp="ab-crest", defs=True, variant="ouro", cls="", label=None, bare=False):
-    """the crest as an inline <svg>. variant "ouro": the board's metallic gold (relief at the strokes' own scale:
+    """the crest as an inline <svg>. variant "ouro": metallic gold (relief at the strokes' own scale:
     lit and shaded slopes over a gradient body, a faint cast shadow); "plano": one ink (currentColor) with the leaf veins cut in the ground colour
-    (--crest-ground), as the board's white-on-black version; "linha": one ink, the leaves as line art, as the board's
+    (--crest-ground), the white-on-black version; "linha": one ink, the leaves as line art, the
     black version. defs=False reuses a definition made earlier on the page
     (crest_defs). Decorative (aria-hidden) unless a label is given (role img, one name). bare: the drawing only, no
     <svg> (to place inside another drawing)."""
@@ -122,7 +122,7 @@ def crest_svg(idp="ab-crest", defs=True, variant="ouro", cls="", label=None, bar
 
 
 def monogram_svg(idp="ab-crest", defs=False, variant="ouro", cls="", label=None):
-    """the board's minimal monogram (the B with its hooked swash): gold in relief, or one ink (currentColor)"""
+    """the minimal monogram (the B with its hooked swash): gold in relief, or one ink (currentColor)"""
     d = (MONO_DEFS if defs else "").replace("abzm-", idp + "-m")
     body = (MONO_BODY.replace("abzm-", idp + "-m") if variant == "ouro"
             else f'<use class="crest__forma" href="#{idp}-mp"/>')
@@ -133,7 +133,7 @@ def monogram_svg(idp="ab-crest", defs=False, variant="ouro", cls="", label=None)
 
 # ---------------------------------------------------------------- wordmark
 def wordmark():
-    """«A Brazileira» as lettered on the identity board (assets/img/wordmark.svg: one path per letter, filled with
+    """«A Brazileira» as lettered in the identity (assets/img/wordmark.svg: one path per letter, filled with
     currentColor; DESIGN.md › Logo usage). Inline and aria-hidden: the lockup's hidden text carries the name.
     The width and height attributes give it its ratio before CSS applies (no layout shift)."""
     s = read(os.path.join(ASSETS, "img/wordmark.svg"))
@@ -217,12 +217,12 @@ def nb(s):
 for _k in ("pt", "en"):
     for _f in ("lede", "list_p", "consent", "msg_ok", "msg_error", "noscript"):
         T[_k][_f] = nb(T[_k][_f])
-# the one sentence of the first screen (client, 9 Nov: only «abrimos em breve», a little teasing; the double door is
+# the one sentence of the first screen (since 9 Nov: a short line about the opening; the double door is
 # the page's entrance, and «abrir as portas» is also what a house does when it opens to guests). Where it breaks, it
 # breaks after the comma: the object holds together.
 T["pt"]["lede"] = T["pt"]["lede"].replace("abrimos as portas", "abrimos\u00a0as\u00a0portas")
 T["en"]["lede"] = T["en"]["lede"].replace("we open our doors", "we\u00a0open\u00a0our\u00a0doors")
-# English breaks by rule too (review r2): the list sentence at its clause, as the Portuguese does («Leave your email
+# English breaks by rule too: the list sentence at its clause, as the Portuguese does («Leave your email
 # and / we will let you know when we open.», never «we will / let you know»), and the consent's object stays whole
 # («… from A Brazileira / about the opening.», never a two-word runt after a dangling «about»). «and» is not tied:
 # that would push the list sentence to three lines on desktops.
@@ -233,9 +233,9 @@ T["en"]["consent"] = T["en"]["consent"].replace("about the opening", "about\u00a
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
         '<span class="foot__place">' + nb("Torres Vedras, Portugal") + "</span>")
 # Dia / Noite before the first paint: the visitor's choice on this site if there is one; otherwise the sky over
-# Torres Vedras (39.09 N, 9.26 W) at this moment, as the brief asks («when the visitor has not chosen»): Dia while the
+# Torres Vedras (39.09 N, 9.26 W) at this moment, when the visitor has not chosen: Dia while the
 # sun is above the horizon (altitude > -0.833 deg, the standard sunrise/sunset), Noite otherwise. A system dark mode is
-# not a choice made here, so it does not override the house's sky (decided in round 2; DESIGN.md › Dia & Noite); one
+# not a choice made here, so it does not override the house's sky (DESIGN.md › Dia & Noite); one
 # press on Noite is remembered. The sun's position is a low-precision solar ephemeris (about 1 minute against
 # published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn the lights on at sunset. data-sol
 # marks a theme the sky chose (never stored); a line under the control then says so («É noite em Torres Vedras.»).
@@ -264,9 +264,9 @@ TICK = ('<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 
 
 def lockup_html(level="h1", idp="ab-crest", extra="", defs=True):
-    """the board's vertical lockup: the crest (gold), «A Brazileira» (the board's lettering, an inline SVG) and BOUTIQUE
+    """the vertical lockup: the crest (gold), «A Brazileira» (the drawn lettering, an inline SVG) and BOUTIQUE
     HOTEL in spaced capitals. The crest and the drawn letters are aria-hidden; the name is read once, from the hidden
-    «A Brazileira», and the line is live text: «A Brazileira, Boutique Hotel». (The board's lockup has no town line:
+    «A Brazileira», and the line is live text: «A Brazileira, Boutique Hotel». (The lockup has no town line:
     Torres Vedras is said in the footer, the sun note and the metadata.)"""
     return (f'<{level} class="lockup{extra}">'
             f'<span class="lockup__crest">{crest_svg(idp, defs=defs)}</span>'
@@ -523,7 +523,7 @@ THEME_COLOR = ('<meta name="theme-color" content="#FAECDF" media="(prefers-color
 
 # 404.html is served at any depth (/abrazileira/a/b/c): resolve the site root first, then
 # write the base, the stylesheets (parser-inserted, render-blocking) and the script after it. The script is written
-# too (review r1): a page-relative <script src> in the markup was requested by the preload scanner before the <base>
+# too: a page-relative <script src> in the markup was requested by the preload scanner before the <base>
 # applied (a/b/assets/js/site.js: one 404 and a console error on every deep 404).
 BASE_JS = ('<script>(function(){var p=location.pathname.split("/").filter(Boolean),'
            'b=(/\\.github\\.io$/.test(location.hostname)||p[0]==="abrazileira")&&p.length?"/"+p[0]+"/":"/";'
@@ -534,7 +534,7 @@ BASE_JS = ('<script>(function(){var p=location.pathname.split("/").filter(Boolea
            # production domain serves the site at /; the github.io preview at /abrazileira/ has no root stylesheet, so a
            # no-JS 404 there is plain). Single-quoted on purpose: the repository's deploy step (tools/stamp_assets.py)
            # fingerprints the double-quoted, page-relative references only and stopped at this root-absolute one
-           # («missing asset /assets/css/tokens.css», review r1); it leaves these alone, and the unstamped files it
+           # («missing asset /assets/css/tokens.css»); it leaves these alone, and the unstamped files it
            # keeps in docs/ are this build's own. build.py's stamp() still adds ?v= to them.
            "<noscript><link rel='stylesheet' href='/assets/css/tokens.css'><link rel='stylesheet' href='/assets/css/site.css'></noscript>")
 

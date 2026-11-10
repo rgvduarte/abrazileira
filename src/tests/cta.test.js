@@ -113,7 +113,7 @@ const STATE = () => {
       // a stall: three or more frames without movement in the middle of the flight (a restart from rest)
       let stall = 0, run0 = 0; for (let i = moving[0] || 0; i < (moving[moving.length - 1] || 0); i++) { run0 = ys[i + 1] === ys[i] ? run0 + 1 : 0; stall = Math.max(stall, run0); }
       if (["click", "enter", "space", "cue", "click-en", "click-other", "click-sun", "hold-space", "hold-enter", "dblclick"].includes(mode)) {
-        ok = land && !backwards && moving.length >= 40 && mids >= 15 && dur >= 900 && dur <= 1100 && stall < 3;   /* --dur-flight 1000ms since 9 Nov (shorter, client) */
+        ok = land && !backwards && moving.length >= 40 && mids >= 15 && dur >= 900 && dur <= 1100 && stall < 3;   /* --dur-flight 1000ms since 9 Nov (shorter) */
         Object.assign(info, { scrollFrames: moving.length, flightMs: dur, sceneMidFrames: mids, S: Smax, backwards, stall, theme: await pg.evaluate(() => document.documentElement.dataset.theme) });
       } else {   // tab, reduced motion, hash: a jump, never a replay
         const distinct = [...new Set(ys.map(Math.round))].length;
@@ -124,7 +124,7 @@ const STATE = () => {
       await c.close();
     }
   }
-  // fast flicks (review, door finish): the jump rule is the scroll's own change in a frame, never its distance from r,
+  // fast flicks (since the door finish): the jump rule is the scroll's own change in a frame, never its distance from r,
   // so a fast flick (1500-3500 px/s, a mouse-driven gesture) never cuts the walk-in ahead in one frame. Every frame after
   // the driver wrote it: the largest step of r is at most 0.15 (or the scroll's own largest step in a frame, where that is
 // more), and r never jumps to p with a step over 0.1 beyond the scroll's own.
@@ -151,7 +151,7 @@ const STATE = () => {
   }
   // the colour hand-off, in both themes and on every aspect ratio: the whole frame is --color-hall (list content and
   // footer text excepted) from the moment the screen is one colour (p = flat) to the end, and with the seam on screen.
-  // Then the same on the 3D path (?3d=force; review, door finish), walked in by wheel so the canvas has drawn before the
+  // Then the same on the 3D path (?3d=force), walked in by wheel so the canvas has drawn before the
   // flat colour, at 390 x 844, 844 x 390 and 1440 x 900, Dia and Noite, each frame read once r has caught up with p;
   // under the flat colour the canvas and the photograph's layers are both hidden.
   const b3 = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
@@ -213,7 +213,7 @@ const STATE = () => {
   console.log("cta", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);
 })();
 
-// First-screen geometry and the identity in the DOM (review of the identity round: the board's lockup is taller per em
+// First-screen geometry and the identity in the DOM (the vertical lockup is taller per em
 // than the old one, and where the text column sets the stage's row (short split windows, landscape phones) the
 // photograph grew with it and the cue left the screen, and no test noticed). At each size below, on a first visit (no
 // stored theme, the clock at noon in Torres Vedras, so the theme is Dia and the sun note shows; PT), .scene, .entrance,
@@ -224,7 +224,7 @@ const STATE = () => {
 // Then, on every page (home PT and EN, privacy PT and EN, 404): one crest (svg.crest), aria-hidden and not focusable;
 // the drawn wordmark aria-hidden; the lockup reads «A Brazileira» then «Boutique Hotel», and nothing of Torres Vedras;
 // on the home pages the h1 is the lockup and its accessible name starts «A Brazileira»; no <img> and no CSS background
-// anywhere names the identity board or a raster of the crest (the crest is drawn inline, never the board's bitmap).
+// anywhere names the identity's source images or a raster of the crest (the crest is drawn inline, never a bitmap).
 // GEO_ONLY=1 runs this part alone; GEO_WRITE=1 prints the measured table (to refresh the stored values).
 const GEO = {
   // size: [scene x, y, w, h], [entrance], [cta], cue icon [x, y, w, h] or null (not shown)
