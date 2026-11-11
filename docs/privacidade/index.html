@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}catch(e){}r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}r.setAttribute("data-theme",t)})(document.documentElement)</script>
+<script>(function(r){var n=Date.now(),p,s,t;r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};p=r.__sol(n)?"dia":"noite";try{s=sessionStorage.getItem("ab-tema").split("|")}catch(e){s=[]}if((s[0]==="dia"||s[0]==="noite")&&s[1]===p&&n<s[2])t=s[0];else{t=p;r.setAttribute("data-sol","")}r.setAttribute("data-theme",t)})(document.documentElement)</script>
 <title>Nota de privacidade · A Brazileira</title>
 <meta name="description" content="Como A Brazileira trata os dados da lista de espera.">
 <link rel="canonical" href="https://abrazileira.com/privacidade/">
@@ -22,8 +22,8 @@
 <link rel="preload" href="../assets/fonts/eb-garamond-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/eb-garamond-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../assets/css/tokens.5e5f3f506e.css">
-<link rel="stylesheet" href="../assets/css/site.1460769c48.css">
-<script src="../assets/js/site.8df893736f.js" defer></script>
+<link rel="stylesheet" href="../assets/css/site.27d4fecd38.css">
+<script src="../assets/js/site.00b82e53df.js" defer></script>
 </head>
 <body class="page-notice">
 <a class="skip" href="#conteudo">Saltar para o conteúdo</a>

@@ -18,7 +18,7 @@
 // The same tolerance in the photograph's ungained levels; still caught by night: a 1px ring of 3% black (2.8), a
 // 16px soft one of 5% (1.8).
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 900000);
-const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
+const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js"), choose = require("./theme.js");
 const [, , dir] = process.argv;
 const LIMIT = 0.6, GAIN = 1.85, lim = (theme) => theme === "noite" ? LIMIT * GAIN : LIMIT;
 const VP = [[375, 667, 2], [390, 844, 3], [430, 932, 3], [768, 1024, 2], [1440, 900, 1], [1920, 1080, 1], [2560, 1440, 1]];
@@ -47,7 +47,7 @@ function hpmax(p) {
     const mob = w < 900 && w < h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mob, hasTouch: mob });
     const pg = await ctx.newPage(); await serve.offline(pg);
-    await pg.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, theme);
+    await choose(pg, theme, dir);
     await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1500);
     for (const f of [0, 0.2]) {
       if (f) { await pg.evaluate((y) => window.scrollTo(0, y), Math.round(h * f)); await pg.waitForTimeout(1200); }

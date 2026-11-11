@@ -30,8 +30,11 @@ module.exports.offline = (page) => page.route("**/*", (rt) => {
 // stylesheet the page loads is served with the viewport units fixed in px, as iOS resolves them: svh the small viewport
 // (bars shown), lvh and vh the large one (bars hidden), dvh the one in use now. Give the page a viewport as tall as the
 // visible area (bars shown: svh; hidden: lvh), so innerHeight is what the iPhone reports. Call after offline().
-module.exports.ios = (page, svh, lvh, dvh) => {
+// safe (optional): the safe-area insets in px, { top, right, bottom, left } (a notched iPhone in landscape: 47-59 left
+// and right, 21 bottom), written in place of env(safe-area-inset-*), which headless Chromium resolves to 0.
+module.exports.ios = (page, svh, lvh, dvh, safe) => {
   const px = (u, v) => (css) => css.replace(new RegExp("(?<![\\w.-])(-?\\d*\\.?\\d+)" + u + "\\b", "g"), (m, n) => `calc(${n} * ${v / 100}px)`);
-  const fix = (css) => [px("svh", svh), px("lvh", lvh), px("dvh", dvh), px("vh", lvh)].reduce((t, f) => f(t), css);
+  const env = (css) => safe ? css.replace(/env\(\s*safe-area-inset-(top|right|bottom|left)\s*(?:,[^)]*)?\)/g, (m, k) => `${safe[k] || 0}px`) : css;
+  const fix = (css) => [px("svh", svh), px("lvh", lvh), px("dvh", dvh), px("vh", lvh), env].reduce((t, f) => f(t), css);
   return page.route(/\.css(\?|$)/, async (rt) => { const r = await rt.fetch(); return rt.fulfill({ response: r, body: fix(await r.text()) }); });
 };

@@ -18,20 +18,30 @@
   for (ki = 0; ki < PRESS.length; ki++) window.addEventListener(PRESS[ki], function () { keyed = false; }, { capture: true, passive: true });
 
   /* ---------------------------------------------------------------- 1. Dia / Noite
-     The head script has already set data-theme: the visitor's stored choice; otherwise the sky over Torres
-     Vedras (then data-sol is set, and a short line under the control says so: «É noite em Torres Vedras.»).
-     The system's dark mode only decides without JavaScript (CSS). */
+     The head script has already set data-theme: the sky over Torres Vedras, on every visit (then data-sol is set,
+     and a short line under the control says so: «É noite em Torres Vedras.»), unless the visitor chose a theme
+     earlier in this visit and the sun has not risen or set since. The system's dark mode only decides without
+     JavaScript (CSS). */
   (function () {
     var group = document.querySelector("[data-theme-switch]"),
       dark = window.matchMedia("(prefers-color-scheme: dark)"),
       KEY = "ab-tema",
       sol = root.__sol,
-      picked = false,
+      mine = null,       /* this visit's choice: [theme, the sky when it was made, the end of that day or night (ms)] */
       timer, solT;
     if (!group) return;
     var buttons = group.querySelectorAll("[data-theme-set]"),
       note = document.getElementById("sol-note");
-    try { var s0 = localStorage.getItem(KEY); picked = s0 === "dia" || s0 === "noite"; } catch (e) {}
+    /* A choice lasts for the visit (sessionStorage: reloads and the other pages of the tab) and only until the sun
+       next rises or sets; then, and on any later visit, the sky decides again. The head script has already checked
+       it: the one it honoured is taken up here, a lapsed one is dropped, and so is the key earlier builds kept in
+       localStorage (a choice for good: a visitor who once pressed Dia got Dia at night on every later visit). */
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    try {
+      var s0 = (sessionStorage.getItem(KEY) || "").split("|");
+      if (!root.hasAttribute("data-sol") && s0[0] === root.getAttribute("data-theme")) mine = [s0[0], s0[1], +s0[2]];
+      else sessionStorage.removeItem(KEY);
+    } catch (e) {}
 
     function current() {
       var t = root.getAttribute("data-theme");
@@ -39,6 +49,8 @@
     }
     /* the theme of a visitor who has not chosen: the sky over the house */
     function free(now) { return sol(now) ? "dia" : "noite"; }
+    /* minutes to the next sunrise or sunset (1441: none within a day) */
+    function turn(now) { var up = sol(now), m; for (m = 1; m <= 1440 && sol(now + m * 60000) === up; m++); return m; }
     function sync() {
       var t = current(), i, told = root.hasAttribute("data-sol") && note;
       for (i = 0; i < buttons.length; i++) {
@@ -61,10 +73,11 @@
     function apply(t, keep, sky) {
       root.classList.add("is-instant");
       root.setAttribute("data-theme", t);
-      if (keep) {                         /* a choice: it wins over the sky from now on, and is remembered */
-        picked = true;
+      if (keep) {                         /* a choice: it wins over the sky for this visit, until the sun next rises or sets */
+        var now = Date.now();
+        mine = sol ? [t, free(now), now + turn(now) * 60000] : [t, "", now + 864e5];
         root.removeAttribute("data-sol");
-        try { localStorage.setItem(KEY, t); } catch (e) {}
+        try { sessionStorage.setItem(KEY, mine.join("|")); } catch (e) {}   /* blocked storage: it still holds for this page */
       } else if (sky !== undefined) {
         if (sky) root.setAttribute("data-sol", ""); else root.removeAttribute("data-sol");
       }
@@ -109,23 +122,44 @@
       if (t === current()) return;        /* the theme already shown: nothing to choose, nothing is stored */
       swap(t, true);
     });
-    /* Torres Vedras time: until the visitor chooses, the page keeps the sky over the house (head script). If
-       the sun rises or sets while the page is open, the lamps come on (or go out) with a slow cross-fade, once,
-       at that minute; while the sequence is moving it waits until the page rests. A tab coming back from the
-       background catches up at once. */
+    /* Torres Vedras time: unless the visitor chose in this day or night, the page keeps the sky over the house
+       (head script). If the sun rises or sets while the page is open, the lamps come on (or go out) with a slow
+       cross-fade, once, at that minute, and a choice made before it lapses (the page then shows what a reload would);
+       while the sequence is moving it waits until the page rests. A tab coming back from the background catches up
+       at once. */
     function sky() {
       clearTimeout(solT);
-      if (picked || !sol) return;
-      var now = Date.now(), t = free(now), up, m;
-      if (t !== current() || !root.hasAttribute("data-sol")) {
+      if (!sol) return;
+      var now = Date.now(), t = free(now), m;
+      if (mine && (mine[1] !== t || !(now < mine[2]))) {   /* the sun has risen or set since the choice */
+        mine = null;
+        try { sessionStorage.removeItem(KEY); } catch (e) {}
+      }
+      if (!mine && (t !== current() || !root.hasAttribute("data-sol"))) {
         if (root.__portaBusy && root.__portaBusy()) { solT = setTimeout(sky, 700); return; }
         if (t !== current()) swap(t, false, true); else apply(t, false, true);
       }
-      up = sol(now);
-      for (m = 1; m <= 1440 && sol(now + m * 60000) === up; m++);   /* the next sunrise or sunset, to the minute */
+      m = turn(now);                      /* the next sunrise or sunset, to the minute */
       if (m <= 1440) solT = setTimeout(sky, m * 60000 - (now % 60000) + 500);
     }
     document.addEventListener("visibilitychange", function () { if (!document.hidden) sky(); });
+    /* Back to this page from the browser's back/forward cache (a swipe back in Safari): the page does not start again,
+       so the head script's rule is applied here to what the visit holds now. A choice made on another page of the
+       visit since this one was shown is taken up (at once, no cross-fade: the page is being shown again, not
+       changed); without a valid choice, the sky decides (sky()). */
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted || !sol) return;
+      var s = [], now = Date.now();
+      try { s = (sessionStorage.getItem(KEY) || "").split("|"); } catch (er) {}
+      if ((s[0] === "dia" || s[0] === "noite") && s[1] === free(now) && now < +s[2]) {
+        mine = [s[0], s[1], +s[2]];
+        if (s[0] !== current() || root.hasAttribute("data-sol")) apply(s[0], false, false);
+      } else {
+        mine = null;
+        try { sessionStorage.removeItem(KEY); } catch (er) {}
+      }
+      sky();
+    });
     group.hidden = false;
     sync();
     sky();
@@ -261,6 +295,7 @@
       cue = $(".porta__cue"),
       list = document.getElementById("lista"), reveal = list && list.querySelector("[data-reveal]"),
       rv = function (s) { return (reveal && reveal.querySelector(s)) || document.createElement("i"); },
+      foot = document.querySelector(".foot"), footLink = foot && foot.querySelector(".foot__link"), footOut = false,
       shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false,
       held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1, box3 = null;
     probe.className = "porta__probe";
@@ -312,9 +347,13 @@
                rising over a photograph the smoothing has not caught up with.
        The list (LIST) reads r, so it never shows before the light (which reads max(r, p - LAG)). Its words begin at
        r 0.645, with the light at 0.80: for the last 0.015 of progress before the screen is one colour, up to a fifth of
-       the hall still shows through under them (the title at 0.39 when the light is whole, r 0.66). */
+       the hall still shows through under them (the title at 0.39 when the light is whole, r 0.66).
+       The footer (FOOT) on landscape phones stands beside the form, out of the flow at the page's foot (site.css), so it
+       scrolls into the last screen while the camera is still walking in: there it reads r too and is held at opacity 0,
+       with no pointer target, until the screen is one colour (r 0.66), then fades in and is whole with the form
+       (0.87). Elsewhere it follows the list in the flow and is never held (footOut, measured with the geometry). */
     var DOOR = [0, 0.34], PAN = [0, 0.28], CENTRE = [0.32, 0.5], KX = [0.01, 0.34, 0.54, 0.66], LIGHT = [0.52, 0.66],
-      COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
+      COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3, FOOT = 4,
       lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
     var T = [
       [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
@@ -332,7 +371,9 @@
          empty field on it) and settle one after the other: the stagger is in how long each takes */
       [rv(".lista__title"), 0.645, 0.8, E.rise, lift(1), LIST],
       [rv(".lista__lede"), 0.65, 0.83, E.rise, lift(1), LIST],
-      [rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST]
+      [rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST],
+      /* the footer beside the form (landscape phones): held until the screen is one colour, whole with the form */
+      [foot || document.createElement("i"), COVER_AT, 0.87, E.rise, function (u) { return [u, null]; }, FOOT]
     ];
     /* The camera: the hall point travels to the centre of the screen while the text leaves, and the walk-in scales
        the scene around it. Scale is geometric (constant perceived speed); the hall point moves on a straight line.
@@ -452,6 +493,8 @@
       pin = r.top + window.pageYOffset;
       run = Math.max(1, natural - stick);
       mw = vw; mh = vh;
+      /* the footer out of the flow, beside the form (landscape phones): held with the list (FOOT, render()) */
+      footOut = !!foot && getComputedStyle(foot).position === "absolute";
     }
     function target() {
       var y = window.pageYOffset;
@@ -475,6 +518,7 @@
       }
       if (r <= 0 && p <= 0) {           /* exact rest: the CSS state, nothing inline */
         for (i = 0; i < T.length; i++) { s = T[i][0].style; s.opacity = ""; s.transform = ""; s.pointerEvents = ""; }
+        if (footLink) footLink.style.pointerEvents = "";
         scene.style.transform = "";
         plate.style.transform = "";
         draw3d(0, 0);
@@ -485,6 +529,10 @@
         q = t[5] === TEXT ? Math.min(r, p) : t[5] === COVER ? Math.max(r, p - LAG) : r;
         s = t[0].style;
         if (t[5] === TEXT && q <= 0) { s.opacity = ""; s.transform = ""; s.pointerEvents = ""; continue; }   /* back at rest */
+        if (t[5] === FOOT && !footOut) {    /* the footer in the flow, under the list: never held */
+          if (s.opacity) { s.opacity = ""; if (footLink) footLink.style.pointerEvents = ""; }
+          continue;
+        }
         v = t[4](t[3](clamp((q - t[1]) / (t[2] - t[1]))));
         if (v[0] !== null) s.opacity = v[0] <= 0 ? "0" : v[0] >= 1 ? "1" : v[0].toFixed(4);
         if (v[1] !== null) s.transform = v[1];
@@ -492,6 +540,7 @@
            shows (focus still reaches both: see the focusin handlers) */
         if (t[5] === TEXT) s.pointerEvents = v[0] < 0.5 ? "none" : "";
         else if (t[5] === LIST) s.pointerEvents = v[0] < 0.5 ? "none" : "auto";
+        else if (t[5] === FOOT && footLink) footLink.style.pointerEvents = v[0] < 0.5 ? "none" : "";   /* only its link takes a tap (site.css) */
       }
       scene.style.transform = low ? "none" : camAt(r);
       /* the hall beyond: zoom^kp in all, so it gets zoom^(kp - 1) inside the camera */
@@ -1404,12 +1453,30 @@
           msg.appendChild(a);
           msg.appendChild(document.createTextNode(parts.slice(1).join("")));
         }
+        fit();
       }, 60);
     }
     function idle() {
       busy = false;
       form.removeAttribute("aria-busy");
       button.removeAttribute("aria-disabled");
+    }
+    /* Landscape phones (the list in two columns, site.css): the block fills the screen where the scroll stops, so the
+       messages of a failed check, or the error under the button, push the button (and, as the page grows, the footer
+       beside it) under the screen's edge, while nothing above them moves. Once they are shown, the page moves up by
+       just that much: the button's foot (or the error's) as far above the edge as the list keeps under its block, or,
+       where the longer block no longer fits with that air, an equal share of what is left above and below; never past
+       the field's own top, so the field stays whole. The page's end moves down with the button, so the room is there.
+       Read once, after the change; elsewhere (one column) the messages lengthen the form downwards and nothing moves. */
+    var lista = form.closest(".lista"), inner = lista && lista.querySelector(".lista__inner");
+    function fit() {
+      if (!inner || getComputedStyle(inner).display !== "grid") return;
+      var vh = window.innerHeight, g = parseFloat(getComputedStyle(lista).paddingBottom) || 0,
+        top = form.getBoundingClientRect().top, field = email.getBoundingClientRect().top,
+        end = Math.max(button.getBoundingClientRect().bottom, msg.textContent ? msg.getBoundingClientRect().bottom : 0),
+        air = Math.max(0, Math.min(g, (vh - (end - top)) / 2)),
+        d = Math.min(Math.ceil(end - (vh - air)), Math.floor(field));
+      if (d > 0) window.scrollBy(0, d);
     }
 
     email.addEventListener("input", function () {
@@ -1425,7 +1492,7 @@
       msg.textContent = "";
       state("idle");
       var bad = validate();
-      if (bad.length) { bad[0].focus(); return; }
+      if (bad.length) { bad[0].focus(); fit(); return; }
       if (hp.value) { done(); return; }          /* a bot filled the hidden field: pretend, send nothing */
       busy = true;
       state("sending");
@@ -1446,8 +1513,8 @@
         if (r.status !== 400) return fail();
         return r.json().then(function (j) {
           var m = j && j.message;
-          if (m === "invalid_email") { state("idle"); mark(email, emailMsg, d.msgEmail); email.focus(); }
-          else if (m === "consent_required") { state("idle"); mark(consent, consentMsg, d.msgConsent); consent.focus(); }
+          if (m === "invalid_email") { state("idle"); mark(email, emailMsg, d.msgEmail); email.focus(); fit(); }
+          else if (m === "consent_required") { state("idle"); mark(consent, consentMsg, d.msgConsent); consent.focus(); fit(); }
           else fail();
         }, fail);
       }, fail).then(function () { clearTimeout(timer); idle(); }, function () { clearTimeout(timer); idle(); fail(); });
@@ -1496,7 +1563,7 @@
       var b = inner && form && (form.getAttribute("data-state") || "idle") === "idle" && !form.querySelector(".field__msg:not([hidden])") ? inner.offsetHeight + "px" : lb,
         f = foot ? foot.offsetHeight + "px" : lf;
       if (list.style.paddingBlockStart) list.style.paddingBlockStart = "";
-      if (b !== lb) list.style.setProperty("--lista-b", (lb = b));
+      if (b !== lb) { list.style.setProperty("--lista-b", (lb = b)); if (foot) foot.style.setProperty("--lista-b", b); }   /* the footer too: on landscape phones it ends level with the block (site.css) */
       if (f !== lf) list.style.setProperty("--foot-h", (lf = f));
       if (focused) keep(); else kept = { w: w, top: "" };
     }

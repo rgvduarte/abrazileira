@@ -1125,6 +1125,107 @@ picture.t-noite { display: var(--t-noite); }
   .porta__band { padding-block: var(--space-2) max(var(--space-2), env(safe-area-inset-bottom)); column-gap: var(--space-6); }
 }
 
+/* The waiting list on landscape phones (up to 500px tall and from 560px wide: 844 x 390, 932 x 430, 812 x 375,
+   667 x 375, 568 x 320, and about 50px less with Safari's bars shown). Stacked, the block (title to button) was 360px
+   (411px in English) and the footer 68px: together taller than the screen, so the page went on past the run and a
+   flick to its end showed the footer under the block, the title cut by the top. Here the list takes two columns: its
+   name and sentence on the left, the form on the right, a step tighter (the consent 16px under the field, the button
+   24px under the consent); and the footer stands at the foot of the left column, in the room the form leaves under the
+   sentence, its last line level with the button's foot. So the end screen holds the block alone (229-254px), and it
+   stands in the middle of what the visitor sees where the scroll stops. Without JavaScript the footer stays under
+   the list. */
+@media (orientation: landscape) and (max-height: 31.25em) and (min-width: 35em) {
+  :root {
+    --lista-w: 52rem;                                          /* both columns together */
+    --lista-form: min(var(--measure-form), 56%);               /* the form's column: 26rem where there is room */
+    --lista-cg: clamp(var(--space-5), 6%, var(--space-8));     /* between the columns */
+    --lista-end: max(var(--space-4), env(safe-area-inset-bottom));   /* under the block, at the page's foot */
+  }
+  .lista__inner {
+    inline-size: min(100%, var(--lista-w));
+    display: grid;
+    grid-template-columns: minmax(min-content, 1fr) minmax(0, var(--lista-form));   /* the name on one line */
+    grid-template-rows: auto auto 1fr;
+    column-gap: var(--lista-cg);
+    align-items: start;
+  }
+  .lista__title { grid-area: 1 / 1; text-align: start; white-space: nowrap; margin-inline-end: 0; }
+  .lista__lede { grid-area: 2 / 1; margin-inline: 0; text-align: start; }
+  .lista .form { grid-column: 2; grid-row: 1 / -1; margin-block-start: 0; }
+  .lista__noscript { grid-column: 2; }
+  .lista .check { margin-block-start: var(--space-4); }
+  .lista .button { margin-block-start: var(--space-5); }
+  .lista .form__msg { text-align: start; }   /* the thank-you and the error read from the form's own left edge */
+  /* a failed check: each message 4px under its control (8 stacked), and 8px taken back from the step after it (the
+     consent 8px under the email's message, the button 16px under the consent's; 4 and 8px under 300px tall: its
+     negative foot margin collapses into theirs), so the two messages lengthen the form by 42px, not 66 (67px, not 91,
+     where the consent's takes two lines); what still goes under the screen's edge is brought into view by site.js
+     (section 3, fit()) */
+  .lista .field__msg { margin-block: var(--space-1) calc(-1 * var(--space-2)); }
+
+  /* the footer at the foot of the left column (site.js ran: it measures the block): out of the flow, held to the
+     page's foot, so the page ends with the list; transparent, and only its link takes a tap, so the form beside it is
+     untouched; name, town and link on a line each, from the list's left edge. The left column keeps their room under
+     the sentence (two lines and the link's 44px target) and 24px above it. */
+  :root[data-sequence] .home { position: relative; }
+  :root[data-sequence] .home > .foot {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    padding-block: 0 max(var(--lista-end), calc(var(--lista-h) - var(--lista-top) - var(--lista-b, 30rem)));
+    background: none;
+    text-align: start;
+    pointer-events: none;
+  }
+  :root[data-sequence] .home > .foot > p { inline-size: min(100%, var(--lista-w)); margin-inline: auto; display: grid; justify-items: start; }
+  :root[data-sequence] .home > .foot :is(.foot__dot, .foot__sep) { display: none; }
+  :root[data-sequence] .home > .foot .foot__link { pointer-events: auto; }
+  :root[data-sequence] .lista__inner::after {
+    content: "";
+    grid-area: 3 / 1;
+    block-size: calc(2 * var(--size-ui) * var(--leading-text) + var(--target) + var(--space-5));
+  }
+  /* where the block stands (the padding above it), worked out alike on the list and on the footer, so the footer's
+     last line ends where the block does. Without the sequence (reduced motion): in the middle of the small viewport,
+     between the safe areas, as on every other screen. With it: the end screen is the list's last large viewport and
+     nothing follows it, so the block stands in the middle of what the visitor sees at the page's end (the dynamic
+     viewport, between the safe areas; dvh = lvh = svh off iOS), never closer than --lista-end to the page's foot; a
+     block taller than that starts 16px from the top. With Safari's bars shown the page ends 50px after the run, and
+     that is where the scroll stops (a finger's scroll hides the bars and ends at the run's end, the hero action and
+     #lista land at the page's end): the middle is kept for that screen. */
+  :root[data-sequence="static"] :is(.lista, .home > .foot) {
+    --lista-h: 100vh;
+    --lista-top: max(var(--space-4), env(safe-area-inset-top), calc((100vh - var(--lista-b, 30rem)) / 2));
+  }
+  :root[data-sequence="scroll"] :is(.lista, .home > .foot) {
+    --lista-h: 100vh;
+    --lista-top: max(var(--space-4), env(safe-area-inset-top),
+      min(calc((100vh - var(--lista-b, 30rem)) / 2), calc(100vh - var(--lista-b, 30rem) - var(--lista-end))));
+  }
+  @supports (height: 100dvh) {
+    :root[data-sequence="static"] :is(.lista, .home > .foot) {
+      --lista-h: 100svh;
+      --lista-top: max(var(--space-4), env(safe-area-inset-top),
+        calc((100svh - var(--lista-b, 30rem) + env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2));
+    }
+    :root[data-sequence="scroll"] :is(.lista, .home > .foot) {
+      --lista-h: 100lvh;
+      --lista-top: max(var(--space-4), env(safe-area-inset-top),
+        min(calc(100lvh - (100dvh + var(--lista-b, 30rem) - env(safe-area-inset-top) + env(safe-area-inset-bottom)) / 2),
+          calc(100lvh - var(--lista-b, 30rem) - var(--lista-end))));
+    }
+  }
+  :root[data-sequence] .lista { padding-block: var(--lista-top) var(--lista-end); }
+  .porta-on .lista { min-block-size: var(--lista-h); }
+}
+/* the shortest of them (568 x 320 with Safari's bars: 270px): the form's steps tighter again (4, 12 and 16px), so
+   the block (238px) fits with 16px clear above and below */
+@media (orientation: landscape) and (max-height: 18.75em) and (min-width: 35em) {
+  .lista .field__label { margin-block-end: var(--space-1); }
+  .lista .check { margin-block-start: var(--space-3); }
+  .lista .button { margin-block-start: var(--space-4); }
+}
+
 /* Short portrait phones (320 x 568-640): tighter rhythm; the page may scroll. */
 @media (orientation: portrait) and (max-height: 42.5em) {
   /* the same intervals, in proportion: pair 8, apart 12, break 24-29, air 20 */

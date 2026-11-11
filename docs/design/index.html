@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}catch(e){}r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}r.setAttribute("data-theme",t)})(document.documentElement)</script>
+<script>(function(r){var n=Date.now(),p,s,t;r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};p=r.__sol(n)?"dia":"noite";try{s=sessionStorage.getItem("ab-tema").split("|")}catch(e){s=[]}if((s[0]==="dia"||s[0]==="noite")&&s[1]===p&&n<s[2])t=s[0];else{t=p;r.setAttribute("data-sol","")}r.setAttribute("data-theme",t)})(document.documentElement)</script>
 <title>Sistema de design · A Brazileira</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/css/tokens.5e5f3f506e.css">
-<link rel="stylesheet" href="../assets/css/site.1460769c48.css">
+<link rel="stylesheet" href="../assets/css/site.27d4fecd38.css">
 <style>
 body { display: block; font-size: var(--size-ui); }
 .sg { max-inline-size: var(--container); margin-inline: auto; padding: var(--space-7) max(var(--gutter), env(safe-area-inset-left)) var(--space-9); }
@@ -219,7 +219,7 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 </ul>
 
 <h2>Dia e Noite</h2>
-<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, até o visitante escolher, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite guarda a escolha, que passa a valer sempre; tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
+<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, em cada visita, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite vale para o resto da visita, até ao próximo nascer ou pôr do sol; a visita seguinte volta a seguir o céu. Tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
 <div class="sg-panels">
 <section class="sg-panel" data-theme="dia" aria-label="Dia">
 <p class="sg-tag">Dia</p>

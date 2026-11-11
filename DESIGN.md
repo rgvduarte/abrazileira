@@ -329,11 +329,12 @@ words).
 
 **Dia** is that doorway in daylight on its own plaster. **Noite** is the same photograph relit for the night
 (its own files, not a filter): a deep dusk wall that falls away into the night ground, the lantern lit with a warm
-pool on the stone, lamplight in the door gap and on the step tops, the fanlight a blue-hour sky. Until the visitor
-chooses, the page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
+pool on the stone, lamplight in the door gap and on the step tops, the fanlight a blue-hour sky. On every visit the
+page keeps the hour of the house: Dia while the sun is up over Torres Vedras, Noite after sunset, so the
 lantern is lit when it really is, and one short line under the control says so, on every screen («É noite em
 Torres Vedras.»). The system's dark mode does not override the sky (it is not a choice made on this site);
-without JavaScript the system theme decides. The Dia · Noite control overrides it and remembers the choice.
+without JavaScript the system theme decides. The Dia · Noite control overrides it for the rest of the visit, until
+the sun next rises or sets; the next visit opens on the sky again.
 
 Scrolling is the one journey on the page, and it is short: about one screen from the top to a readable form
 (one decisive swipe on a phone). The doors swing inwards from the first pixel, the camera walks in through the
@@ -825,14 +826,59 @@ crest now carrying the block's weight, the line → sentence gap still reads as 
   in the middle of the screen at the page's end in both. Where the footer does not fit under the centred block with
   32px clear (320 × 568, 375 × 667, an iPhone SE), the block stands that gap above the footer, the title on screen
   (375 × 667: 19px above the middle; the page went on 51px before, 100px at 320 × 568, the title cut by the top). Only
-  a block and footer taller than the screen together lengthen the section (844 × 390: 360 + 68px, 411px in English):
-  the page goes on 69px (121px in English; 117 and 169 before) and its end shows the footer under the block's lower
-  part; the run's end is its rest position (the block 16px from the top). The hero action, `#lista` and Tab land on
+  a block and footer taller than the screen together lengthen the section (very large text); the run's end is then
+  its rest position (the block 16px from the top). The hero action, `#lista` and Tab land on
   that rest position (site.js `rest()`: the page's end when the list closes within the run's last screen, else the
   list's top). Its first screen is transparent (the stage behind it is the same flat colour) and its own colour starts
   exactly at the bottom of the stage. Its words are held at opacity 0, with no pointer target, until the screen is one
-  colour (site.js). Home page document: 1.95 screens at 390 × 844 (2.09 before 9 Nov evening), 1.95 at 1440 × 900
-  (2.03), 2.14 at 844 × 390 (2.26 on 9 Nov evening, 2.43 before), 1.95 at 320 × 568 (2.13, 2.21).
+  colour (site.js; on landscape phones the footer beside the form too). Home page document: 1.95 screens at 390 × 844 (2.09 before 9 Nov evening), 1.95 at 1440 × 900
+  (2.03), 1.95 at 844 × 390 (2.14 with the stacked list, 2.26 on 9 Nov evening, 2.43 before), 1.95 at 320 × 568
+  (2.13, 2.21).
+- **Waiting list on landscape phones** (`(orientation: landscape) and (max-height: 31.25em) and (min-width: 35em)`:
+  844 × 390, 932 × 430, 812 × 375, 667 × 375, 568 × 320, and about 50px less with Safari's bars shown). Stacked, the
+  block was 360px (411px in English) and the footer 68px: together taller than the screen, so the page went on past
+  the run (69px; 121px in English; with Safari's bars 120 / 171px) and its end showed the footer under the block with
+  «Lista de espera» cut by the top. There the list takes two columns in a 52rem measure: the name and the sentence on
+  the left (start-aligned, the name on one line: the column is never narrower than it), the form on the right
+  (min(26rem, 56%)), 24–64px apart (6%); the title's top on the field label's. The form is a step tighter: the
+  consent 16px under the field (24 stacked), the button 24px under the consent (32); under 300px tall (568 × 320 with
+  the bars) 4 / 12 / 16px. The field and the button keep 48px, the field's text 19px, the checkbox its 44px target;
+  the thank-you and the error start at the form's left edge. The footer leaves the flow and stands at the foot of
+  the left column, in the room the form leaves under the sentence (the column keeps two lines, the link's 44px and
+  24px above them for it): name, town and link on a line
+  each from the list's left edge, its link's box ending level with the button's foot (both labels centred in their
+  boxes, so «Privacidade» reads on the button's line). It is transparent and only its link takes a tap, so the form
+  beside it is never covered. So the end screen holds the block alone: 229px (254px in English, and at 667 and
+  568px wide, where the consent takes three lines; 238px under 300px tall), and the page ends with the run (bars
+  hidden) or the bars' height after it (bars shown), the block in the middle of what is seen between the safe areas.
+  Measured (`src/tests/list.test.js` L): at the page's end, the run's end, after the hero action's flight and on
+  `#lista`, the block whole and within 0.5px of that middle at every size listed, in both languages, with the bars
+  shown and hidden (iPhone emulation with the notched phones' safe areas: 47 / 59 / 44px at the sides, 21px below);
+  the footer's lines clear of the block's words. With the bars shown, the run's end is not a rest (the page goes on
+  50px and the scroll that hides the bars ends at the page's end), so there the block is placed for the page's end:
+  at the run's end its foot is then under the screen's edge by 4px at 812 × 325 in English, 14px at 667 × 325 and
+  33px at 568 × 270 (whole at 844 × 340 and 932 × 380). Reduced motion (`data-sequence="static"`): the same two
+  columns and footer, the block in the middle of the small viewport. Without JavaScript the footer stays under the
+  list (two columns, the stacked rules).
+  During the walk-in the footer, out of the flow at the page's foot, scrolls into the last screen before the screen
+  is one colour (its lines are on screen 49px of scroll before the flat moment at 844 × 390, 33px at 667 × 375), so it
+  is held with the list (site.js, the timeline's `FOOT` row, only while it is out of the flow): opacity 0 and no tap
+  on its link until the screen is one colour (r 0.66), then it fades in where it stands and is whole with the form
+  (0.87). Before, it passed fully drawn over the zooming door and stood there while the list's name and sentence
+  were still faint. On portrait screens, where it follows the list in the flow, it is never held.
+  A failed check: each message stands 4px under its control (8 stacked) and takes 8px back from the step after it
+  (a negative foot margin that collapses into the consent's and the button's), so the two messages lengthen the form
+  by 42px, not 66 (67px, not 91, where the consent's takes two lines); and where the button (or the error under it)
+  still goes under the screen's edge, site.js (`fit()`, section 3) moves the page up by just that much once the
+  messages are shown: the button's foot as far above the edge as the list's foot air (16px, or the bottom safe area),
+  or an equal share of what is left where the longer block no longer fits with that air, never past the field's top
+  (the page's end moves down with the button, so the room is there). Before, where the scroll stops the button went under the
+  edge by 12px at 844 × 340 in English, 30px at 667 × 325 and 49 / 74px at 568 × 270 (the footer cut there too).
+  Now the field and the button are whole on screen at eleven landscape iPhone sizes (568 to 956px wide, bars shown
+  and hidden, PT and EN: 43 of 44), all but 568 × 270 in English, where the form from the field to the button
+  (276px) is taller than the screen: there the field is whole at the top and the button's label on screen, its
+  foot 6px under the edge. In one column (every other screen) the messages lengthen the form
+  downwards and nothing moves.
 - **Privacy notice**: top bar, the lockup at its 30px minimum as a home link, a 40rem reading column, footer.
 - **Very short portrait screens** (up to 600px tall: 320 × 568, iPhone SE in Safari 375 × 553): the lockup at its
   30px minimum, 12px above the lede, no scroll cue, and the photograph takes the height that is left, so the whole
@@ -849,7 +895,8 @@ between them; the hall has a title, a sentence and the form.
    none on screens from 900 × 600, where the crest is far below). From 900px its inline padding follows the 86rem container, so on very wide screens
    the controls line up with the composition, not the window's edges.
 2. `main`: the door sequence (`.porta`: a sticky stage with the first screen inside) and `#lista`.
-3. Footer on the hall: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade».
+3. Footer on the hall: «© 2026 A Brazileira · Torres Vedras, Portugal · Privacidade» (on landscape phones, at the
+   foot of the list's left column: Layout › Waiting list on landscape phones).
 Nothing else: no address, date, rooms, people, prices or social links.
 
 ## Elevation & depth
@@ -887,14 +934,22 @@ case, muted colour, 44 × 44px minimum.
   for the language. Forced colours: the tick is a border, so it stays visible.
 
 **`theme switch`** (Dia · Noite / Day · Night): two real buttons in `role="group"`; hidden without JS.
-A head script sets `data-theme` before the first paint (no flash): the stored choice
-(`localStorage["ab-tema"]`) if there is one; otherwise the sky over Torres Vedras now (Torres Vedras time, see
-A distinctive touch), marked `data-sol` and never stored. The system's dark mode is not consulted when
-JavaScript runs (see Dia & Noite › The system's dark mode). A click on the other theme stores the choice, which
-wins from then on; tapping the theme already shown does nothing (nothing is stored, the sky keeps deciding).
+A head script sets `data-theme` before the first paint (no flash), on every visit: the sky over Torres Vedras now
+(Torres Vedras time, see A distinctive touch), marked `data-sol` and never stored; the one exception is a choice made
+on the control earlier in the same visit, while the sun is still on the same side of the horizon. The system's dark
+mode is not consulted when JavaScript runs (see Dia & Noite › The system's dark mode). A click on the other theme
+keeps the choice for the visit, in `sessionStorage["ab-tema"]` as `<theme>|<the sky then>|<the end of that day or
+night, ms>`: reloads and the other pages of the tab keep it, until the sun next rises or sets; then, and on any later
+visit (a new tab, the browser reopened), the sky decides again. The key earlier builds kept in `localStorage` (a
+choice for good: a visitor who once pressed Dia got Dia at night on every later visit) is ignored and removed.
+Tapping the theme already shown does nothing (nothing is stored, the sky keeps deciding). A page shown again from
+the browser's back/forward cache (a swipe back in Safari) does not start again, so site.js applies the same rule on
+`pageshow` (persisted) to what the visit holds then: a choice made meanwhile on another page of the visit is taken up
+at once, without a cross-fade (before, the home page came back as it was left, Dia with «É dia em Torres Vedras.»
+after Noite was pressed on the privacy notice, until a reload); with no valid choice, the sky decides.
 `meta[name=theme-color]` follows (the wall colour; the hall's light once the screen is that colour, when the root
-takes it too, so overscroll and the browser's bar never show the wall under the list). Storage is wrapped in try/catch (a choice still holds for the visit if
-storage is blocked). A theme change lands at once on the controls and links (their colour transitions are held
+takes it too, so overscroll and the browser's bar never show the wall under the list). Storage is wrapped in try/catch (with storage blocked a choice still
+holds on that page; the next load follows the sky). A theme change lands at once on the controls and links (their colour transitions are held
 for that frame, `.is-instant`), so nothing catches up after it.
 
 **`sun note`** (`#sol-note`, inside the theme group): while `data-sol` is set, one short sentence on its own
@@ -1294,7 +1349,9 @@ unlit at night.
   focus landing in it (Tab, or the walk-in on request) reads what it is for. **invalid** (client check, or the
   server's 400 `invalid_email` / `consent_required`): the field gets `aria-invalid="true"`, a 2px barro edge and
   an inline message in barro 17px below it, which replaces the description; focus moves to the first invalid
-  field; the message clears as soon as the value is fixed (and the description returns). **sending**: `aria-busy` on the form, `aria-disabled` on the button (focus stays on it), label
+  field; the message clears as soon as the value is fixed (and the description returns). On landscape phones the
+  messages sit 4px under their controls and the page moves up just enough to keep the button on screen (Layout ›
+  Waiting list on landscape phones); elsewhere they lengthen the form downwards and nothing moves. **sending**: `aria-busy` on the form, `aria-disabled` on the button (focus stays on it), label
   «A enviar…» / «Sending…», further submits ignored. **success**: the fields give way to «Obrigado. Já está na
   lista.» / «Thank you. You are on the list.» in the form's own height (nothing around it moves), anchored at the
   top of that box, where the field was (48px under the sentence; it used to float 168px down the middle of an
@@ -1321,6 +1378,10 @@ unlit at night.
 « · » separators are spaced alike. Below 480px name, place and link take a line each (no dangling separator), and
 the link's box takes back only 4px of the footer's 12px bottom padding, so its focus ring (2px at a 3px offset)
 fits inside the page at its foot (before: at 320 × 568 the ring's bottom edge was cut off by the document's end).
+On landscape phones (home page, with JavaScript) it leaves the flow and stands at the foot of the list's left column,
+name, town and link on a line each, start-aligned, the link's box ending level with the button's foot; transparent,
+only the link takes a tap; during the walk-in it is held with the list, invisible until the screen is one colour
+(Layout › Waiting list on landscape phones).
 
 **`privacy notice`** (`privacidade/`, `en/privacy/`): same top bar and tokens; the lockup (30px, its line on
 two lines) as home link; h1 title (EB Garamond 28–38px); a short intro at `--size-intro` (the lede, never under
@@ -1410,6 +1471,18 @@ CSS/JS references exist (it fails on the build before this fix). The two `theme-
   695 / 735: 5px / 0px; iPhone SE 375 × 553 / 627: the title 12px / 70px from the top, 16px / 32px over the footer.
   With the 3D entrance on (`?3d=force`) the end of the run is the same frame: ΔRGB 0 at
   390 × 796 @3 and 1440 × 900, Dia and Noite.
+- **The whole list on landscape phones**: on a phone on its side (844 × 390 and the like, and about 50px less with
+  Safari's bars shown) the stacked list and the footer under it were taller than the screen, so the page went on
+  past the run (69px at 844 × 390, 121px in English) and a flick to its end stopped with «Lista de espera» above the
+  screen (its top 54px above, 106px in English; with the bars shown 104 / 155px). The list now takes two columns there and the footer stands beside the
+  form, at the foot of the left column, so the end screen is the block alone and the page ends with the run (Layout ›
+  Waiting list on landscape phones). Measured (`src/tests/list.test.js` L, which fails on the stacked list at every
+  size): at 844 × 390, 932 × 430, 812 × 375, 667 × 375, 568 × 320 and 720 × 450, and on emulated iPhones with the bars
+  shown (844 × 340, 932 × 380, 812 × 325, 667 × 325, 568 × 270) and hidden, PT and EN: at the page's end, the run's
+  end, after the hero action's flight and on `#lista`, the block whole, within 0.5px of the middle between the safe
+  areas, the footer whole and clear of it. Portrait, tablet and desktop pixel for pixel as before (390 × 844,
+  390 × 796 with the bars, 768 × 1024, 1440 × 900: the first screen, the walk-in, the run's end, the page's end and
+  the hero action's landing, PT and EN).
 
 ### The door sequence (scroll-linked)
 A short run: the camera zooms in until the screen is one colour and then the list shows, all in a short space, on
@@ -1473,6 +1546,7 @@ a few pixels on); one swipe with momentum on a real phone covers both.
 | The hall (`plate`) | Depth | with the camera | its own `scale(s^(kp − 1))` inside the camera, so it grows as zoom^kp (kp 0.8): further away, it opens up behind the jambs | — |
 | The hall's light (`flood`) | Arrival | 0.52 → 0.66 of max(r, p − 0.1) | `--color-hall` over the whole stage, opacity 0 → 1, slow at first: 0.013 when the doorway covers the screen (0.54), 0.28 at 0.6, 0.80 at 0.645 (so never a veil over the stone); 1 from 0.66 on; the page behind the stage takes the colour too | `--curve-light` (0.55, 0, 0.75, 0.55): slow, then all at once |
 | Waiting list: title, sentence, form (`list`) | Arrival | 0.645 → 0.80 / 0.65 → 0.83 / 0.655 → 0.87 of r | opacity 0 → 1 and 16px (the form 10px) of rise, on top of the scroll's own; no pointer target below 50% | `--ease-out` (0.23, 1, 0.32, 1) on p |
+| Footer, landscape phones only (`foot`) | Held with the list | 0.66 → 0.87 of r | opacity 0 → 1 where it stands (no rise); its link no pointer target below 50%; not held where it is in the flow | `--ease-out` |
 
 **The walk-in's keyframes** (`measure()`, per screen): log(scale) passes through 0 at p = 0.01; inDoor^0.3 at
 p = 0.34 (the threshold, as the doors finish opening); inDoor at p = 0.54, the scale at which the doorway covers
@@ -1569,9 +1643,10 @@ hall still shows through under them (r 0.65: light 0.87, title 0.14; r 0.66: lig
   of 10). Measured after: 0px at the page's end, at the end of the run and part-way through the rise, at
   390 × 844 and 375 × 667 (touch) and 1440 × 900 and 1280 × 720 (mouse), and the first press on the button runs
   the validation (`src/tests/list.test.js` A; before: 104px at 390, 68px at 1440, validation never ran).
-  On short landscape screens the list is taller than the screen: Tab from the action into the field used to keep
-  the browser's own focus scroll, which went past the list's start and clipped «Lista de espera» (844 × 390: the
-  title 6–7px above the screen). The handler now puts the list at its rest position whenever what took the focus is
+  Where the list is taller than the screen (short landscape screens before the two-column list; very large text),
+  Tab from the action into the field used to keep the browser's own focus scroll, which went past the list's start
+  and clipped «Lista de espera» (844 × 390: the title 6–7px above the screen). The handler now puts the list at its
+  rest position whenever what took the focus is
   in view there, from either side; only what would not fit is brought in with `scrollIntoView({ block: "nearest" })`.
 
 ### The walk-in on request (the hero action and the scroll cue)
@@ -1617,7 +1692,8 @@ This replaces the former instant jump.
   which simply carries on at the speed it has (no stall and restart).
 - **Lands** on the list's rest position (site.js `rest()`, the same place as `#lista` on load and Tab): the page's
   end, which is the end of the run except on a phone with its toolbars shown (40px further on an iPhone),
-  or the list's top where the list is longer than the run's last screen (844 × 390); with the title and the email
+  or the list's top where the list is longer than the run's last screen (very large text; 844 × 390 before the
+  two-column list on landscape phones); with the title and the email
   field in view; the list's words rise in during the last 300ms of the flight
   and are at rest when it lands. The
   focus moves to the email field with `preventScroll`; the field is described by the list sentence («Deixe-nos o
@@ -2180,19 +2256,22 @@ approved drawing (only the pendant's antialiasing differs, it moved into its own
 Real devices are still to be checked (see Roadmap).
 
 ## Dia & Noite (extension)
-Which one shows: the visitor's stored choice; otherwise Torres Vedras time (Dia while the sun's altitude over
-39.09 N, 9.26 W is above −0.833°, the standard sunrise and sunset; Noite otherwise), decided by the head script
-before the first paint, so there is no flash, and said by the sun note.
+Which one shows: Torres Vedras time, on every visit (Dia while the sun's altitude over 39.09 N, 9.26 W is above
+−0.833°, the standard sunrise and sunset; Noite otherwise), decided by the head script before the first paint, so
+there is no flash, and said by the sun note. A choice on the control holds for the rest of that visit (reloads, the
+other language, the privacy notice) and only until the sun next rises or sets: a choice made by day is dropped at
+sunset, one made at night at sunrise, and a new visit always opens on the sky.
 
 **The system's dark mode**: it does not override the sky. The default follows the sun when the visitor has not
 chosen, and a system setting is not a choice made on this site; an earlier build had let an always-dark phone skip
 both the sun and the Dia hero (at Lisbon midday it got Noite). One
-press on Noite is remembered from then on. Without JavaScript the system theme still decides (CSS
+press on Noite holds for the rest of the visit, until the sun next rises or sets. Without JavaScript the system theme still decides (CSS
 `prefers-color-scheme`), so nobody who asks for dark gets a theme flash. The rule was lopsided before too (dark
 always won, light at night still got Noite).
 If the sun rises or sets while the page is open, the theme changes once, at that minute, with the slow 1.4s
 cross-fade (`--dur-sky`; it waits while the sequence is moving; a tab back from the background catches up at
-once); never while the visitor has chosen. Without JavaScript the system theme decides, as before. Noite is the
+once); never over a choice made in this day or night. A choice made before the sun rose or set lapses at that
+minute, and the page shows what a reload would (the sky's theme, the sun note). Without JavaScript the system theme decides, as before. Noite is the
 house at night, not a low-light mode: the waiting list is lamplight (#FCE7BC) in both themes, by design (the hall
 you walk into is lit).
 `[data-theme]` on any element scopes a theme to that subtree (the styleguide shows both side by side); the
@@ -2211,7 +2290,7 @@ decoration). One is kept.
 
 | Candidate | Prototype and measurement | Verdict |
 |---|---|---|
-| **Torres Vedras time**: the default Dia / Noite follows sunrise and sunset over the house | the sun's altitude at 39.09 N, 9.26 W from a low-precision solar ephemeris in the head script (about 600 bytes): sunrise/sunset within 1–2 minutes of published times for 2026 (8 Nov 07:13 / 17:29 UTC, 21 Jun 05:12 / 20:07, 21 Dec 07:53 / 17:18); 18 checks (both system schemes, stored choice, manual toggle, every page, a sunset while the page is open) | **Kept**, and made perceptible on every screen (round 3): one short sentence under the control, «É noite em Torres Vedras.», in the house's serif, only while the sky decides (also the buttons' description for screen readers). A visitor in São Paulo at 19:00 sees the lantern lit and reads why: it is night in Torres Vedras. It says something only this house can say. Before round 3 it was screen-reader-only on phones and, on desktop, sat in the menu row in the control's voice, where it read as a third menu item. |
+| **Torres Vedras time**: the default Dia / Noite follows sunrise and sunset over the house | the sun's altitude at 39.09 N, 9.26 W from a low-precision solar ephemeris in the head script (about 700 bytes with the check of a choice made in the visit): sunrise/sunset within 1–2 minutes of published times for 2026 (8 Nov 07:13 / 17:29 UTC, 21 Jun 05:12 / 20:07, 21 Dec 07:53 / 17:18); 18 checks (both system schemes, stored choice, manual toggle, every page, a sunset while the page is open); since 10 Nov 18 more (`src/tests/list.test.js` M: a first visit by night and by day, with an old stored choice, a choice through a reload and the other language, a new visit, a choice dropped at sunset with the page open, after it with the page asleep, and on the next day), each with the first paint checked | **Kept**, and made perceptible on every screen (round 3): one short sentence under the control, «É noite em Torres Vedras.», in the house's serif, only while the sky decides (also the buttons' description for screen readers). A visitor in São Paulo at 19:00 sees the lantern lit and reads why: it is night in Torres Vedras. It says something only this house can say. Before round 3 it was screen-reader-only on phones and, on desktop, sat in the menu row in the control's voice, where it read as a third menu item. |
 | **Ink draws itself** on first visit (contours, then washes bloom) | stroke-dash draw of the ink paths (top to bottom, 0.5s stagger, 0.9s each), washes fade in at 1.0s; holds 60fps under 4× throttle but rasters 133ms (390, DPR 3) / 316ms (1440) during the load window | **Removed** (and moot since the photograph replaced the drawing). It spent a second load gesture, withheld the approved drawing for 1.5s on the first visit, and the line-draw reveal is a common template trope. |
 | **Living lantern** at night (irregular warm flicker of the lantern and the doorway light, opacity 0.86–1) | WAAPI opacity on the six lamplight layers, 4.2s irregular loop; cheap here, invisible in stills and only noticed as "something moves" beside the text | **Removed.** An endless ambient loop has no purpose a visitor can name (no feedback, no state, no space), pulls the eye from the sentence beside it, keeps the compositor busy on phones, and a flickering electric lantern reads as a failing bulb. The lamp is already alive where it counts: it is lit only at night, and the light swings open with the doors. |
 | **Sketchbook signature** «Torres Vedras, 2026» in the drawing's corner | single-stroke script lettering (Hershey script cuts) with a hand wobble, in the drawing's ink | **Removed** (moot with the photograph). It read as a script font, not a hand, crowded the drawing and repeated the lockup. |
@@ -2355,7 +2434,7 @@ accessibility tree (nothing is made inert or hidden).
   alone, `GEO_WRITE=1` prints the table); and the identity in the DOM on all five pages: one crest, aria-hidden and not
   focusable, the drawn lettering aria-hidden, the lockup reading «A Brazileira, Boutique Hotel» with no Torres Vedras,
   the home's h1 named «A Brazileira…», no crest raster as an image or a background) and `node
-  src/tests/list.test.js docs` (156 checks: a tap or a click on the email field or the button never moves the
+  src/tests/list.test.js docs` (223 checks: a tap or a click on the email field or the button never moves the
   page, at three rest positions on 390 × 844 and 375 × 667 by touch and 1440 × 900 and 1280 × 720 by mouse, and the
   button's first press runs the validation; the list's words are never invisible on the flat colour and are at
   rest after a reload at the bottom, on six screens including 844 × 390 and 1440 × 900 at 200%; the scroll to the
@@ -2364,10 +2443,32 @@ accessibility tree (nothing is made inert or hidden).
   the sky, clear of the crest at five sizes; J: where the scroll stops (the page's end) the block is within 8px of the screen's
   middle where the footer fits under it with 32px clear, otherwise 16–32px above the footer with the title on screen,
   and the page ends with the run (a block and footer taller than the screen: 16px from the top where the run ends, the
-  field whole), at ten sizes, Dia and Noite, PT and EN; the same with Safari's bars shown and hidden, emulated by
+  field whole), at nine sizes, Dia and Noite, PT and EN; the same with Safari's bars shown and hidden, emulated by
   `serve.ios` (390 × 796 / 836, 393 × 695 / 735, 375 × 553 / 627), where the hero action and `#lista`
   land at the page's end; and a failed check grows the form downwards;
-  K: reduced motion and no JavaScript put the list right after the photograph, centred at `#lista`). `src/tests/png.js` decodes the screenshots (Node's zlib only).
+  K: reduced motion and no JavaScript put the list right after the photograph, centred at `#lista`; L: landscape
+  phones, 844 × 390, 932 × 430, 812 × 375, 667 × 375, 568 × 320 and 720 × 450, and emulated iPhones with Safari's bars
+  shown and hidden and the notched phones' safe areas (`serve.ios`'s fifth argument): at the page's end, the run's
+  end, after the hero action's flight and on `#lista`, the whole block on screen and centred between the safe areas,
+  the title whole, the footer whole and clear of the block's words, the field and button 44px or more, the field's
+  text 16px or more, a tap on the button and on the footer's link reaching them; 33 checks, all failing on the stacked
+  list; the footer during the run at 844 × 390, 667 × 375, 568 × 320 and an emulated iPhone 844 wide with the bars
+  hidden (390 tall, as during a finger's scroll) and shown (340), settled at 13 progresses: no pixel of it before the
+  screen is one colour (opacity 0 wherever its lines are on screen, its link not hit; at 844 × 390, 667 × 375 and
+  with the bars hidden its lines are on screen before that moment), opaque with its link live from 0.87 on, and never
+  held at 390 × 844 (in the flow); a failed check at the page's end at ten landscape sizes and languages (844 × 340, 667 × 325, 812 × 325,
+  780 × 310, 568 × 320, 568 × 270, 844 × 390): the focus in the field, the field and the button whole on screen (568 ×
+  270 in English: the field whole, the button's label on screen); M: Dia / Noite on every visit, with the clock pinned: a first visit by night opens Noite and by day Dia, with
+  the sun note, in either system scheme, also over a choice an earlier build kept in localStorage (removed); a choice
+  holds through a reload and the other language, a new tab opens on the sky; Dia chosen at 17:20 holds at 17:25 and
+  lapses at sunset with the page open (the lamps come on, the note returns), and after it with the page asleep; a
+  choice from the day before does not hold the next day; on every load data-theme is set once, before `<body>`, and
+  the first frame has it; back from the back/forward cache (replayed: pageshow with persisted, then
+  visibilitychange, after the privacy notice in the same visit stored its choice), the home page takes up Noite
+  chosen there, then Dia chosen there (no sun note), and with no choice left goes back to the sky with the note;
+  `SUN_ONLY=1` runs this part alone). `src/tests/png.js` decodes the screenshots (Node's zlib
+  only). Tests that need a fixed theme choose it as a visitor would, with `src/tests/theme.js`: a choice in
+  sessionStorage for the day or night at the page's clock, made with the page's own ephemeris.
 - The 3D entrance: `node src/tests/door3d.test.js docs` (123 checks). Headless Chromium has no GPU, so the default
   page refuses its SwiftShader renderer, as it should; the 3D path is driven with `?3d=force` (no probe, no frame-time
   rule) or, for the default path, with a capable GPU spoofed in an init script (the renderer's name, the
@@ -2509,6 +2610,7 @@ accessibility tree (nothing is made inert or hidden).
 | Action steps | `(min-width: 56.25em)`; `(min-width: 75em)` | the action and the button 19px; then 21px |
 | Lockup line | none | BOUTIQUE HOTEL on one line everywhere (the lockup has had no town line since Nov 2026, so the one-line / two-line switch and its container query are gone); with enlarged text it may break between its two words |
 | Footer lines | `(max-width: 29.99em)` | name, place and link on three lines, no separators |
+| Landscape list | `(orientation: landscape) and (max-height: 31.25em) and (min-width: 35em)`; `(max-height: 18.75em)` | the waiting list in two columns (name and sentence left, start-aligned; the form right, min(26rem, 56%)), consent 16px and button 24px apart; the home footer at the foot of the left column, out of the flow; the block centred where the scroll stops, the page ending with the run (Layout › Waiting list on landscape phones); under 300px tall the form's steps 4 / 12 / 16px; a failed check's messages 4px under their controls, 8px taken back from the step after each |
 | Home sentence | `text-wrap: balance`, the object tied | one line where it fits (PT from about 335px at the phone size; EN from 320px); otherwise two, «Estamos a restaurar / um edifício antigo.» (below 335px, and in the split layout's narrow column from 900 to about 1080px) (the 13.4em one-phrase-a-line rule for the old three-phrase sentence is gone) |
 | Sun note | every width; `(min-width: 56.25em) and (min-height: 37.5em)` | its own line under Dia · Noite; the stage clears it by 12px (`--sol-h`) except on screens from 900 × 600, where the crest is far below; with very large text it wraps inside the screen and the stage clears the bar's real height (`--bar-h`) |
 | Wide | `(min-width: 120em)`; `(min-width: 160em)` | root 112.5%; 131.25% (everything scales together) |
@@ -2531,8 +2633,8 @@ Do:
   keep the first paint on a phone under 180 KB.
 - Move only `transform` and `opacity`; promote layers only while they move.
 - Give every interruption back to the visitor at once (wheel, touch, key, pointer).
-- Respect the visitor: a stored choice, then the sky over the house (the system's dark mode decides only
-  without JavaScript).
+- Respect the visitor and the hour: the sky over the house on every visit, a choice for the rest of that visit until
+  the sun next rises or sets (the system's dark mode decides only without JavaScript).
 - Move the page on focus for the keyboard only; a tap or a click never moves it.
 - Re-run the CLS fallback tuning after any copy change, and the contrast matrix after any colour change.
 - Write pt-PT first, plain and factual.

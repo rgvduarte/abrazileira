@@ -13,17 +13,23 @@ var group = document.querySelector("[data-theme-switch]"),
 dark = window.matchMedia("(prefers-color-scheme: dark)"),
 KEY = "ab-tema",
 sol = root.__sol,
-picked = false,
+mine = null,
 timer, solT;
 if (!group) return;
 var buttons = group.querySelectorAll("[data-theme-set]"),
 note = document.getElementById("sol-note");
-try { var s0 = localStorage.getItem(KEY); picked = s0 === "dia" || s0 === "noite"; } catch (e) {}
+try { localStorage.removeItem(KEY); } catch (e) {}
+try {
+var s0 = (sessionStorage.getItem(KEY) || "").split("|");
+if (!root.hasAttribute("data-sol") && s0[0] === root.getAttribute("data-theme")) mine = [s0[0], s0[1], +s0[2]];
+else sessionStorage.removeItem(KEY);
+} catch (e) {}
 function current() {
 var t = root.getAttribute("data-theme");
 return t === "dia" || t === "noite" ? t : dark.matches ? "noite" : "dia";
 }
 function free(now) { return sol(now) ? "dia" : "noite"; }
+function turn(now) { var up = sol(now), m; for (m = 1; m <= 1440 && sol(now + m * 60000) === up; m++); return m; }
 function sync() {
 var t = current(), i, told = root.hasAttribute("data-sol") && note;
 for (i = 0; i < buttons.length; i++) {
@@ -43,9 +49,10 @@ function apply(t, keep, sky) {
 root.classList.add("is-instant");
 root.setAttribute("data-theme", t);
 if (keep) {
-picked = true;
+var now = Date.now();
+mine = sol ? [t, free(now), now + turn(now) * 60000] : [t, "", now + 864e5];
 root.removeAttribute("data-sol");
-try { localStorage.setItem(KEY, t); } catch (e) {}
+try { sessionStorage.setItem(KEY, mine.join("|")); } catch (e) {}
 } else if (sky !== undefined) {
 if (sky) root.setAttribute("data-sol", ""); else root.removeAttribute("data-sol");
 }
@@ -88,17 +95,33 @@ swap(t, true);
 });
 function sky() {
 clearTimeout(solT);
-if (picked || !sol) return;
-var now = Date.now(), t = free(now), up, m;
-if (t !== current() || !root.hasAttribute("data-sol")) {
+if (!sol) return;
+var now = Date.now(), t = free(now), m;
+if (mine && (mine[1] !== t || !(now < mine[2]))) {
+mine = null;
+try { sessionStorage.removeItem(KEY); } catch (e) {}
+}
+if (!mine && (t !== current() || !root.hasAttribute("data-sol"))) {
 if (root.__portaBusy && root.__portaBusy()) { solT = setTimeout(sky, 700); return; }
 if (t !== current()) swap(t, false, true); else apply(t, false, true);
 }
-up = sol(now);
-for (m = 1; m <= 1440 && sol(now + m * 60000) === up; m++);
+m = turn(now);
 if (m <= 1440) solT = setTimeout(sky, m * 60000 - (now % 60000) + 500);
 }
 document.addEventListener("visibilitychange", function () { if (!document.hidden) sky(); });
+window.addEventListener("pageshow", function (e) {
+if (!e.persisted || !sol) return;
+var s = [], now = Date.now();
+try { s = (sessionStorage.getItem(KEY) || "").split("|"); } catch (er) {}
+if ((s[0] === "dia" || s[0] === "noite") && s[1] === free(now) && now < +s[2]) {
+mine = [s[0], s[1], +s[2]];
+if (s[0] !== current() || root.hasAttribute("data-sol")) apply(s[0], false, false);
+} else {
+mine = null;
+try { sessionStorage.removeItem(KEY); } catch (er) {}
+}
+sky();
+});
 group.hidden = false;
 sync();
 sky();
@@ -198,6 +221,7 @@ probe = document.createElement("div"),
 cue = $(".porta__cue"),
 list = document.getElementById("lista"), reveal = list && list.querySelector("[data-reveal]"),
 rv = function (s) { return (reveal && reveal.querySelector(s)) || document.createElement("i"); },
+foot = document.querySelector(".foot"), footLink = foot && foot.querySelector(".foot__link"), footOut = false,
 shown = -1, seen = -1, lit = false, raf = 0, last = 0, lastY = NaN, calm = 0, promoted = false, idle, rq = 0, on = false,
 held = { w: 0, run: 0 }, mw = 0, mh = 0, endOff = -1, box3 = null;
 probe.className = "porta__probe";
@@ -230,7 +254,7 @@ var FLIGHT = num("--dur-flight", 1250), WEIGHT = num("--flight-weight", 2), WLIS
 RISE = num("--rise-list", 16);
 function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 var DOOR = [0, 0.34], PAN = [0, 0.28], CENTRE = [0.32, 0.5], KX = [0.01, 0.34, 0.54, 0.66], LIGHT = [0.52, 0.66],
-COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3,
+COVER_AT = 0.66, LAG = 0.1, TEXT = 1, COVER = 2, LIST = 3, FOOT = 4,
 lift = function (k) { return function (u) { return [u, "translate(0," + ((1 - u) * RISE * k).toFixed(2) + "px)"]; }; };
 var T = [
 [intro, 0, 0.14, E.copy, function (u) { return [1 - u, "translate(0," + (-16 * u).toFixed(2) + "px)"]; }, TEXT],
@@ -243,7 +267,8 @@ var T = [
 [$(".porta__flood"), LIGHT[0], LIGHT[1], E.light, function (u) { return [u, null]; }, COVER],
 [rv(".lista__title"), 0.645, 0.8, E.rise, lift(1), LIST],
 [rv(".lista__lede"), 0.65, 0.83, E.rise, lift(1), LIST],
-[rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST]
+[rv(".form"), 0.655, 0.87, E.rise, lift(0.6), LIST],
+[foot || document.createElement("i"), COVER_AT, 0.87, E.rise, function (u) { return [u, null]; }, FOOT]
 ];
 var KNEE = 0.25;
 function knee(a) {
@@ -326,6 +351,7 @@ if (!wrap.style.getPropertyValue("--porta-run")) held = { w: fw, run: natural };
 pin = r.top + window.pageYOffset;
 run = Math.max(1, natural - stick);
 mw = vw; mh = vh;
+footOut = !!foot && getComputedStyle(foot).position === "absolute";
 }
 function target() {
 var y = window.pageYOffset;
@@ -341,6 +367,7 @@ if (root.__tint) root.__tint();
 }
 if (r <= 0 && p <= 0) {
 for (i = 0; i < T.length; i++) { s = T[i][0].style; s.opacity = ""; s.transform = ""; s.pointerEvents = ""; }
+if (footLink) footLink.style.pointerEvents = "";
 scene.style.transform = "";
 plate.style.transform = "";
 draw3d(0, 0);
@@ -351,11 +378,16 @@ t = T[i];
 q = t[5] === TEXT ? Math.min(r, p) : t[5] === COVER ? Math.max(r, p - LAG) : r;
 s = t[0].style;
 if (t[5] === TEXT && q <= 0) { s.opacity = ""; s.transform = ""; s.pointerEvents = ""; continue; }
+if (t[5] === FOOT && !footOut) {
+if (s.opacity) { s.opacity = ""; if (footLink) footLink.style.pointerEvents = ""; }
+continue;
+}
 v = t[4](t[3](clamp((q - t[1]) / (t[2] - t[1]))));
 if (v[0] !== null) s.opacity = v[0] <= 0 ? "0" : v[0] >= 1 ? "1" : v[0].toFixed(4);
 if (v[1] !== null) s.transform = v[1];
 if (t[5] === TEXT) s.pointerEvents = v[0] < 0.5 ? "none" : "";
 else if (t[5] === LIST) s.pointerEvents = v[0] < 0.5 ? "none" : "auto";
+else if (t[5] === FOOT && footLink) footLink.style.pointerEvents = v[0] < 0.5 ? "none" : "";
 }
 scene.style.transform = low ? "none" : camAt(r);
 plate.style.transform = "scale(" + Math.pow(scaleAt(r), cam.kp - 1).toFixed(5) + ")";
@@ -998,12 +1030,23 @@ a.textContent = d.mail;
 msg.appendChild(a);
 msg.appendChild(document.createTextNode(parts.slice(1).join("")));
 }
+fit();
 }, 60);
 }
 function idle() {
 busy = false;
 form.removeAttribute("aria-busy");
 button.removeAttribute("aria-disabled");
+}
+var lista = form.closest(".lista"), inner = lista && lista.querySelector(".lista__inner");
+function fit() {
+if (!inner || getComputedStyle(inner).display !== "grid") return;
+var vh = window.innerHeight, g = parseFloat(getComputedStyle(lista).paddingBottom) || 0,
+top = form.getBoundingClientRect().top, field = email.getBoundingClientRect().top,
+end = Math.max(button.getBoundingClientRect().bottom, msg.textContent ? msg.getBoundingClientRect().bottom : 0),
+air = Math.max(0, Math.min(g, (vh - (end - top)) / 2)),
+d = Math.min(Math.ceil(end - (vh - air)), Math.floor(field));
+if (d > 0) window.scrollBy(0, d);
 }
 email.addEventListener("input", function () {
 if (email.hasAttribute("aria-invalid") && okEmail(email.value.trim())) mark(email, emailMsg, "");
@@ -1018,7 +1061,7 @@ clearTimeout(said);
 msg.textContent = "";
 state("idle");
 var bad = validate();
-if (bad.length) { bad[0].focus(); return; }
+if (bad.length) { bad[0].focus(); fit(); return; }
 if (hp.value) { done(); return; }
 busy = true;
 state("sending");
@@ -1039,8 +1082,8 @@ if (r.ok) return done();
 if (r.status !== 400) return fail();
 return r.json().then(function (j) {
 var m = j && j.message;
-if (m === "invalid_email") { state("idle"); mark(email, emailMsg, d.msgEmail); email.focus(); }
-else if (m === "consent_required") { state("idle"); mark(consent, consentMsg, d.msgConsent); consent.focus(); }
+if (m === "invalid_email") { state("idle"); mark(email, emailMsg, d.msgEmail); email.focus(); fit(); }
+else if (m === "consent_required") { state("idle"); mark(consent, consentMsg, d.msgConsent); consent.focus(); fit(); }
 else fail();
 }, fail);
 }, fail).then(function () { clearTimeout(timer); idle(); }, function () { clearTimeout(timer); idle(); fail(); });
@@ -1070,7 +1113,7 @@ if (focused && w === kept.w && kept.top) { if (list.style.paddingBlockStart !== 
 var b = inner && form && (form.getAttribute("data-state") || "idle") === "idle" && !form.querySelector(".field__msg:not([hidden])") ? inner.offsetHeight + "px" : lb,
 f = foot ? foot.offsetHeight + "px" : lf;
 if (list.style.paddingBlockStart) list.style.paddingBlockStart = "";
-if (b !== lb) list.style.setProperty("--lista-b", (lb = b));
+if (b !== lb) { list.style.setProperty("--lista-b", (lb = b)); if (foot) foot.style.setProperty("--lista-b", b); }
 if (f !== lf) list.style.setProperty("--foot-h", (lf = f));
 if (focused) keep(); else kept = { w: w, top: "" };
 }

@@ -26,12 +26,12 @@
 //    3px either side of it (brass hinges and the gap excepted).
 // J. Where the scroll stops the block (title to button) stands in the middle of what the visitor sees (centred in the
 //    page's height): at 320 x 568, 375 x 667, 390 x 844, 390 x 796,
-//    430 x 932, 844 x 390, 768 x 1024, 1024 x 768, 1440 x 900 and 1920 x 1080, Dia and Noite, PT and EN, settled, at
+//    430 x 932, 768 x 1024, 1024 x 768, 1440 x 900 and 1920 x 1080, Dia and Noite, PT and EN, settled, at
 //    the end of the run and at the end of the page. Where the block and the footer fit on one screen (16px between
 //    them), the page ends one large viewport after the run, and there the block is within 8px of the middle when the
 //    footer fits under it with 32px clear; otherwise it stands 16-32px above the footer, the title on screen and the
 //    field whole (320 x 568, 375 x 667: the page went on 100px and 51px before, the title cut by the top). Taller than
-//    that (844 x 390): where the run ends the block starts 16px from the top, the field whole. Opaque.
+//    that: where the run ends the block starts 16px from the top, the field whole. Opaque. (Landscape phones: L.)
 //    An iPhone with Safari's bars, emulated (serve.ios: stylesheets served with svh, lvh, dvh in px; headless Chromium
 //    has svh = lvh = dvh): 390 wide, 796 shown / 836 hidden (Safari 26), 393 x 695 / 735, 375 x 553 / 627 (SE):
 //    with the bars shown the page ends 40px (74px) after the run, with them hidden at the run's end; in both, where the
@@ -41,14 +41,53 @@
 //    check lengthen the form downwards (the title and the field do not move).
 // K. Reduced motion and no JavaScript (390 x 844, 1440 x 900): the list starts at the photograph's foot (no void), and
 //    arriving with #lista its block is in the middle (8px; 16px without JavaScript, where its height is a guess).
+// L. Landscape phones: the whole block (title, sentence, field, consent, button) on screen where the scroll stops, the
+//    title whole, never cut (before: at 844 x 390 the block and the footer were 428px together, the page went on 69px
+//    past the run and its end showed the title cut by the top; with Safari's bars, by 104px). At 844 x 390,
+//    932 x 430, 812 x 375, 667 x 375, 568 x 320 and 720 x 450 (1440 x 900 at 200%), and on emulated iPhones in
+//    Safari (serve.ios, with the safe areas of the notched ones: 47 / 59 / 44px left and right, 21px below) with the
+//    bars shown (844 x 340, 932 x 380, 812 x 325, 667 x 325, 568 x 270) and hidden; PT and EN, Dia (Noite at 844 x 390):
+//    at the page's end, at the run's end where that is the page's end, after the hero action's flight (the focus in the
+//    field) and on #lista on load: the block whole and opaque, within 8px of the middle of what is seen between the
+//    safe areas, or at least 16px from both edges where it is too tall for that; the footer whole on the same screen,
+//    its lines clear of the block's words (beside the sentence, under it); the field and the button 44px or more and
+//    the field's text 16px or more; a tap on the button's centre and on the footer's link reaches them. With the bars
+//    shown the page ends 50px after the run (the bars' height), and that is where the scroll stops.
+//    The footer during the run (844 x 390, 667 x 375, 568 x 320, an iPhone 844 wide with the bars hidden and shown): it
+//    scrolls into the last screen before the flat moment (844 x 390, 667 x 375, bars hidden), and there no pixel of it
+//    shows (opacity 0, its link no tap target) until the screen is one colour; opaque, its link live, from 0.87 on;
+//    at 390 x 844 (in the flow) never held.
+//    A failed check at the page's end (844 x 340 PT and EN, 667 x 325 PT and EN, 812 x 325, 780 x 310, 568 x 320 and
+//    844 x 390 in English, 568 x 270 PT): the focus in the field, the field and the button whole on screen; 568 x 270
+//    in English (the form from the field to the button is 276px): the field whole and the button's label on screen.
+// M. Dia / Noite follows the sun on every visit (the clock pinned in Torres Vedras, 8 Nov 2026: sunrise 07:13 UTC,
+//    sunset 17:29 UTC). On every load the first paint is right: data-theme is set once, by the head script, before
+//    <body> exists, never changed afterwards, and the first animation frame (before the first paint) already has it.
+//    1. A first visit by night opens Noite and by day Dia, with the sun note, in either system scheme, also for a
+//       visitor whose earlier visit stored a choice in localStorage («dia» at night, «noite» by day: earlier builds
+//       kept it for good); that old key is ignored and removed. 390 x 844 and 1440 x 900.
+//    2. A choice holds for the visit while the sun stays on the same side of the horizon: by day, Noite pressed;
+//       a reload, then the English page: Noite, no sun note, the choice in sessionStorage (never in localStorage);
+//       a new tab (a new visit): Dia again, by the sky.
+//    3. A choice lapses when the sun rises or sets: Dia pressed back by day at 17:20 (Noite, then Dia); a reload at
+//       17:25 keeps it; at sunset, with the page open, the lamps come on by themselves (Noite, the sun note, the
+//       choice dropped); a reload then: Noite. The same choice with the clock moved past sunset while the page sleeps
+//       (no timer runs): the reload opens Noite. Noite pressed by day, reopened by day the next day: Dia (a choice
+//       is for that day or night only, not for the next one of the same kind).
+//    4. Back from the back/forward cache (replayed: headless Chromium does not restore from it here): the home page by
+//       day (Dia, the sun note); Noite pressed on the privacy notice in the same visit, the value it stored written into
+//       the home page's sessionStorage, then pageshow (persisted) and visibilitychange: Noite, no sun note; Dia pressed
+//       there next: Dia as a choice, no note; no choice left: the sky, with the note; a reload: the same.
+//    SUN_ONLY=1 runs this part alone; SUN_SHOTS=<dir> saves a screenshot of each state there.
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 900000);
-const { chromium } = require("playwright"), serve = require("./serve.js");
+const { chromium } = require("playwright"), serve = require("./serve.js"), choose = require("./theme.js");
 const [, , dir] = process.argv;
 (async () => {
   const { srv, base } = await serve(dir); const b = await chromium.launch(); let fail = 0;
   const report = (ok, ...a) => { if (!ok) fail++; console.log(ok ? "PASS" : "FAIL", ...a); };
+  if (process.env.SUN_ONLY) { await sun(b, base, report); console.log("list", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0); }
   const ctx = async (w, h, o = {}) => { const m = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, isMobile: m && h > w, hasTouch: m, ...o });
-    if (o.theme !== null) await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, o.theme || "dia"); return c; };
+    if (o.theme !== null) await choose(c, o.theme || "dia", dir); return c; };
   const geo = (pg) => pg.evaluate(() => { const P = document.documentElement.__porta.geo(); return { ...P, listY: Math.round(document.getElementById("lista").getBoundingClientRect().top + scrollY), max: document.documentElement.scrollHeight - innerHeight }; });
 
   // A. tap / click focus never jumps
@@ -248,7 +287,7 @@ const [, , dir] = process.argv;
     await pg.waitForTimeout(300); const run = await block(pg);
     await pg.evaluate(() => scrollTo(0, 1e6)); await pg.waitForTimeout(400); const pageEnd = await block(pg);
     return { g, end, run, pageEnd }; };
-  for (const [n, w, h] of [["se320", 320, 568], ["m375", 375, 667], ["m390", 390, 844], ["m796", 390, 796], ["m430", 430, 932], ["land", 844, 390], ["t768", 768, 1024], ["t1024", 1024, 768], ["d1440", 1440, 900], ["d1920", 1920, 1080]])
+  for (const [n, w, h] of [["se320", 320, 568], ["m375", 375, 667], ["m390", 390, 844], ["m796", 390, 796], ["m430", 430, 932], ["t768", 768, 1024], ["t1024", 1024, 768], ["d1440", 1440, 900], ["d1920", 1920, 1080]])
     for (const theme of ["dia", "noite"]) for (const page of ["", "en/"]) {
       const c = await ctx(w, h, { theme }); const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
       const { g, end, run, pageEnd } = await walk(pg), past = pageEnd.max - end;
@@ -300,6 +339,91 @@ const [, , dir] = process.argv;
     report(after.msgs === 2 && Math.abs(after.title - at[0]) <= 0.5 && Math.abs(after.email - at[1]) <= 0.5, n, "J messages grow the form downwards", JSON.stringify({ before: at.map(Math.round), after }));
     await c.close();
   }
+  // L. landscape phones: the whole block on screen where the scroll stops, the footer whole beside it, never cut
+  const land = (pg, sb) => pg.evaluate((sb) => { const q = (s) => document.querySelector(s), R = (s) => q(s).getBoundingClientRect(), vh = innerHeight;
+    const parts = [".lista__title", ".lista__lede", ".field__label", "#email", ".check__label", ".lista .button"].map(R), f = R(".foot"), e = R("#email"), bt = R(".lista .button");
+    const top = Math.min(...parts.map((r) => r.top)), bot = Math.max(...parts.map((r) => r.bottom)), t = R(".lista__title");
+    const lines = [...q(".foot p").children].filter((c) => getComputedStyle(c).display !== "none").map((c) => c.getBoundingClientRect());
+    const words = [".lista__title", ".lista__lede", ".lista .form"].map(R), meet = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    const hit = (s) => { const r = R(s), el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!el && (el === q(s) || q(s).contains(el)); };
+    return { y: Math.round(scrollY), max: document.documentElement.scrollHeight - innerHeight, vh, top: +top.toFixed(1), bot: +bot.toFixed(1), h: Math.round(bot - top),
+      off: +((top + bot) / 2 - (vh - sb) / 2).toFixed(1), title: [+t.top.toFixed(1), +t.bottom.toFixed(1)], foot: [Math.round(Math.min(...lines.map((r) => r.top))), Math.round(Math.max(...lines.map((r) => r.bottom)))],
+      footClear: !lines.some((l) => words.some((w) => meet(l, w))), field: [Math.round(e.height), parseFloat(getComputedStyle(q("#email")).fontSize)], button: Math.round(bt.height),
+      taps: hit(".lista .button") && hit(".foot__link"), op: Math.min(...[".lista__title", ".lista__lede", ".lista .form"].map((s) => +getComputedStyle(q(s)).opacity)),
+      active: document.activeElement && document.activeElement.id }; }, sb);
+  const whole = (r) => r.op >= 0.999 && r.top >= -0.5 && r.bot <= r.vh + 0.5 && r.title[0] >= 0 && r.title[1] <= r.vh && r.field[0] >= 44 && r.field[1] >= 16 && r.button >= 44 &&
+    (r.h + 32 <= r.vh ? Math.abs(r.off) <= 8 : true) && r.foot[0] >= 0 && r.foot[1] <= r.vh + 0.5 && r.footClear && r.taps;
+  const LAND = [["l844", 844, 390], ["l932", 932, 430], ["l812", 812, 375], ["l667", 667, 375], ["l568", 568, 320], ["z200", 720, 450]].map((v) => v.concat([null]))
+    .concat([["ios844", 844, 340, 390, { left: 47, right: 47, bottom: 21 }], ["ios932", 932, 380, 430, { left: 59, right: 59, bottom: 21 }], ["ios812", 812, 325, 375, { left: 44, right: 44, bottom: 21 }],
+      ["ios667", 667, 325, 375, null], ["ios568", 568, 270, 320, null]].flatMap(([n, w, sv, lv, safe]) => [[n + "-bars", w, sv, [sv, lv, safe]], [n + "-full", w, lv, [sv, lv, safe]]]));
+  for (const [n, w, h, ios] of LAND) for (const [theme, page] of [["dia", ""], ["dia", "en/"]].concat(n === "l844" ? [["noite", ""]] : [])) {
+    const sb = ios && ios[2] ? ios[2].bottom : 0, c = await ctx(w, h, { theme, isMobile: true, hasTouch: true }), pg = await c.newPage(); await serve.offline(pg);
+    if (ios) await serve.ios(pg, ios[0], ios[1], h, ios[2] || undefined);
+    await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const { g, end, pageEnd } = await walk(pg), past = pageEnd.max - end, run = await (async () => { await pg.evaluate((y) => scrollTo(0, y), end); await pg.waitForTimeout(400); return land(pg, sb); })();
+    await pg.evaluate(() => scrollTo(0, 1e6)); await pg.waitForTimeout(400); const atEnd = await land(pg, sb);
+    await pg.evaluate(() => scrollTo(0, 0)); await pg.waitForTimeout(500);
+    await pg.click(".porta .cta"); await pg.waitForFunction(() => document.activeElement && document.activeElement.id === "email", null, { timeout: 6000 }).catch(() => {});
+    await pg.waitForTimeout(500); const fl = await land(pg, sb);
+    await pg.goto("about:blank"); await pg.goto(base + page + "#lista", { waitUntil: "networkidle" }); await pg.waitForTimeout(900); const hash = await land(pg, sb);
+    const bars = ios ? ios[1] - h : 0, ok = Math.abs(end - g.listY) <= 1 && Math.abs(past - bars) <= 1 && whole(atEnd) && (past > 1 || whole(run)) &&
+      fl.y === fl.max && fl.active === "email" && whole(fl) && hash.y === hash.max && whole(hash);
+    report(ok, n, "L landscape: the whole block where the scroll stops", theme, page || "pt", JSON.stringify({ end, pageEndPastRun: past, atEnd, ...(past > 1 ? {} : { run: { top: run.top, bot: run.bot, off: run.off } }),
+      flight: { y: fl.y, top: fl.top, bot: fl.bot, active: fl.active }, hash: { y: hash.y, top: hash.top, bot: hash.bot } }));
+    await c.close();
+  }
+  /* L, the footer during the run: beside the form it stands at the page's foot, so it scrolls into the last screen while
+     the camera is still walking in. Until the screen is one colour (p < flat) no pixel of it shows (opacity 0 wherever
+     its lines are on screen) and its link takes no tap; it fades in with the list and is opaque, its link live, from
+     0.87 on. Settled at each progress. 844 x 390, 667 x 375 and an iPhone 844 wide with Safari's bars hidden (as during a
+     finger's scroll: 390 tall, svh 340), where its lines are on screen before the flat moment (49 / 33 / 49px of
+     scroll before); 568 x 320 and the same iPhone with the bars shown (340 tall: the page ends 50px after the run, so
+     its lines come on screen only after the flat moment); at 390 x 844, where it follows the list in the flow, it is
+     never held (no inline opacity at any point). */
+  for (const [n, w, h, ios, must] of [["l844", 844, 390, null, 1], ["l667", 667, 375, null, 1], ["l568", 568, 320, null, 0],
+    ["ios844-full", 844, 390, [340, 390, { left: 47, right: 47, bottom: 21 }], 1], ["ios844-bars", 844, 340, [340, 390, { left: 47, right: 47, bottom: 21 }], 0],
+    ["m390", 390, 844, null, 0]]) {
+    const c = await ctx(w, h, { theme: "dia", isMobile: true, hasTouch: true }), pg = await c.newPage(); await serve.offline(pg);
+    if (ios) await serve.ios(pg, ios[0], ios[1], h, ios[2]);
+    await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    const g = await geo(pg), held = w > h, rows = [];
+    for (const q of [0.3, 0.45, 0.55, 0.6, 0.63, 0.65, g.flat - 0.004, 0.7, 0.75, 0.8, 0.87, 0.93, 1]) {
+      await pg.evaluate((y) => scrollTo(0, y), Math.floor(g.pin + q * g.run));
+      await pg.waitForFunction(() => { const P = document.documentElement.__porta.geo(); return P.r === P.p; }, null, { timeout: 8000 }).catch(() => {});
+      await pg.waitForTimeout(120);
+      rows.push(await pg.evaluate(() => { const f = document.querySelector(".foot"), l = f.querySelector(".foot__link"), P = document.documentElement.__porta.geo(), vh = innerHeight;
+        const lines = [...f.querySelector("p").children].filter((e) => getComputedStyle(e).display !== "none").map((e) => e.getBoundingClientRect());
+        const lr = l.getBoundingClientRect(), whole = lr.top >= 0 && lr.bottom <= vh, at = whole && document.elementFromPoint(lr.left + lr.width / 2, lr.top + lr.height / 2);
+        return { p: +P.p.toFixed(3), seen: lines.some((r) => r.bottom > 0 && r.top < vh), op: +getComputedStyle(f).opacity, inline: f.style.opacity, link: whole ? !!at && (at === l || l.contains(at)) : null }; }));
+    }
+    const before = rows.filter((r) => r.p < g.flat), late = rows.filter((r) => r.p >= 0.87);
+    const ok = held ? before.every((r) => !r.seen || (r.op === 0 && !r.link)) && (!must || before.some((r) => r.seen)) && late.every((r) => r.op === 1 && r.link !== false)
+      : rows.every((r) => r.inline === "" && r.op === 1);
+    report(ok, n, held ? "L the footer held with the list during the run: no pixel before the flat moment" : "L the footer in the flow: never held", JSON.stringify({ flat: g.flat, rows }));
+    await c.close();
+  }
+  /* L, a failed check where the scroll stops (the page's end): the two messages lengthen the form (by 42px; 67px in
+     English at 568px wide, where the consent's takes two lines), and the button and the footer beside it went under
+     the screen's edge (before: 12px at 844 x 340 in English, 30px at 667 x 325); now the page moves up by what is
+     needed, the field and the button whole on screen, the focus in the field. 568 x 270 in English, where the form
+     from the field to the button (276px) is taller than the screen: the field whole and the button's label on screen. */
+  for (const [n, w, sv, lv, safe, h, page] of [["ios844-bars", 844, 340, 390, { left: 47, right: 47, bottom: 21 }, 340, "en/"],
+    ["ios844-bars", 844, 340, 390, { left: 47, right: 47, bottom: 21 }, 340, ""], ["ios667-bars", 667, 325, 375, null, 325, ""], ["ios667-bars", 667, 325, 375, null, 325, "en/"],
+    ["ios812-bars", 812, 325, 375, { left: 44, right: 44, bottom: 21 }, 325, "en/"], ["ios780-bars", 780, 310, 360, { left: 50, right: 50, bottom: 21 }, 310, "en/"],
+    ["ios568-full", 568, 270, 320, null, 320, "en/"], ["ios568-bars", 568, 270, 320, null, 270, ""], ["ios568-bars", 568, 270, 320, null, 270, "en/"], ["l844", 844, 390, 390, null, 390, "en/"]]) {
+    const c = await ctx(w, h, { theme: "dia", isMobile: true, hasTouch: true }), pg = await c.newPage(); await serve.offline(pg);
+    if (sv !== lv) await serve.ios(pg, sv, lv, h, safe || undefined);
+    await pg.goto(base + page, { waitUntil: "networkidle" }); await pg.waitForTimeout(800);
+    await pg.evaluate(() => scrollTo(0, 1e6)); await pg.waitForTimeout(500);
+    const bb = await pg.locator(".lista .button").boundingBox(); await pg.touchscreen.tap(bb.x + bb.width / 2, bb.y + Math.min(bb.height / 2, h - bb.y - 4)); await pg.waitForTimeout(700);
+    const r = await pg.evaluate(() => { const R = (s) => document.querySelector(s).getBoundingClientRect(), e = R("#email"), b = R(".lista .button"), l = R(".button__idle");
+      return { vh: innerHeight, y: Math.round(scrollY), email: [+e.top.toFixed(1), +e.bottom.toFixed(1)], button: [+b.top.toFixed(1), +b.bottom.toFixed(1)], label: [+l.top.toFixed(1), +l.bottom.toFixed(1)],
+        title: +R(".lista__title").top.toFixed(1), msgs: [...document.querySelectorAll(".lista .field__msg")].filter((m) => !m.hidden).length, active: document.activeElement && document.activeElement.id }; });
+    const tall = w === 568 && h === 270 && page, ok = r.msgs === 2 && r.active === "email" && r.email[0] >= 0 && r.email[1] <= r.vh &&
+      (tall ? r.label[0] >= 0 && r.label[1] <= r.vh : r.button[0] >= 0 && r.button[1] <= r.vh + 0.5);
+    report(ok, `${n}${page ? "-en" : ""}`, "L a failed check: the field and the button whole on screen" + (tall ? " (568 x 270 EN: the field whole, the button's label on screen)" : ""), JSON.stringify(r));
+    await c.close();
+  }
   // K. reduced motion and no JavaScript: the list right after the photograph, and centred on arrival at #lista
   for (const [n, w, h] of [["m390", 390, 844], ["d1440", 1440, 900]]) for (const mode of ["reduce", "nojs"]) {
     const c = await ctx(w, h, { reducedMotion: mode === "reduce" ? "reduce" : "no-preference", javaScriptEnabled: mode !== "nojs" }); const pg = await c.newPage(); await serve.offline(pg);
@@ -310,5 +434,130 @@ const [, , dir] = process.argv;
     report(!r.on && Math.abs(r.gap) <= 1 && r.top >= 0 && r.bottom <= r.ih && Math.abs(r.off) <= (mode === "nojs" ? 16 : 8), n, "K list after the photograph, centred at #lista,", mode, JSON.stringify(r));
     await c.close();
   }
+  await sun(b, base, report);
   console.log("list", fail ? "FAILED" : "ok"); await b.close(); srv.close(); process.exit(fail ? 1 : 0);
 })();
+
+// M. Dia / Noite on every visit (see the header)
+const FIRST = () => {   // every change of data-theme while the page loads, and the theme at the first animation frame
+  window.__th = []; window.__first = null;
+  new MutationObserver((ms) => { for (const m of ms) if (m.target === document.documentElement)
+    window.__th.push([Math.round(performance.now()), m.target.getAttribute("data-theme"), !!document.body]); })
+    .observe(document, { attributes: true, subtree: true, attributeFilter: ["data-theme"] });
+  requestAnimationFrame(() => { const r = document.documentElement;
+    window.__first = [r.getAttribute("data-theme"), r.hasAttribute("data-sol"), getComputedStyle(r).backgroundColor, !!document.body]; });
+};
+async function sun(b, base, report) {
+  const fs = require("fs"), path = require("path"), SHOTS = process.env.SUN_SHOTS;
+  if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
+  const shot = async (pg, name) => { if (SHOTS) await pg.screenshot({ path: path.join(SHOTS, name + ".png") }); };
+  const NIGHT = "2026-11-08T21:00:00Z", DAY = "2026-11-08T13:00:00Z";
+  const ctx = async (w, h, when, scheme) => { const m = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, isMobile: m, hasTouch: m, colorScheme: scheme || "light" });
+    await c.addInitScript(FIRST); await c.clock.install({ time: new Date(when) }); return c; };   /* FIRST before the clock: the browser's own frames */
+  const open = async (c, url) => { const pg = await c.newPage(); await serve.offline(pg); await pg.goto(url || base, { waitUntil: "networkidle" }); await pg.waitForTimeout(700); return pg; };
+  const state = async (pg) => { await pg.waitForFunction(() => window.__first, null, { timeout: 3000 }).catch(() => {}); return pg.evaluate(() => { const r = document.documentElement, n = document.getElementById("sol-note"),
+      vis = n && [...n.children].find((s) => getComputedStyle(s).display !== "none" && s.getBoundingClientRect().height > 0),
+      bg = (() => { const d = document.createElement("div"); d.style.cssText = "position:absolute;width:1px;height:1px;background:var(--color-bg)"; document.body.appendChild(d); const v = getComputedStyle(d).backgroundColor; d.remove(); return v; })();
+    let local = "?", sess = "?"; try { local = localStorage.getItem("ab-tema"); sess = sessionStorage.getItem("ab-tema"); } catch (e) {}
+    return { theme: r.getAttribute("data-theme"), sol: r.hasAttribute("data-sol"), note: vis ? vis.textContent : null,
+      pressed: [...document.querySelectorAll("[data-theme-set]")].filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.getAttribute("data-theme-set")),
+      local, sess, th: window.__th, first: window.__first, bg, clock: new Date().toISOString().slice(0, 16) }; }); };
+  /* the first paint: data-theme set once, before <body>, never again; the first frame already shows it */
+  const firstOk = (s, want) => s.th.length === 1 && s.th[0][1] === want && !s.th[0][2] && !!s.first && s.first[0] === want && s.first[1] === s.sol;
+  const NOTE = { noite: /^(É noite em Torres Vedras\.|It is night in Torres Vedras\.)$/, dia: /^(É dia em Torres Vedras\.|It is daytime in Torres Vedras\.)$/ };
+  const skyOk = (s, want) => s.theme === want && s.sol && NOTE[want].test(s.note || "") && s.pressed.join() === want && firstOk(s, want);
+  const mineOk = (s, want) => s.theme === want && !s.sol && s.note === null && s.pressed.join() === want && firstOk(s, want);
+  const brief = (s) => JSON.stringify({ ...s, th: s.th.map((x) => x.join(":")) });
+  const press = async (pg, t) => { await pg.click(`[data-theme-set="${t}"]`); await pg.waitForTimeout(1300); };
+
+  // 1. a first visit follows the sky, whatever an earlier visit stored
+  for (const [n, w, h] of [["m390", 390, 844], ["d1440", 1440, 900]])
+    for (const [when, want, scheme] of [[NIGHT, "noite", "light"], [DAY, "dia", "dark"]]) for (const old of [null, want === "noite" ? "dia" : "noite"]) {
+      const c = await ctx(w, h, when, scheme);
+      if (old) { const p0 = await c.newPage(); await serve.offline(p0); await p0.goto(base + "robots.txt"); await p0.evaluate((v) => localStorage.setItem("ab-tema", v), old); await p0.close(); }
+      const pg = await open(c), s = await state(pg);
+      report(skyOk(s, want) && s.local === null && s.sess === null, n, "M1", want === "noite" ? "night" : "day", "clock, system " + scheme + (old ? ", old localStorage choice «" + old + "»" : ", first visit"), "opens", want, brief(s));
+      if (n === "m390") await shot(pg, `M1-${want}${old ? "-old-" + old : ""}`);
+      await c.close();
+    }
+
+  // 2. a choice holds for the visit, in the same day or night
+  {
+    const c = await ctx(390, 844, DAY), pg = await open(c), s0 = await state(pg);
+    await press(pg, "noite"); const s1 = await state(pg);
+    const end = s1.sess && +s1.sess.split("|")[2];
+    report(skyOk(s0, "dia") && s1.theme === "noite" && !s1.sol && /^noite\|dia\|\d+$/.test(s1.sess || "") && end > Date.parse(DAY) && end <= Date.parse("2026-11-08T17:31:00Z") && s1.local === null,
+      "m390", "M2 by day, Noite pressed: stored for the visit with the day it was made in", brief(s1));
+    await shot(pg, "M2-day-pressed-noite");
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s2 = await state(pg);
+    report(mineOk(s2, "noite") && s2.sess === s1.sess && s2.local === null, "m390", "M2 reload in the same day: Noite, first paint Noite, no sun note", brief(s2));
+    await shot(pg, "M2-day-reload-noite");
+    await pg.goto(base + "en/", { waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s3 = await state(pg);
+    report(mineOk(s3, "noite"), "m390", "M2 the English page in the same visit: Night", brief(s3));
+    const p2 = await open(c), s4 = await state(p2);
+    report(skyOk(s4, "dia") && s4.sess === null, "m390", "M2 a new tab (a new visit): Dia, by the sky", brief(s4));
+    await c.close();
+  }
+
+  // 3. a choice lapses at sunrise or sunset
+  {
+    const c = await ctx(390, 844, "2026-11-08T17:20:00Z"), pg = await open(c), s0 = await state(pg);
+    await press(pg, "noite"); await press(pg, "dia"); const s1 = await state(pg);
+    report(skyOk(s0, "dia") && s1.theme === "dia" && !s1.sol && /^dia\|dia\|\d+$/.test(s1.sess || ""), "m390", "M3 17:20, Noite then Dia pressed: Dia chosen", brief(s1));
+    await c.clock.setSystemTime(new Date("2026-11-08T17:25:00Z"));
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s2 = await state(pg);
+    report(mineOk(s2, "dia"), "m390", "M3 reload at 17:25 (before sunset): the choice holds", brief(s2));
+    await shot(pg, "M3-1725-chosen-dia");
+    await c.clock.fastForward("08:00"); await pg.waitForTimeout(2500); const s3 = await state(pg);
+    report(s3.theme === "noite" && s3.sol && NOTE.noite.test(s3.note || "") && s3.pressed.join() === "noite" && s3.sess === null && s3.clock >= "2026-11-08T17:30",
+      "m390", "M3 sunset with the page open: the lamps come on, the choice dropped", JSON.stringify({ theme: s3.theme, sol: s3.sol, note: s3.note, sess: s3.sess, clock: s3.clock }));
+    await shot(pg, "M3-sunset-live-noite");
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s4 = await state(pg);
+    report(skyOk(s4, "noite"), "m390", "M3 reload after sunset: Noite, by the sky", brief(s4));
+    await c.close();
+  }
+  {
+    const c = await ctx(390, 844, "2026-11-08T17:20:00Z"), pg = await open(c);
+    await press(pg, "noite"); await press(pg, "dia"); const s1 = await state(pg);
+    await c.clock.setSystemTime(new Date("2026-11-08T17:40:00Z"));   /* the page asleep: the clock moves, no timer runs */
+    const s2 = await state(pg);
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s3 = await state(pg);
+    report(s1.theme === "dia" && !s1.sol && s2.theme === "dia" && skyOk(s3, "noite") && s3.sess === null, "m390", "M3 a choice made by day, the page reopened after sunset: Noite, first paint Noite",
+      JSON.stringify({ before: [s1.theme, s1.sess], asleep: [s2.theme, s2.clock], after: JSON.parse(brief(s3)) }));
+    await shot(pg, "M3-reopened-after-sunset-noite");
+    await c.close();
+  }
+  {
+    const c = await ctx(390, 844, DAY), pg = await open(c);
+    await press(pg, "noite"); const s1 = await state(pg);
+    await c.clock.setSystemTime(new Date("2026-11-09T13:00:00Z"));
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s2 = await state(pg);
+    report(s1.theme === "noite" && /^noite\|dia\|/.test(s1.sess || "") && skyOk(s2, "dia") && s2.sess === null, "m390", "M3 Noite pressed by day, reopened by day the next day: Dia, by the sky",
+      JSON.stringify({ before: [s1.theme, s1.sess], after: JSON.parse(brief(s2)) }));
+    await c.close();
+  }
+
+  // 4. back to a page from the back/forward cache (a swipe back in Safari) after a choice on another page of the visit
+  {
+    /* headless Chromium does not restore from that cache here, so the restore is replayed: what the other page writes
+       is made by that page itself (the privacy notice, pressed in a second tab, read from its sessionStorage), written
+       into the home page's, then the restore's events (pageshow with persisted, visibilitychange) */
+    const c = await ctx(390, 844, DAY), pg = await open(c), s0 = await state(pg);
+    const other = await open(c, base + "privacidade/"), stored = async () => other.evaluate(() => sessionStorage.getItem("ab-tema"));
+    const restore = async (v) => { await pg.evaluate((v) => { if (v === null) sessionStorage.removeItem("ab-tema"); else sessionStorage.setItem("ab-tema", v);
+      dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })); document.dispatchEvent(new Event("visibilitychange")); }, v); await pg.waitForTimeout(1500); return state(pg); };
+    await press(other, "noite"); const v1 = await stored(), s1 = await restore(v1);
+    report(skyOk(s0, "dia") && /^noite\|dia\|\d+$/.test(v1 || "") && s1.theme === "noite" && !s1.sol && s1.note === null && s1.pressed.join() === "noite" && s1.sess === v1,
+      "m390", "M4 home by day, Noite pressed on the privacy notice, back from the cache: Noite, no sun note", JSON.stringify({ before: [s0.theme, s0.sol], stored: v1, after: JSON.parse(brief(s1)) }));
+    await shot(pg, "M4-back-after-noite-elsewhere");
+    await press(other, "dia"); const v2 = await stored(), s2 = await restore(v2);
+    report(/^dia\|dia\|\d+$/.test(v2 || "") && s2.theme === "dia" && !s2.sol && s2.note === null && s2.pressed.join() === "dia" && s2.sess === v2,
+      "m390", "M4 then Dia pressed there, back again: Dia as a choice (no sun note)", JSON.stringify({ stored: v2, after: JSON.parse(brief(s2)) }));
+    const s3 = await restore(null);
+    report(s3.theme === "dia" && s3.sol && NOTE.dia.test(s3.note || "") && s3.sess === null, "m390", "M4 no choice left in the visit, back again: the sky decides, with the sun note",
+      JSON.stringify({ after: JSON.parse(brief(s3)) }));
+    await pg.reload({ waitUntil: "networkidle" }); await pg.waitForTimeout(700); const s4 = await state(pg);
+    report(skyOk(s4, "dia"), "m390", "M4 a reload then: the same (Dia, by the sky)", brief(s4));
+    await c.close();
+  }
+}

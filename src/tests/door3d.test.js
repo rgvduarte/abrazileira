@@ -64,7 +64,7 @@
 //   the context go later in a short task; the main thread held 12 s in «upload» (a page suspended in the background)
 //   does not refuse the 3D.
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 1200000);
-const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
+const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js"), choose = require("./theme.js");
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.replace("#", "").padEnd(6, "0").slice(i - 1, i + 1), 16));
 const [, , dir] = process.argv;
 /* a capable GPU, in an init script: the renderer's name, the major-performance-caveat flag dropped (SwiftShader would
@@ -126,7 +126,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
     o = o || {};
     const mobile = (o.w || 390) < 900, c = await b.newContext({ viewport: { width: o.w || 390, height: o.h || 844 }, deviceScaleFactor: o.dpr || 2, isMobile: mobile, hasTouch: mobile,
       reducedMotion: o.reduce ? "reduce" : "no-preference", userAgent: o.ua });
-    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, o.theme || "dia");
+    await choose(c, o.theme || "dia", dir);
     await c.addInitScript(spoof(o.spoof));
     await c.addInitScript(() => { window.addEventListener("load", () => { window.__loadAt = performance.now(); }); window.__req3d = [];
       new PerformanceObserver((l) => { for (const e of l.getEntries()) if (/door3d|three\.min/.test(e.name)) window.__req3d.push(e.startTime); }).observe({ type: "resource", buffered: true }); });
@@ -609,7 +609,8 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
   // ---------------------------------------------------------------- 6. a gesture before the module is in (4x CPU throttle): no long task
   for (const [w, h, dpr] of [[1440, 900, 1], [390, 844, 3]]) for (let attempt = 1; attempt <= 2; attempt++) {
     const mobile = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
-    await c.addInitScript(() => { try { localStorage.setItem("ab-tema", "dia"); } catch (e) {} window.__lt = [];
+    await choose(c, "dia", dir);
+    await c.addInitScript(() => { window.__lt = [];
       try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__lt.push([e.startTime, e.duration]); }).observe({ type: "longtask", buffered: true }); } catch (e) {} });
     const pg = await c.newPage(); await serve.offline(pg);
     const cdp = await c.newCDPSession(pg);
@@ -641,7 +642,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
      if a second attempt, in a fresh context, fails too. */
   for (const trig of ["module", "upload"]) for (let attempt = 1; attempt <= 2; attempt++) {
     const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
-    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, "dia");
+    await choose(c, "dia", dir);
     await c.addInitScript(spoof({ gpu: GPU }));
     await c.addInitScript((T) => { window.__ev = []; window.__trig = 0;
       new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__ev.push([e.name, e.startTime, e.processingStart - e.startTime]); }).observe({ type: "event", durationThreshold: 16, buffered: true });
@@ -757,7 +758,7 @@ const GPU = "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
   const IUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.1 Mobile/15E148 Safari/604.1";
   const iphone = async () => {
     const c = await b.newContext({ viewport: { width: 390, height: 796 }, screen: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, userAgent: IUA });
-    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, "dia");
+    await choose(c, "dia", dir);
     await c.addInitScript(spoof({ gpu: "Apple GPU" }));
     await c.addInitScript(SAFARI);
     const pg = await c.newPage(); await serve.offline(pg);

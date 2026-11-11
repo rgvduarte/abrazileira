@@ -232,21 +232,25 @@ T["en"]["consent"] = T["en"]["consent"].replace("about the opening", "about\u00a
 # the town is its own span: on phones it takes a second line by rule, not by a near miss in width
 FOOT = ('<span class="foot__name">' + nb("© 2026 A Brazileira") + '</span><span class="foot__dot"> · </span>'
         '<span class="foot__place">' + nb("Torres Vedras, Portugal") + "</span>")
-# Dia / Noite before the first paint: the visitor's choice on this site if there is one; otherwise the sky over
-# Torres Vedras (39.09 N, 9.26 W) at this moment, when the visitor has not chosen: Dia while the
-# sun is above the horizon (altitude > -0.833 deg, the standard sunrise/sunset), Noite otherwise. A system dark mode is
-# not a choice made here, so it does not override the house's sky (DESIGN.md › Dia & Noite); one
-# press on Noite is remembered. The sun's position is a low-precision solar ephemeris (about 1 minute against
-# published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn the lights on at sunset. data-sol
-# marks a theme the sky chose (never stored); a line under the control then says so («É noite em Torres Vedras.»).
-# Without JavaScript the page follows the system theme.
-THEME_HEAD = ('<script>(function(r){var t;try{t=localStorage.getItem("ab-tema")}catch(e){}'
+# Dia / Noite before the first paint: the sky over Torres Vedras (39.09 N, 9.26 W) at this moment, on every visit:
+# Dia while the sun is above the horizon (altitude > -0.833 deg, the standard sunrise/sunset), Noite otherwise. The
+# one exception is a choice made on the control during this visit, while the sun is still on the same side of the
+# horizon: site.js keeps it in sessionStorage as "<theme>|<the sky then>|<the end of that day or night, ms>", so it
+# holds across reloads and pages of the visit and lapses at the next sunrise or sunset, or when the tab is closed (a
+# visitor who once pressed Dia never gets Dia at night on a later visit). A system dark mode is not a choice made
+# here, so it does not override the house's sky (DESIGN.md › Dia & Noite). The sun's position is a low-precision solar
+# ephemeris (about 1 minute against published sunrise/sunset times for 2026); site.js reuses it (root.__sol) to turn
+# the lights on at sunset. data-sol marks a theme the sky chose (never stored); a line under the control then says so
+# («É noite em Torres Vedras.»). Without JavaScript the page follows the system theme.
+THEME_HEAD = ('<script>(function(r){var n=Date.now(),p,s,t;'
               'r.__sol=function(m){var k=Math.PI/180,d=m/864e5-10957.5,g=(357.529+.98560028*d)*k,'
               'L=(280.459+.98564736*d+1.915*Math.sin(g)+.02*Math.sin(2*g))*k,e=(23.439-3.6e-7*d)*k,'
               'c=Math.asin(Math.sin(e)*Math.sin(L)),a=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L)),'
               'h=(280.46061837+360.98564736629*d-9.26)*k-a,f=39.09*k;'
               'return Math.asin(Math.sin(f)*Math.sin(c)+Math.cos(f)*Math.cos(c)*Math.cos(h))>-.833*k};'
-              'if(t!=="dia"&&t!=="noite"){t=r.__sol(Date.now())?"dia":"noite";r.setAttribute("data-sol","")}'
+              'p=r.__sol(n)?"dia":"noite";'
+              'try{s=sessionStorage.getItem("ab-tema").split("|")}catch(e){s=[]}'
+              'if((s[0]==="dia"||s[0]==="noite")&&s[1]===p&&n<s[2])t=s[0];else{t=p;r.setAttribute("data-sol","")}'
               'r.setAttribute("data-theme",t)})(document.documentElement)</script>')
 
 

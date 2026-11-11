@@ -23,7 +23,7 @@
 // sliced by the screen's edge. The hand-off again on the 3D path (?3d=force, walked in by wheel) at 390 x 844, 844 x 390
 // and 1440 x 900; fast flicks (1500-3500 px/s) at 390 x 844 and 844 x 390 never cut the walk-in ahead in one frame.
 setTimeout(() => { console.log("TIMEOUT"); process.exit(2); }, 1200000);
-const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js");
+const { chromium } = require("playwright"), serve = require("./serve.js"), png = require("./png.js"), choose = require("./theme.js");
 const [, , dir] = process.argv;
 const REC = () => {   // every rAF frame: [t, scrollY, scene scale, intro opacity]
   window.__fr = []; const t0 = performance.now();
@@ -53,7 +53,7 @@ const STATE = () => {
       // whatever the hour; click-other repeats the click in the other theme; click-sun leaves the default (sky) theme
       const theme = ((mi + (mobile ? 0 : 1)) % 2 ? "noite" : "dia"), page = mode === "click-en" ? "en/" : "";
       const c = await b.newContext({ viewport: { width: w, height: h }, isMobile: mobile, hasTouch: mobile, reducedMotion: mode === "reduced-click" ? "reduce" : "no-preference" });
-      if (mode !== "click-sun") await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, mode === "click-other" ? (theme === "dia" ? "noite" : "dia") : theme);
+      if (mode !== "click-sun") await choose(c, mode === "click-other" ? (theme === "dia" ? "noite" : "dia") : theme, dir);
       const pg = await c.newPage(); await serve.offline(pg); const errs = []; pg.on("pageerror", (e) => errs.push(String(e)));
       if (mode === "click-sun") await pg.clock.install({ time: new Date(mobile ? "2026-11-08T21:00:00Z" : "2026-11-08T11:00:00Z") });
       if (mode === "hash") { await c.addInitScript(REC); await pg.goto(base + "#lista", { waitUntil: "networkidle" }); await pg.waitForTimeout(1500); }
@@ -130,7 +130,7 @@ const STATE = () => {
 // more), and r never jumps to p with a step over 0.1 beyond the scroll's own.
   for (const [n, w, h] of [["m390", 390, 844], ["land", 844, 390]]) for (const sp of [1500, 2500, 3500]) {
     const mobile = w < 900, c = await b.newContext({ viewport: { width: w, height: h }, isMobile: mobile && h > w, hasTouch: mobile });
-    await c.addInitScript(() => { try { localStorage.setItem("ab-tema", "dia"); } catch (e) {} });
+    await choose(c, "dia", dir);
     const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base, { waitUntil: "networkidle" }); await pg.waitForTimeout(1200);
     const g = await pg.evaluate(() => document.documentElement.__porta.geo());
     await pg.evaluate(() => { window.__rf = []; const d = document.createElement("div"); d.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;pointer-events:none;opacity:0"; document.body.appendChild(d);
@@ -159,7 +159,7 @@ const STATE = () => {
     .concat([["m390", 390, 844, "?3d=force"], ["land", 844, 390, "?3d=force"], ["d1440", 1440, 900, "?3d=force"]]);
   for (const [n, w, h, q] of HAND) for (const theme of ["dia", "noite"]) {
     const mobile = w < 900, c = await (q ? b3 : b).newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile && h > w, hasTouch: mobile });
-    await c.addInitScript((t) => { try { localStorage.setItem("ab-tema", t); } catch (e) {} }, theme);
+    await choose(c, theme, dir);
     const pg = await c.newPage(); await serve.offline(pg); await pg.goto(base + q, { waitUntil: "networkidle" }); await pg.waitForTimeout(1200);
     const g = await pg.evaluate(() => { const d = document.createElement("div"), P = document.documentElement.__porta.geo();
       d.style.cssText = "position:absolute;width:1px;height:1px;background:var(--color-hall)"; document.querySelector(".lista").appendChild(d);

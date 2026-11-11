@@ -393,7 +393,7 @@ code {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 </ul>
 
 <h2>Dia e Noite</h2>
-<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, até o visitante escolher, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite guarda a escolha, que passa a valer sempre; tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
+<p class="sg-note">Os mesmos componentes com <code>data-theme</code> aplicado a cada painel. Na página pública, em cada visita, o tema segue o sol em Torres Vedras (Dia do nascer ao pôr do sol, Noite depois), e uma frase curta por baixo do controlo diz-o, em todos os ecrãs: «É noite em Torres Vedras.» O modo escuro do sistema não se sobrepõe ao céu (só decide sem JavaScript). Escolher Dia ou Noite vale para o resto da visita, até ao próximo nascer ou pôr do sol; a visita seguinte volta a seguir o céu. Tocar no tema já mostrado não guarda nada. O estado atual de cada controlo é a tinta forte com um traço curto em latão por baixo (o sublinhado fica só para ligações). Esta página segue a mesma regra.</p>
 <div class="sg-panels">
 {panel("dia", scene_d, style_d, "Dia", "Noite")}
 {panel("noite", scene_n, style_n, "Dia", "Noite")}

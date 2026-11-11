@@ -12,7 +12,7 @@
 // also asks for the canvas hidden, the photograph shown and the 3D still on; during every scenario no frame shows neither
 // the canvas nor the photograph under a stage that is not yet flat colour.
 setTimeout(()=>{console.log('TIMEOUT');process.exit(2)},2400000);
-const {chromium}=require('playwright'),serve=require('./serve.js');
+const {chromium}=require('playwright'),serve=require('./serve.js'),choose=require('./theme.js');
 const [,,dir]=process.argv;
 const VPS=(process.env.VPS||'m390:390:844,d1440:1440:900').split(',').map(s=>s.split(':'));
 (async()=>{const {srv,base}=await serve(dir);const b=await chromium.launch();let pass=0,fail=0;const results=[];
@@ -23,7 +23,7 @@ for(const [n0,w,h,scheme,Q] of RUNS){
   const mobile=+w<900,n=n0+(Q?'-3d':'');
   const c=await (Q?b3:b).newContext({viewport:{width:+w,height:+h},colorScheme:scheme,isMobile:mobile,hasTouch:mobile});
   // the default theme follows the sky over Torres Vedras, not the system: choose it, so both themes are covered whatever the hour
-  await c.addInitScript(t=>{try{localStorage.setItem('ab-tema',t)}catch(e){}},scheme==='dark'?'noite':'dia');
+  await choose(c,scheme==='dark'?'noite':'dia',dir);
   await c.addInitScript(()=>{ // fake scroll position hook (rubber-band emulation) + invariant monitor
     const d=Object.getOwnPropertyDescriptor(window,'pageYOffset')||Object.getOwnPropertyDescriptor(Window.prototype,'pageYOffset');
     const dy=Object.getOwnPropertyDescriptor(window,'scrollY')||Object.getOwnPropertyDescriptor(Window.prototype,'scrollY');
